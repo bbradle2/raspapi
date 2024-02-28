@@ -79,7 +79,7 @@ class Program
         int milliseconds = 2000;
         try
         {
-            var command = "cat /proc/cpuinfo";
+            var command = "/proc/cpuinfo";
             Console.WriteLine(command.Execute());
 
             SendMessageToTerminal($"Opening LED Pin {pin}.");
