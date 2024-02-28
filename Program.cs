@@ -63,7 +63,7 @@ class Program
     {
 
         //Console.WriteLine("cat /proc/cpuinfo".Bash());
-        Console.WriteLine(GitVersionInformation.FullSemVer);
+        Console.WriteLine(GitVersionInformation.);
 
         //SendMessageToTerminal("Blinking LED. Press Ctrl+C to end.");
         controller.OpenPin(pin, PinMode.Output);
