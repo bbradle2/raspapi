@@ -84,11 +84,10 @@ class Program
 
             SendMessageToTerminal($"Opening LED Pin {pin}.");
             controller.OpenPin(pin, PinMode.Output);
-            SendMessageToTerminal($"Turn On LED {pin}.");
+            SendMessageToTerminal($"Turn On LED {pin} For {milliseconds / 1000} Seconds.");
             controller.Write(pin, PinValue.High);
-
-            SendMessageToTerminal($"Sleeping For {milliseconds/1000} Seconds.");
-            Thread.Sleep(2000);
+           
+            Thread.Sleep(milliseconds);
 
             SendMessageToTerminal($"Turn Off LED {pin}.");
             controller.Write(pin, PinValue.Low);
