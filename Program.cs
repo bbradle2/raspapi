@@ -50,7 +50,6 @@ class Program
 {
     
     private static readonly GpioController controller = new GpioController();
-    //private static bool ledOn = true;
 
     private static readonly int pin = 23;
     private static void SendMessageToTerminal(string message) 
@@ -101,8 +100,5 @@ class Program
         {
             controller.ClosePin(pin);
         }
-
-
     }
-
 }
