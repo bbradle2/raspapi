@@ -87,7 +87,7 @@ class Program
             SendMessageToTerminal($"Turn On LED {pin}.");
             controller.Write(pin, PinValue.High);
 
-            SendMessageToTerminal($"Sleeping For {milliseconds} Milli Seconds.");
+            SendMessageToTerminal($"Sleeping For {milliseconds/1000} Seconds.");
             Thread.Sleep(2000);
 
             SendMessageToTerminal($"Turn Off LED {pin}.");
