@@ -12,9 +12,10 @@ using System.Net.NetworkInformation;
 
 public static class LinuxExtensions
 {
-    public static string Bash(this string cmd)
+    public static string Execute(this string cmd)
     {
         var escapedArgs = cmd.Replace("\"", "\\\"");
+        string ?result = null;
 
         var process = new Process()
         {
@@ -27,10 +28,22 @@ public static class LinuxExtensions
                 CreateNoWindow = true,
             }
         };
-        
-        string result = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
-        return result;
+
+        try
+        {
+            process.Start();
+            result = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            return result;
+        } 
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            process.Dispose();
+            process = null;
+        }
+
+        return result!;
     }
 }
 class Program
@@ -42,7 +55,7 @@ class Program
     private static readonly int pin = 23;
     private static void SendMessageToTerminal(string message) 
     {
-        Console.WriteLine("\r\n" + message);
+        Console.WriteLine(message);
     }
     private static void OnSigInt(object? sender, ConsoleCancelEventArgs e)
     {
@@ -61,35 +74,36 @@ class Program
     
     static void Main(string[] args)
     {
+        
+        
+        int milliseconds = 2000;
+        try
+        {
+            var command = "cat /proc/cpuinfo";
+            Console.WriteLine(command.Execute());
 
-        //Console.WriteLine("cat /proc/cpuinfo".Bash());
-        Console.WriteLine(GitVersionInformation.InformationalVersion);
+            SendMessageToTerminal($"Opening LED Pin {pin}.");
+            controller.OpenPin(pin, PinMode.Output);
+            SendMessageToTerminal($"Turn On LED {pin}.");
+            controller.Write(pin, PinValue.High);
 
-        //SendMessageToTerminal("Blinking LED. Press Ctrl+C to end.");
-        controller.OpenPin(pin, PinMode.Output);
-        controller.Write(pin, PinValue.High);
-        Thread.Sleep(2000);
-        controller.Write(pin, PinValue.Low);
-        controller.ClosePin(pin);
-        //      Thread.Sleep(1000);
+            SendMessageToTerminal($"Sleeping For {milliseconds} Milli Seconds.");
+            Thread.Sleep(2000);
 
-        // try
-        // {
-        //     controller.OpenPin(pin, PinMode.Output);
-        // } 
-        // catch (Exception ex) 
-        // {
-        //     Console.WriteLine(ex.ToString());
-        //     return;
-        // }
+            SendMessageToTerminal($"Turn Off LED {pin}.");
+            controller.Write(pin, PinValue.Low);
+            
+        }  
+        catch (Exception ex) 
+        {
+            Console.WriteLine(ex.ToString());
+        } 
+        finally 
+        {
+            controller.ClosePin(pin);
+        }
 
-        //  while (true)
-        //  {
-        //      controller.Write(pin, (ledOn) ? PinValue.High : PinValue.Low);
-        //      Thread.Sleep(1000);
-        //      ledOn = !ledOn;
-        //  }
-       
+
     }
 
 }
