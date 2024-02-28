@@ -68,7 +68,7 @@ class Program
         //SendMessageToTerminal("Blinking LED. Press Ctrl+C to end.");
         controller.OpenPin(pin, PinMode.Output);
         controller.Write(pin, PinValue.High);
-        Thread.Sleep(3000);
+        Thread.Sleep(2000);
         controller.Write(pin, PinValue.Low);
         controller.ClosePin(pin);
         //      Thread.Sleep(1000);
