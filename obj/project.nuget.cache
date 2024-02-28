@@ -1,13 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "kOViDhPN3OFTsZDIwePWd4qtqmBp4JchtyrSTkPk7fRmz+7klKO+rOau1kUNOabfFt8gTbFMYRE8pmjV60e6TA==",
+  "dgSpecHash": "qfFLGQvEuulCa8LDVGscXUFiJKaifTLLNNMPjZl2buET9UNAqzHLGOnV+7+1C9HXLhJVvFQyu75dOJMFwjjzdg==",
   "success": true,
   "projectFilePath": "/home/bbrad/projects/dotnett/first_test/first_test.csproj",
   "expectedPackageFiles": [
     "/home/bbrad/.nuget/packages/dapper/2.1.28/dapper.2.1.28.nupkg.sha512",
+    "/home/bbrad/.nuget/packages/gitversion.msbuild/6.0.0-beta.5/gitversion.msbuild.6.0.0-beta.5.nupkg.sha512",
     "/home/bbrad/.nuget/packages/microsoft.extensions.logging.abstractions/7.0.1/microsoft.extensions.logging.abstractions.7.0.1.nupkg.sha512",
     "/home/bbrad/.nuget/packages/mysqlconnector/2.3.5/mysqlconnector.2.3.5.nupkg.sha512",
-    "/home/bbrad/.nuget/packages/system.device.gpio/3.1.0/system.device.gpio.3.1.0.nupkg.sha512"
+    "/home/bbrad/.nuget/packages/system.device.gpio/3.1.0/system.device.gpio.3.1.0.nupkg.sha512",
+    "/home/bbrad/.nuget/packages/system.text.encodings.web/8.0.0/system.text.encodings.web.8.0.0.nupkg.sha512",
+    "/home/bbrad/.nuget/packages/system.text.json/8.0.1/system.text.json.8.0.1.nupkg.sha512"
   ],
   "logs": []
 }

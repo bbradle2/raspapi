@@ -18,3 +18,5 @@
 /home/bbrad/projects/dotnett/first_test/bin/Debug/net8.0/MySqlConnector.dll
 /home/bbrad/projects/dotnett/first_test/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
 /home/bbrad/projects/dotnett/first_test/bin/Debug/net8.0/Dapper.dll
+/home/bbrad/projects/dotnett/first_test/obj/Debug/net8.0/GitVersionInformation.g.cs
+/home/bbrad/projects/dotnett/first_test/obj/Debug/net8.0/first_test.sourcelink.json
