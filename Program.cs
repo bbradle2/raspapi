@@ -7,50 +7,23 @@ using Dapper;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using System.Globalization;
+using System.Text;
+using DataObjects;
+using LinuxExtensions;
 
 
 
-public static class LinuxExtensions
-{
-    public static string Execute(this string cmd)
-    {
-        var escapedArgs = cmd.Replace("\"", "\\\"");
-        string ?result = null;
 
-        var process = new Process()
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "/bin/bash",
-                Arguments = $"-c \"{escapedArgs}\"",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            }
-        };
-
-        try
-        {
-            process.Start();
-            result = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-            return result;
-        } 
-        catch(Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-            process.Dispose();
-            process = null;
-        }
-
-        return result!;
-    }
-}
 class Program
 {
     
     private static readonly GpioController controller = new GpioController();
-
     private static readonly int pin = 23;
     private static void SendMessageToTerminal(string message) 
     {
@@ -70,35 +43,91 @@ class Program
         SendMessageToTerminal("SIGTERM Received...");
     }
 
-    
     static void Main(string[] args)
     {
-        
-        
-        int milliseconds = 2000;
-        try
-        {
-            var command = "cat /proc/cpuinfo";
-            Console.WriteLine(command.Execute());
 
-            SendMessageToTerminal($"Opening LED Pin {pin}.");
-            controller.OpenPin(pin, PinMode.Output);
-            SendMessageToTerminal($"Turn On LED {pin} For {milliseconds / 1000} Seconds.");
-            controller.Write(pin, PinValue.High);
-           
-            Thread.Sleep(milliseconds);
+        AppDomain.CurrentDomain.ProcessExit += OnSigTerm;
+        Console.CancelKeyPress += OnSigInt;
 
-            SendMessageToTerminal($"Turn Off LED {pin}.");
-            controller.Write(pin, PinValue.Low);
-            
-        }  
-        catch (Exception ex) 
+        var builder = WebApplication.CreateBuilder(args);
+
+        var app = builder.Build();
+
+        app.MapGet("/cpuinfo", async () =>
         {
-            Console.WriteLine(ex.ToString());
-        } 
-        finally 
+            StringBuilder? retRes = new StringBuilder();
+            try
+            {
+                var commandRes = await Task.Run(() => "cat /proc/cpuinfo".Execute());
+
+                foreach (var c in commandRes)
+                {
+                    if (c == '\n' || c == '\t') continue;
+
+                    retRes.Append(c);
+                }
+
+                CPUObject cpuObject = new CPUObject { Call = "CPUInfo", Content = retRes.ToString() };
+
+                return Results.Json(cpuObject);
+            } 
+            finally 
+            {
+                retRes = null;
+            }
+        });
+
+        app.MapGet("/ledstatus", () =>
         {
-            controller.ClosePin(pin);
-        }
+            var openPin = controller.OpenPin(pin, PinMode.Output);
+
+            try
+            {        
+                return Results.Json(openPin.Read().ToString());
+            } 
+            finally 
+            {
+                
+            }
+        });
+
+        app.MapGet("/ledon", () =>
+        {
+            var openPin = controller.OpenPin(pin, PinMode.Output);
+
+            try
+            {
+                controller.Write(pin, PinValue.High);
+                var pinValue = openPin.Read();
+                return Results.Json(pinValue.ToString());
+            }
+            finally
+            {
+                
+            }
+        });
+
+        app.MapGet("/ledoff", () =>
+        {
+            var openPin = controller.OpenPin(pin, PinMode.Output);
+
+            try
+            {
+                controller.Write(pin, PinValue.Low);
+                var pinValue = openPin.Read();
+                return Results.Json(pinValue.ToString());
+            }
+            finally
+            {
+                
+            }
+        });
+
+        app.Run();
+        controller.OpenPin(pin, PinMode.Output);
+        controller.Write(pin, PinValue.Low);
+        controller.ClosePin(pin);
+        AppDomain.CurrentDomain.ProcessExit -= OnSigTerm;
+        Console.CancelKeyPress -= OnSigInt;
     }
 }
