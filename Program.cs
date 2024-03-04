@@ -5,18 +5,15 @@ using System.Device.Gpio;
 //using MySqlConnector;
 //using Dapper;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text;
-using DataObjects;
-using LinuxExtensions;
-using System;
+using Interfaces;
+using Controllers;
 
 class Program
 {
 
     //private static readonly GpioController controller = new GpioController();
-    private static readonly int pin = 23;
+    
     // private static void SendMessageToTerminal(string message) 
     // {
     //     Console.WriteLine(message);
@@ -44,95 +41,26 @@ class Program
 
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddSingleton<GpioController>();
-        
+        builder.Services.AddSingleton<IRaspberryPiController, RaspberryPiController>();
+
         var app = builder.Build();
+        var piController = app.Services.GetService<IRaspberryPiController>();
+        piController!.Start(app);
+
         app.Use(async (context, next) =>
         {
-            // Do work that can write to the Response.
-            await next.Invoke();
-            // Do logging or other work that doesn't write to the Response.
-        });
-        //var config = app.Configuration;
-        //var s = app.Services.GetService<GpioController>();
-
-        app.MapGet("/cpuinfo", async (HttpContext context) =>
-        {
-            StringBuilder? retRes = new StringBuilder();
-            
             try
             {
-                var commandRes = await Task.Run(() => "cat /proc/cpuinfo".Execute());
-
-                foreach (var c in commandRes)
-                {
-                    if (c == '\n' || c == '\t') continue;
-
-                    retRes.Append(c);
-                }
-
-                CPUObject cpuObject = new CPUObject { Call = "CPUInfo", Content = retRes.ToString() };
-
-                return Results.Ok(cpuObject);
-            }
-            finally
+                // Do work that can write to the Response.
+                await next.Invoke();
+                // Do logging or other work that doesn't write to the Response.
+            } 
+            catch (Exception e) 
             {
-                retRes = null;
+                Console.WriteLine(e.ToString());
             }
         });
-
-        app.MapGet("/ledstatus", (GpioController gpioController) =>
-        {
-            ArgumentNullException.ThrowIfNull(gpioController);
-
-            var openPin = gpioController.OpenPin(pin, PinMode.Output);
-
-            try
-            {
-                return Results.Json(openPin.Read().ToString());
-            }
-            finally
-            {
-
-            }
-        });
-
-        app.MapGet("/ledon", (GpioController gpioController) =>
-        {
-            ArgumentNullException.ThrowIfNull(gpioController);
-
-            var openPin = gpioController.OpenPin(pin, PinMode.Output);
-
-            try
-            {
-                gpioController.Write(pin, PinValue.High);
-                var pinValue = openPin.Read();
-                return Results.Json(pinValue.ToString());
-            }
-            finally
-            {
-
-            }
-        });
-
-        app.MapGet("/ledoff", (HttpContext context, GpioController gpioController) =>
-        {
-            
-            ArgumentNullException.ThrowIfNull(gpioController);
-
-            var openPin = gpioController.OpenPin(pin, PinMode.Output);
-
-            try
-            {
-                gpioController.Write(pin, PinValue.Low);
-                var pinValue = openPin.Read();
-                return Results.Json(pinValue.ToString());
-            }
-            finally
-            {
-
-            }
-        });
-
+      
         app.Run();
 
     }
