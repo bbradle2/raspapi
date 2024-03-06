@@ -9,37 +9,13 @@ using Microsoft.AspNetCore.Http;
 
 namespace first_test.Controllers
 {
-    public class RaspberryPiController: IRaspberryPiController
+    public class RaspberryPiGpioController: IRaspberryPiGpioController
     {
         private static readonly int pin = 23;
-        public void Start(WebApplication app)  
+        public void StartGpio(WebApplication app)  
         {
-           app.MapGet("/cpuinfo", async (HttpContext context) =>
-           {
-                StringBuilder? retRes = new StringBuilder();
-
-                try
-                {
-                    var commandRes = await Task.Run(() => "cat /proc/cpuinfo".Execute());
-
-                    foreach (var c in commandRes)
-                    {
-                        if (c == '\n' || c == '\t') continue;
-
-                        retRes.Append(c);
-                    }
-
-                    CPUObject cpuObject = new CPUObject { Call = "CPUInfo", Content = retRes.ToString() };
-
-                    return Results.Ok(cpuObject);
-                }
-                finally
-                {
-                    retRes = null;
-                }
-            });
-
-            app.MapGet("/ledstatus", (GpioController gpioController) =>
+       
+            app.MapGet("/RaspberryPiGpioController/ledstatus", (GpioController gpioController) =>
             {
                 ArgumentNullException.ThrowIfNull(gpioController);
 
@@ -55,7 +31,7 @@ namespace first_test.Controllers
                 }
             });
 
-            app.MapGet("/ledon", (GpioController gpioController) =>
+            app.MapGet("/RaspberryPiGpioController/ledon", (GpioController gpioController) =>
             {
                 ArgumentNullException.ThrowIfNull(gpioController);
 
@@ -73,7 +49,7 @@ namespace first_test.Controllers
                 }
             });
 
-            app.MapGet("/ledoff", (HttpContext context, GpioController gpioController) =>
+            app.MapGet("/RaspberryPiGpioController/ledoff", (HttpContext context, GpioController gpioController) =>
             {
 
                 ArgumentNullException.ThrowIfNull(gpioController);
