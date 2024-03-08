@@ -14,11 +14,19 @@ namespace first_test
         static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
             builder.Services.AddSingleton<GpioController>();
             builder.Services.AddSingleton<IRaspberryPiInfoController, RaspberryPiInfoController>();
             builder.Services.AddSingleton<IRaspberryPiGpioController, RaspberryPiGpioController>();
 
             var app = builder.Build();
+
+           
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
 
             var piInfoController = app.Services.GetService<IRaspberryPiInfoController>();
             ArgumentNullException.ThrowIfNull(piInfoController);

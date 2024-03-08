@@ -5,10 +5,14 @@ namespace first_test.DataObjects
     public abstract class RaspBaseObject
     {
         [JsonPropertyName("Call")]
-        public required string Call { get; set; }
+        [JsonPropertyOrder(0)]
+        public string? Call { get; set; }
 
-        [JsonPropertyName("Content")]
-        public required string Content { get; set; }
+        [JsonPropertyName("Description")]
+        [JsonPropertyOrder(1)]
+        public string? Description { get; set; }
+
+      
     }
 
 }

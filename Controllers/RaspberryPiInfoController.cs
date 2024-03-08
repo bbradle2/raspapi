@@ -1,6 +1,10 @@
 
+using System.Data.Common;
 using System.Device.Gpio;
+using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using first_test.DataObjects;
 using first_test.Interfaces;
 using first_test.LinuxExtensions;
@@ -11,65 +15,78 @@ namespace first_test.Controllers
 {
     public class RaspberryPiInfoController : IRaspberryPiInfoController
     {
+        
         public void StartInfo(WebApplication app)  
         {
-           app.MapGet("/RaspberryPiInfoController/cpuinfo", async (HttpContext context) =>
-           {
-                StringBuilder? retRes = new StringBuilder();
+            const string controllerName = "RaspberryPiInfoController";
+            const string memoryInfo = "memoryinfo";
+            const string cpuInfo = "cpuinfo";
+            const string systemInfo = "systeminfo";
 
+            _ = app.MapGet($"/{controllerName}/{systemInfo}", async (HttpContext context) =>
+            {
+                
                 try
                 {
-                    var commandRes = await Task.Run(() => "cat /proc/cpuinfo".Execute());
+                    string result = "sudo lshw -class system -json".Execute();
+                    byte[] byteArray = Encoding.UTF8.GetBytes(result);
+                    MemoryStream stream = new(byteArray);
+                    var node = await JsonNode.ParseAsync(stream);
 
-                    foreach (var c in commandRes)
-                    {
-                        if (c == '\n' || c == '\t') continue;
+                    //var array = node!.AsArray();
+                    //var id = array[0]!["id"];
+                    //var claimed = array[0]!["claimed"];
+                    //var cls = array[0]!["class"];
 
-                        retRes.Append(c);
-                    }
-
-                    CPUObject cpuObject = new CPUObject { Call = "CPUInfo", Content = retRes.ToString() };
-
-                    return Results.Ok(cpuObject);
+                    return TypedResults.Ok(node);
                 }
                 finally
                 {
-                    retRes = null;
                 }
             });
 
+            _ = app.MapGet($"/{controllerName}/{cpuInfo}", async (HttpContext context) =>
+            {
+                try
+                {
+                    var result = "sudo lshw -class cpu -json".Execute();
+                    byte[] byteArray = Encoding.UTF8.GetBytes(result);
+                    MemoryStream stream = new MemoryStream(byteArray);
+                    var node = await JsonNode.ParseAsync(stream);
+                    return TypedResults.Json(node);
+                } 
+                finally
+                {
 
-            app.MapGet("/RaspberryPiInfoController/memoryinfo", async (HttpContext context) =>
-           {
-               StringBuilder? retRes = new StringBuilder();
+                }
 
-               try
-               {
-                   var commandRes = await Task.Run(() => "cat /proc/cpuinfo".Execute());
+            });
 
-                   foreach (var c in commandRes)
-                   {
-                       if (c == '\n' || c == '\t') continue;
+            _ = app.MapGet($"/{controllerName}/{memoryInfo}", async (HttpContext context) =>
+            {
+                try
+                {
+                    var meminfoLines = await File.ReadAllLinesAsync("/proc/meminfo");
+                    var memTotal = meminfoLines.SingleOrDefault(item => item.Contains("MemTotal:"));
+                    var memFree = meminfoLines.SingleOrDefault(item => item.Contains("MemFree:"));
+                    var memAvailable = meminfoLines.SingleOrDefault(item => item.Contains("MemAvailable:"));
 
-                       retRes.Append(c);
-                   }
+                    MemoryObject memInfoObject = new()
+                    {
+                        Call = memoryInfo,
+                        Description = "RaspBerry Pi 5 Memory Statistics",
+                        MemTotal = memTotal!.Split(":")[1].Trim(),
+                        MemFree = memFree!.Split(":")[1].Trim(),
+                        MemAvailable = memAvailable!.Split(":")[1].Trim()
+                    };
 
-                   MemoryObject cpuObject = new MemoryObject { Call = "MemoryInfo", Content = retRes.ToString() };
+                    return TypedResults.Json<MemoryObject>(memInfoObject);
+                }
+                finally
+                {
 
-                   return Results.Ok(cpuObject);
-               }
-               finally
-               {
-                   retRes = null;
-               }
-           });
-
-
-
-
-
+                }
+            });
         }
-    }
-
-    
+    }   
 }
