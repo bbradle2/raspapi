@@ -1,21 +1,20 @@
 
 using System.Device.Gpio;
-using System.Text;
-using first_test.DataObjects;
-using first_test.Interfaces;
-using first_test.LinuxExtensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
 namespace first_test.Controllers
 {
+    using Interfaces;
+    using Microsoft.Extensions.Configuration;
+
     public class RaspberryPiGpioController: IRaspberryPiGpioController
     {
         private static readonly int pin = 23;
         public void StartGpio(WebApplication app)  
         {
        
-            app.MapGet("/RaspberryPiGpioController/ledstatus", (GpioController gpioController) =>
+            app.MapGet("/RaspberryPiGpioController/ledstatus", (GpioController gpioController, IConfiguration config) =>
             {
                 ArgumentNullException.ThrowIfNull(gpioController);
 
@@ -31,7 +30,7 @@ namespace first_test.Controllers
                 }
             });
 
-            app.MapGet("/RaspberryPiGpioController/ledon", (GpioController gpioController) =>
+            app.MapPut("/RaspberryPiGpioController/ledon", (GpioController gpioController) =>
             {
                 ArgumentNullException.ThrowIfNull(gpioController);
 
@@ -49,7 +48,7 @@ namespace first_test.Controllers
                 }
             });
 
-            app.MapGet("/RaspberryPiGpioController/ledoff", (HttpContext context, GpioController gpioController) =>
+            app.MapPut("/RaspberryPiGpioController/ledoff", (HttpContext context, GpioController gpioController) =>
             {
 
                 ArgumentNullException.ThrowIfNull(gpioController);

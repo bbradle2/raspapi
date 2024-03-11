@@ -2,44 +2,52 @@ using System.Text.Json.Serialization;
 
 namespace first_test.DataObjects
 {
-    public class CPUInfoObject : RaspBaseObject
+    public class CPUInfoObject : BaseInfoObject
     {
-        [JsonPropertyOrder(2)]
-        [JsonPropertyName("Revision")]
-        public string? Revision { get; set; }
+        public CPUInfoObject() 
+        {
+            Name = "cpuinfo";
+            Description = "Raspberry PI 5 cpuinfo";
+        }
 
-        [JsonPropertyName("Serial")]
-        [JsonPropertyOrder(3)]
-        public string? Serial { get; set; }
-        [JsonPropertyOrder(4)]
-        [JsonPropertyName("Model")]
-        public string? Model { get; set; }
-        [JsonPropertyOrder(5)]
-        [JsonPropertyName("ProcessorInfoObjects")]
-        public ProcessorObject[]? ProcessorInfoObjects { get; set; }
-    }
+       
+        public CPUObject[]? CPUObjects { get; set; }
 
-    public class ProcessorObject
-    {
-        [JsonPropertyName("Processor")]
-        public string? Processor { get; set; }
+        public class Capabilities
+        {
+            public string? Fp { get; set; }
+            public string? Asimd { get; set; }
+            public string? Evtstrm { get; set; }
+            public string? Aes { get; set; }
+            public string? Pmull { get; set; }
+            public string? Sha1 { get; set; }
+            public string? Sha2 { get; set; }
+            public string? Crc32 { get; set; }
+            public bool Atomics { get; set; }
+            public bool Fphp { get; set; }
+            public bool Asimdhp { get; set; }
+            public bool Cpuid { get; set; }
+            public bool Asimdrdm { get; set; }
+            public bool Lrcpc { get; set; }
+            public bool Dcpop { get; set; }
+            public bool Asimddp { get; set; }
+            public string? Cpufreq { get; set; }
+        }
 
-        [JsonPropertyName("BogoMIPS")]
-        public string? BogoMIPS { get; set; }
-
-        [JsonPropertyName("Features")]
-        public string? Features { get; set; }
-
-        [JsonPropertyName("CPUImplementer")]
-        public string? CPUImplementer { get; set; }
-
-        [JsonPropertyName("CPUArchitecture")]
-        public string? CPUArchitecture { get; set; }
-        [JsonPropertyName("CPUVariant")]
-        public string? CPUVariant { get; set; }
-        [JsonPropertyName("CPUPart")]
-        public string? CPUPart { get; set; }
-        [JsonPropertyName("CPURevision")]
-        public string? CPURevision { get; set; }
+        public class CPUObject
+        {
+            public string? Id { get; set; }
+            public string? Class { get; set; }
+            public bool? Claimed { get; set; }
+            public string? Description { get; set; }
+            public string? Product { get; set; }
+            public string? Physid { get; set; }
+            public string? Businfo { get; set; }
+            public string? Units { get; set; }
+            public object? Size { get; set; }
+            public object? Capacity { get; set; }
+            public Capabilities? Capabilities { get; set; }
+            public bool? Disabled { get; set; }
+        }
     }
 }
