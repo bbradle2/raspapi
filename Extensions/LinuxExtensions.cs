@@ -3,7 +3,7 @@ namespace first_test.LinuxExtensions
 {
     public static class LinuxExtensions
     {
-        public static string Execute(this string cmd)
+        public static string ExecuteBashScript(this string cmd)
         {
             var escapedArgs = cmd.Replace("\"", "\\\"");
             string? result = null;
