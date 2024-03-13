@@ -4,7 +4,7 @@ namespace first_test.Interfaces
 {
     public interface IRaspberryPiGpioController
     {
-        public void StartGpio(WebApplication app);
+        void StartGpio(WebApplication app);
       
     }
 }
