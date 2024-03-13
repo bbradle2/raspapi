@@ -32,6 +32,8 @@ namespace first_test
             app.UseSwaggerUI();
 
             Console.WriteLine($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
+            Console.WriteLine($"BRIAN_TEST:{app.Configuration["BRIAN_TEST"]}");
+            Console.WriteLine($"AllowedHosts:{app.Configuration["AllowedHosts"]}");
 
             var piInfoController = app.Services.GetService<IRaspberryPiInfoController>();
             ArgumentNullException.ThrowIfNull(piInfoController);
