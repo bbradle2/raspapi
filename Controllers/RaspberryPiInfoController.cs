@@ -1,87 +1,98 @@
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace first_test.Controllers
 {
+    using System.Data;
     using System.Text.Json;
     using DataObjects;
     using Interfaces;
     using LinuxExtensions;
+    using Microsoft.AspNetCore.Components.Routing;
+    using Microsoft.AspNetCore.Routing;
 
-    public class RaspberryPiInfoController : IRaspberryPiInfoController
+    [ApiController]
+    [Route("[controller]")]
+    public class RaspberryPiInfoController : ControllerBase
     {
+        private readonly ILogger<RaspberryPiInfoController> _logger;
         private readonly JsonSerializerOptions options = new(JsonSerializerDefaults.Web);
-        public void StartInfo(WebApplication app)  
+
+        public RaspberryPiInfoController(ILogger<RaspberryPiInfoController> logger) 
         {
-            const string controllerName = "RaspberryPiInfoController";
-            const string memoryInfo = "memoryinfo";
-            const string cpuInfo = "cpuinfo";
-            const string systemInfo = "systeminfo";
-            
-            _ = app.MapGet($"/{controllerName}/{systemInfo}", async (HttpContext context) =>
+            _logger = logger;
+        }
+
+        [HttpGet("GetCpuInfo")]
+        public async Task<CPUInfoObject?> GetCpuInfo()
+        {
+            try
             {
-                try
+                static MemoryStream memoryStreamCPUInfo()
                 {
-                    MemoryStream memoryStream()
-                    {
-                        string systemInfoResult = "sudo lshw -class system -json".ExecuteBashScript();
-                        byte[] systemInfoByteArray = Encoding.UTF8.GetBytes(systemInfoResult);
-                        return new(systemInfoByteArray);
-                    }
+                    string cpuInfoResult = "sudo lshw -class cpu -json".ExecuteBashScript();
+                    byte[] cpuInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
+                    return new MemoryStream(cpuInfoByteArray);
+                };
 
-                    SystemInfoObject systemInfoObject = new()
-                    {
-                        SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStream(), options)
-                    };
-
-                    return TypedResults.Json<SystemInfoObject>(systemInfoObject);
-                }
-                catch(Exception e)
+                CPUInfoObject cpuInfoObject = new()
                 {
-                    return Results.Problem(e.Message);
-                }
-               
-            });
-
-            _ = app.MapGet($"/{controllerName}/{cpuInfo}", async (HttpContext context) =>
+                    CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamCPUInfo(), options)
+                };
+                _logger.LogTrace(cpuInfoObject.ToString());
+                return cpuInfoObject;
+            } 
+            catch(Exception e)
             {
-                try
-                {
-                    MemoryStream memoryStream()
-                    {
-                        string cpuInfoResult = "sudo lshw -class cpu -json".ExecuteBashScript();
-                        byte[] cpuInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
-                        return new MemoryStream(cpuInfoByteArray);
-                    };
+                _logger.LogError(e.Message);
+                return null;
+            }
+        }
 
-                    CPUInfoObject cpuInfoObject = new()
-                    {
-                        CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStream(), options)
-                    };
-
-                    return TypedResults.Json<CPUInfoObject>(cpuInfoObject);
-                } 
-                catch(Exception e)
-                {
-                    return Results.Problem(e.Message);
-                }
-
-            });
-
-            _ = app.MapGet($"/{controllerName}/{memoryInfo}", async (HttpContext context) =>
+        [HttpGet("GetSystemInfo")]
+        public async Task<SystemInfoObject?> GetSystemInfo()
+        {
+            try
             {
-                try
+                static MemoryStream memoryStreamSystemInfo()
                 {
-                    var meminfoLines = await File.ReadAllLinesAsync("/proc/meminfo");
-                    var memInfoObject = MemoryInfoObject.ParseMemoryInfo(meminfoLines);
-                    return TypedResults.Json<MemoryInfoObject>(memInfoObject);
+                    string systemInfoResult = "sudo lshw -class system -json".ExecuteBashScript();
+                    byte[] systemInfoByteArray = Encoding.UTF8.GetBytes(systemInfoResult);
+                    return new(systemInfoByteArray);
                 }
-                catch (Exception e)
+
+                SystemInfoObject systemInfoObject = new()
                 {
-                    return Results.Problem(e.Message);
-                }
-            });
+                    SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), options)
+                };
+                _logger.LogTrace(systemInfoObject.ToString());
+                return systemInfoObject;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                return null;
+            }
+        }
+
+        [HttpGet("GetMemoryInfo")]
+        public async Task<MemoryInfoObject?> GetMemoryInfo()
+        {
+           
+            try
+            {
+                var meminfoLines = await System.IO.File.ReadAllLinesAsync("/proc/meminfo");
+                var memInfoObject = MemoryInfoObject.ParseMemoryInfo(meminfoLines);
+                return memInfoObject;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                return null;
+            }
         }
     }   
 }

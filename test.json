@@ -1,2 +1,0 @@
-vmstat -s | awk 'BEGIN {printf "["} {printf "{\"quantity\":\"%s\",\"description\":\"%s\"}", $1, substr($0, index($0,$2))} NR!=26 {printf ","} END {print "]"
-}' | jq
