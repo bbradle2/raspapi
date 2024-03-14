@@ -2,3 +2,4 @@ obj/
 bin/
 .mono/
 test.json
+scripts/*json
