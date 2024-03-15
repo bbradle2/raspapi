@@ -42,7 +42,7 @@ namespace first_test.Controllers
                 {
                     CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamCPUInfo(), options)
                 };
-                _logger.LogTrace(cpuInfoObject.ToString());
+                _logger.LogInformation("Returning cpuInfoObject");
                 return cpuInfoObject;
             } 
             catch(Exception e)
@@ -68,7 +68,7 @@ namespace first_test.Controllers
                 {
                     SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), options)
                 };
-                _logger.LogTrace(systemInfoObject.ToString());
+                _logger.LogInformation("Returning systemInfoObject");
                 return systemInfoObject;
             }
             catch (Exception e)
@@ -86,6 +86,7 @@ namespace first_test.Controllers
             {
                 var meminfoLines = await System.IO.File.ReadAllLinesAsync("/proc/meminfo");
                 var memInfoObject = MemoryInfoObject.ParseMemoryInfo(meminfoLines);
+                _logger.LogInformation("Returning memInfoObject");
                 return memInfoObject;
             }
             catch (Exception e)
