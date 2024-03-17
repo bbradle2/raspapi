@@ -8,9 +8,6 @@ namespace raspapi
     using Interfaces;
     using Controllers;
     using Microsoft.AspNetCore.Hosting;
-    using System.Text.Json;
-    using System.Text.Json.Serialization;
-    using Microsoft.AspNetCore.Http.Json;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
 
@@ -26,14 +23,15 @@ namespace raspapi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddSingleton<GpioController>();
+            //builder.Services.AddSingleton<GpioController>();
             //builder.Services.AddSingleton<IRaspberryPiGpioController, RaspberryPiGpioController>();
 
             var app = builder.Build();
 
+            
+
             if (app.Environment.IsDevelopment())
             {
- //               app.Logger.LogInformation($"Running in development.");
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
@@ -46,6 +44,8 @@ namespace raspapi
             // ArgumentNullException.ThrowIfNull(piController);
             // piController.StartGpio(app);
             app.MapControllers();
+
+            app.Logger.LogInformation($"Git Version {GitVersionInformation.SemVer}.");
             app.Run();
         }
     }
