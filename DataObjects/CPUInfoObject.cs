@@ -7,7 +7,7 @@ namespace raspapi.DataObjects
         public CPUInfoObject() 
         {
             Name = "cpuinfo";
-            Description = "Raspberry PI 5 cpuinfo";
+            Description = "Raspberry PI 5 cpuinfo.";
         }
 
        

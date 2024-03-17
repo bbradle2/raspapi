@@ -8,7 +8,7 @@ namespace raspapi.DataObjects
         public SystemInfoObject()
         {
             Name = "systeminfo";
-            Description = "Raspberry PI 5 systeminfo";
+            Description = "Raspberry PI 5 systeminfo.";
         }
 
         public SystemObject[]? SystemObjects { get; set; }

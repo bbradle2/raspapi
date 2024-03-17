@@ -7,7 +7,7 @@ namespace raspapi.DataObjects
         public MemoryInfoObject()
         {
             Name = "memoryinfo";
-            Description = "Raspberry PI 5 memoryinfo";
+            Description = "Raspberry PI 5 memoryinfo.";
         }
 
         public string? MemoryTotal { get; set; }
