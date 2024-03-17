@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace first_test.Interfaces
+namespace raspapi.Interfaces
 {
     public interface IRaspberryPiI2CController
     {

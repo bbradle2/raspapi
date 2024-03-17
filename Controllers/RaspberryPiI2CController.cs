@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.AspNetCore.Builder;
 
 
-namespace first_test.Controllers
+namespace raspapi.Controllers
 {
     using Interfaces;
     public class RaspberryPiI2CController : IRaspberryPiI2CController

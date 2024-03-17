@@ -2,32 +2,32 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "C#: first_test Debug",
+            "name": "C#: raspapi Debug",
             "type": "coreclr",
             "request": "launch",
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
-            "program": "${workspaceFolder}/bin/Debug/net8.0/first_test.dll"
+            "program": "${workspaceFolder}/bin/Debug/net8.0/raspapi.dll"
         },
         {
-            "name": "C#: first_test Production",
+            "name": "C#: raspapi Production",
             "type": "coreclr",
             "request": "launch",
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Production"
             },
-            "program": "${workspaceFolder}/bin/Debug/net8.0/first_test.dll"
+            "program": "${workspaceFolder}/bin/Debug/net8.0/raspapi.dll"
         },
         // {
-        //     "name": "C#: first_test",
+        //     "name": "C#: raspapi",
         //     "type": "coreclr",
         //     "request": "launch",
         //     "env":
         //      {
         //         "ASPNETCORE_ENVIRONMENT": "Development"
         //     },
-        //     "program": "${workspaceFolder}/bin/Debug/net8.0/first_test.dll"
+        //     "program": "${workspaceFolder}/bin/Debug/net8.0/raspapi.dll"
         // }
     ]
 }

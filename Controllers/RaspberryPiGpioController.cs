@@ -3,7 +3,7 @@ using System.Device.Gpio;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace first_test.Controllers
+namespace raspapi.Controllers
 {
     using Interfaces;
     using Microsoft.Extensions.Configuration;

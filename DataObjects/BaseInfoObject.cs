@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace first_test.DataObjects
+namespace raspapi.DataObjects
 {
     public abstract class BaseInfoObject
     {

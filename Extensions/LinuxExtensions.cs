@@ -1,5 +1,5 @@
 using System.Diagnostics;
-namespace first_test.LinuxExtensions
+namespace raspapi.LinuxExtensions
 {
     public static class LinuxExtensions
     {
