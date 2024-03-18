@@ -17,6 +17,7 @@ namespace raspapi
         static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            
             builder.Logging.AddConsole();
             builder.Services.AddControllers();
 
@@ -27,8 +28,6 @@ namespace raspapi
             //builder.Services.AddSingleton<IRaspberryPiGpioController, RaspberryPiGpioController>();
 
             var app = builder.Build();
-
-            
 
             if (app.Environment.IsDevelopment())
             {
