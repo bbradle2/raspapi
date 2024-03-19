@@ -17,10 +17,10 @@ namespace raspapi
         static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            
+
             builder.Logging.AddConsole();
             builder.Services.AddControllers();
-
+           
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -34,7 +34,7 @@ namespace raspapi
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            
             //app.Logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
             //app.Logger.LogInformation($"BRIAN_TEST:{app.Configuration["BRIAN_TEST"]}");
             //app.Logger.LogInformation($"AllowedHosts:{app.Configuration["AllowedHosts"]}");
@@ -46,6 +46,7 @@ namespace raspapi
 
             app.Logger.LogInformation($"Git Version {GitVersionInformation.SemVer}.");
             app.Run();
+
         }
     }
 }

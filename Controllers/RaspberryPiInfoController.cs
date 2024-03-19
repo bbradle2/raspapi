@@ -1,17 +1,17 @@
 using System.Text;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace raspapi.Controllers
 {
-    using System.Data;
+    using System.Device.Gpio.Drivers;
     using System.Text.Json;
     using DataObjects;
-    using Interfaces;
     using LinuxExtensions;
-    using Microsoft.AspNetCore.Components.Routing;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Authorization.Infrastructure;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
 
     [ApiController]
@@ -27,72 +27,97 @@ namespace raspapi.Controllers
         }
 
         [HttpGet("GetCpuInfo")]
-        public async Task<CPUInfoObject?> GetCpuInfo()
+        public async Task<IActionResult?> GetCpuInfo()
         {
             try
             {
-                static MemoryStream memoryStreamCPUInfo()
+                if (HttpContext.Request.Headers["AUTHORIZED_USER"] == Environment.UserName)
                 {
-                    string cpuInfoResult = "sudo lshw -class cpu -json".ExecuteBashScript();
-                    byte[] cpuInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
-                    return new MemoryStream(cpuInfoByteArray);
-                };
+                    static MemoryStream memoryStreamCPUInfo()
+                    {
+                        string cpuInfoResult = "sudo lshw -class cpu -json".ExecuteBashScript();
+                        ArgumentNullException.ThrowIfNullOrWhiteSpace(cpuInfoResult);
 
-                CPUInfoObject cpuInfoObject = new()
-                {
-                    CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamCPUInfo(), options)
-                };
-                _logger.LogInformation("Returning cpuInfoObject");
-                return cpuInfoObject;
-            } 
-            catch(Exception e)
+                        byte[] cpuInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
+                        return new MemoryStream(cpuInfoByteArray);
+                    };
+
+                    CPUInfoObject cpuInfoObject = new()
+                    {
+                        CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamCPUInfo(), options)
+                    };
+                    _logger.LogInformation("Returning cpuInfoObject");
+                    return Ok(cpuInfoObject);
+                }
+
+                _logger.LogError("Invalid User");
+                return Unauthorized();
+            }
+            catch (Exception e)
             {
                 _logger.LogError(e.Message);
-                return null;
+                return BadRequest();
             }
         }
 
         [HttpGet("GetSystemInfo")]
-        public async Task<SystemInfoObject?> GetSystemInfo()
+        public async Task<IActionResult?> GetSystemInfo()
         {
             try
             {
-                static MemoryStream memoryStreamSystemInfo()
+                if (HttpContext.Request.Headers["AUTHORIZED_USER"] == Environment.UserName)
                 {
-                    string systemInfoResult = "sudo lshw -class system -json".ExecuteBashScript();
-                    byte[] systemInfoByteArray = Encoding.UTF8.GetBytes(systemInfoResult);
-                    return new(systemInfoByteArray);
+                    static MemoryStream memoryStreamSystemInfo()
+                    {
+                        string systemInfoResult = "sudo lshw -class system -json".ExecuteBashScript();
+                        ArgumentNullException.ThrowIfNullOrWhiteSpace(systemInfoResult);
+                        byte[] systemInfoByteArray = Encoding.UTF8.GetBytes(systemInfoResult);
+                        return new(systemInfoByteArray);
+                    }
+
+                    SystemInfoObject systemInfoObject = new()
+                    {
+                        SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), options)
+                    };
+                    
+                    _logger.LogInformation("Returning systemInfoObject");
+                    return Ok(systemInfoObject);
                 }
 
-                SystemInfoObject systemInfoObject = new()
-                {
-                    SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), options)
-                };
-                _logger.LogInformation("Returning systemInfoObject");
-                return systemInfoObject;
+                _logger.LogError("Invalid User");
+                return Unauthorized();
             }
             catch (Exception e)
             {
-                _logger.LogError(e.Message);
-                return null;
+                _logger.LogCritical(e.Message);
+                return BadRequest();
             }
         }
 
         [HttpGet("GetMemoryInfo")]
-        public async Task<MemoryInfoObject?> GetMemoryInfo()
+        public async Task<IActionResult?> GetMemoryInfo()
         {
-           
             try
             {
-                var meminfoLines = await System.IO.File.ReadAllLinesAsync("/proc/meminfo");
-                var memInfoObject = MemoryInfoObject.ParseMemoryInfo(meminfoLines);
-                _logger.LogInformation("Returning memInfoObject");
-                return memInfoObject;
+                if (HttpContext.Request.Headers["AUTHORIZED_USER"] == Environment.UserName)
+                {
+                    var meminfoLines = await System.IO.File.ReadAllLinesAsync("/proc/meminfo");
+                    if(meminfoLines.Length == 0) 
+                    {
+                        throw new Exception("Meminfo has no entries");
+                    }
+                    var memInfoObject = MemoryInfoObject.ParseMemoryInfo(meminfoLines);
+                    _logger.LogInformation("Returning memInfoObject");
+                    return Ok(memInfoObject);
+                }
+
+                _logger.LogError("Invalid User");
+                return Unauthorized();
             }
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
-                return null;
+                return BadRequest();
             }
         }
     }   
