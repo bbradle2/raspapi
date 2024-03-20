@@ -65,7 +65,7 @@ systeminfomessage=$(curl -s -GET $systeminfourl -H "AUTHORIZED_USER: $programuse
 if [[ "$systeminfomessage" == "" ]]; 
 then
     printf 'could not connect to %s.\n' $systeminfourl
-    
+
 elif [[ "$systeminfomessage" == *"status"*  ]] && 
      [[ "$systeminfomessage" == *"401"*  ]] &&  
      [[ "$systeminfomessage" == *"title"*  ]] && 

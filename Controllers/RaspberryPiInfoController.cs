@@ -46,11 +46,12 @@ namespace raspapi.Controllers
                     {
                         CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamCPUInfo(), options)
                     };
+                    
                     _logger.LogInformation("Returning cpuInfoObject");
                     return Ok(cpuInfoObject);
                 }
 
-                _logger.LogError("Invalid User");
+                _logger.LogError("User Unauthorized");
                 return Unauthorized();
             }
             catch (Exception e)
@@ -79,7 +80,7 @@ namespace raspapi.Controllers
                     {
                         SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), options)
                     };
-                    
+
                     _logger.LogInformation("Returning systemInfoObject");
                     return Ok(systemInfoObject);
                 }
