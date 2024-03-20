@@ -1,7 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace raspapi.Controllers
 {
@@ -9,8 +8,6 @@ namespace raspapi.Controllers
     using System.Text.Json;
     using DataObjects;
     using LinuxExtensions;
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Authorization.Infrastructure;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
 
@@ -19,7 +16,7 @@ namespace raspapi.Controllers
     public class RaspberryPiInfoController : ControllerBase
     {
         private readonly ILogger<RaspberryPiInfoController> _logger;
-        private readonly JsonSerializerOptions options = new(JsonSerializerDefaults.Web);
+        private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
 
         public RaspberryPiInfoController(ILogger<RaspberryPiInfoController> logger) 
         {
@@ -44,9 +41,9 @@ namespace raspapi.Controllers
 
                     CPUInfoObject cpuInfoObject = new()
                     {
-                        CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamCPUInfo(), options)
+                        CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamCPUInfo(), _options)
                     };
-                    
+
                     _logger.LogInformation("Returning cpuInfoObject");
                     return Ok(cpuInfoObject);
                 }
@@ -78,7 +75,7 @@ namespace raspapi.Controllers
 
                     SystemInfoObject systemInfoObject = new()
                     {
-                        SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), options)
+                        SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), _options)
                     };
 
                     _logger.LogInformation("Returning systemInfoObject");
