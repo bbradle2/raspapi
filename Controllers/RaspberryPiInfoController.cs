@@ -28,28 +28,22 @@ namespace raspapi.Controllers
         {
             try
             {
-                if (HttpContext.Request.Headers["AUTHORIZED_USER"] == Environment.UserName)
+                static MemoryStream memoryStreamCPUInfo()
                 {
-                    static MemoryStream memoryStreamCPUInfo()
-                    {
-                        string cpuInfoResult = "sudo lshw -class cpu -json".ExecuteBashScript();
-                        ArgumentNullException.ThrowIfNullOrWhiteSpace(cpuInfoResult);
+                    string cpuInfoResult = "sudo lshw -class cpu -json".ExecuteBashScript();
+                    ArgumentNullException.ThrowIfNullOrWhiteSpace(cpuInfoResult);
 
-                        byte[] cpuInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
-                        return new MemoryStream(cpuInfoByteArray);
-                    };
+                    byte[] cpuInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
+                    return new MemoryStream(cpuInfoByteArray);
+                };
 
-                    CPUInfoObject cpuInfoObject = new()
-                    {
-                        CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamCPUInfo(), _options)
-                    };
+                CPUInfoObject cpuInfoObject = new()
+                {
+                    CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamCPUInfo(), _options)
+                };
 
-                    _logger.LogInformation("Returning cpuInfoObject");
-                    return Ok(cpuInfoObject);
-                }
-
-                _logger.LogError("User Unauthorized");
-                return Unauthorized();
+                _logger.LogInformation("Returning cpuInfoObject");
+                return Ok(cpuInfoObject);
             }
             catch (Exception e)
             {
@@ -63,27 +57,22 @@ namespace raspapi.Controllers
         {
             try
             {
-                if (HttpContext.Request.Headers["AUTHORIZED_USER"] == Environment.UserName)
+                static MemoryStream memoryStreamSystemInfo()
                 {
-                    static MemoryStream memoryStreamSystemInfo()
-                    {
-                        string systemInfoResult = "sudo lshw -class system -json".ExecuteBashScript();
-                        ArgumentNullException.ThrowIfNullOrWhiteSpace(systemInfoResult);
-                        byte[] systemInfoByteArray = Encoding.UTF8.GetBytes(systemInfoResult);
-                        return new(systemInfoByteArray);
-                    }
-
-                    SystemInfoObject systemInfoObject = new()
-                    {
-                        SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), _options)
-                    };
-
-                    _logger.LogInformation("Returning systemInfoObject");
-                    return Ok(systemInfoObject);
+                    string systemInfoResult = "sudo lshw -class system -json".ExecuteBashScript();
+                    ArgumentNullException.ThrowIfNullOrWhiteSpace(systemInfoResult);
+                    byte[] systemInfoByteArray = Encoding.UTF8.GetBytes(systemInfoResult);
+                    return new(systemInfoByteArray);
                 }
 
-                _logger.LogError("Invalid User");
-                return Unauthorized();
+                SystemInfoObject systemInfoObject = new()
+                {
+                    SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), _options)
+                };
+
+                _logger.LogInformation("Returning systemInfoObject");
+                return Ok(systemInfoObject);
+
             }
             catch (Exception e)
             {
@@ -97,20 +86,15 @@ namespace raspapi.Controllers
         {
             try
             {
-                if (HttpContext.Request.Headers["AUTHORIZED_USER"] == Environment.UserName)
+                var meminfoLines = await System.IO.File.ReadAllLinesAsync("/proc/meminfo");
+                if(meminfoLines.Length == 0) 
                 {
-                    var meminfoLines = await System.IO.File.ReadAllLinesAsync("/proc/meminfo");
-                    if(meminfoLines.Length == 0) 
-                    {
-                        throw new Exception("Meminfo has no entries");
-                    }
-                    var memInfoObject = MemoryInfoObject.ParseMemoryInfo(meminfoLines);
-                    _logger.LogInformation("Returning memInfoObject");
-                    return Ok(memInfoObject);
+                    throw new Exception("Meminfo has no entries");
                 }
-
-                _logger.LogError("Invalid User");
-                return Unauthorized();
+                
+                var memInfoObject = MemoryInfoObject.ParseMemoryInfo(meminfoLines);
+                _logger.LogInformation("Returning memInfoObject");
+                return Ok(memInfoObject);
             }
             catch (Exception e)
             {

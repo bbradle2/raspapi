@@ -29,6 +29,8 @@ namespace raspapi
 
             var app = builder.Build();
 
+            app.UseMiddleware<RaspApiIntercept>();
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
