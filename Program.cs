@@ -29,7 +29,7 @@ namespace raspapi
 
             var app = builder.Build();
 
-            app.UseMiddleware<RaspApiIntercept>();
+            app.UseMiddleware<ApiIntercept>();
 
             if (app.Environment.IsDevelopment())
             {

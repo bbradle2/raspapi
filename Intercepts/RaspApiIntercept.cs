@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-public class RaspApiIntercept
+public class ApiIntercept
 {
    
     private readonly RequestDelegate _next;
-    public RaspApiIntercept(RequestDelegate next)
+    public ApiIntercept(RequestDelegate next)
     {
         _next = next;
     }
