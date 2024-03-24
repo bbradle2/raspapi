@@ -3,14 +3,10 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-public class ApiIntercept
+public class ApiIntercept(RequestDelegate next)
 {
    
-    private readonly RequestDelegate _next;
-    public ApiIntercept(RequestDelegate next)
-    {
-        _next = next;
-    }
+    private readonly RequestDelegate _next = next;
 
     public async Task Invoke(HttpContext context)
     {

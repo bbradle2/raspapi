@@ -4,11 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace raspapi.Controllers
 {
-    using System.Device.Gpio.Drivers;
     using System.Text.Json;
     using DataObjects;
     using LinuxExtensions;
-    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Routing;
 
     [ApiController]

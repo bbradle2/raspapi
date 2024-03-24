@@ -24,7 +24,7 @@ namespace raspapi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            //builder.Services.AddSingleton<GpioController>();
+            builder.Services.AddSingleton<GpioController>();
             //builder.Services.AddSingleton<IRaspberryPiGpioController, RaspberryPiGpioController>();
 
             var app = builder.Build();
