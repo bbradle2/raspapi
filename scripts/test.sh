@@ -27,9 +27,9 @@ then
 else
     printf 'Success\n'
 fi
-
-
 printf "\n"
+
+
 cpuinfourl="http://localhost:$port/RaspberryPiInfo/GetCPUInfo"
 printf "Calling $cpuinfourl\n"
 cpuinfomessage=$(curl -s -GET $cpuinfourl -H "AUTHORIZED_USER: $USER")
@@ -52,8 +52,9 @@ then
 else
     printf 'Success\n'
 fi
-
 printf "\n"
+
+
 systeminfourl="http://localhost:$port/RaspberryPiInfo/GetSystemInfo"
 printf "Calling $systeminfourl\n"
 systeminfomessage=$(curl -s -GET $systeminfourl -H "AUTHORIZED_USER: $USER")
@@ -78,6 +79,6 @@ else
     printf 'Success\n'
 
 fi
-
 printf "\n"
+
 printf "End Test\n"
