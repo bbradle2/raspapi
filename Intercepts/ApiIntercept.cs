@@ -10,13 +10,15 @@ public class ApiIntercept(RequestDelegate next)
 
     public async Task Invoke(HttpContext context)
     {
-        if (context.Request.Headers["AUTHORIZED_USER"] != Environment.UserName)
+        if (context.Request.Headers["AUTHORIZED_USER"] == Environment.UserName)
+        {
+            await _next(context);
+        }
+        else
         {
             context.Response.StatusCode = 401;
             await context.Response.WriteAsJsonAsync(new UnauthorizedResult());
             return;
-        } 
-
-        await _next(context);
+        }
     }
 }
