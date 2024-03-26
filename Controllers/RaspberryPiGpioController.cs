@@ -14,7 +14,7 @@ namespace raspapi.Controllers
         public void StartGpio(WebApplication app)  
         {
        
-            app.MapGet("/RaspberryPiGpioController/ledstatus", (GpioController gpioController, IConfiguration config) =>
+            app.MapGet("/RaspberryPiGpio/ledstatus", (GpioController gpioController, IConfiguration config) =>
             {
                 ArgumentNullException.ThrowIfNull(gpioController);
 
@@ -30,7 +30,7 @@ namespace raspapi.Controllers
                 }
             });
 
-            app.MapPut("/RaspberryPiGpioController/ledon", (GpioController gpioController) =>
+            app.MapPut("/RaspberryPiGpio/ledon", (GpioController gpioController) =>
             {
                 ArgumentNullException.ThrowIfNull(gpioController);
 
@@ -48,7 +48,7 @@ namespace raspapi.Controllers
                 }
             });
 
-            app.MapPut("/RaspberryPiGpioController/ledoff", (HttpContext context, GpioController gpioController) =>
+            app.MapPut("/RaspberryPiGpio/ledoff", (HttpContext context, GpioController gpioController) =>
             {
 
                 ArgumentNullException.ThrowIfNull(gpioController);

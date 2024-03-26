@@ -10,7 +10,7 @@ memoryinfomessage=$(curl -s -GET $meminfourl -H "AUTHORIZED_USER: $USER")
 
 if [[ "$memoryinfomessage" == "" ]]; 
 then
-    printf 'could not connect to %s.\n' $meminfourl
+    printf 'Could not connect to %s.\n' $meminfourl
 
 elif [[ "$memoryinfomessage" == *"statusCode"*  ]] && 
      [[ "$memoryinfomessage" == *"401"*  ]]; 
@@ -35,7 +35,7 @@ printf "Calling $cpuinfourl\n"
 cpuinfomessage=$(curl -s -GET $cpuinfourl -H "AUTHORIZED_USER: $USER")
 
 if [[ "$cpuinfomessage" == "" ]]; then
-    printf 'could not connect to %s.\n' $cpuinfourl
+    printf 'Could not connect to %s.\n' $cpuinfourl
 
 elif [[ "$cpuinfomessage" == *"statusCode"*  ]] && 
      [[ "$cpuinfomessage" == *"401"*  ]];
@@ -61,7 +61,7 @@ systeminfomessage=$(curl -s -GET $systeminfourl -H "AUTHORIZED_USER: $USER")
 
 if [[ "$systeminfomessage" == "" ]]; 
 then
-    printf 'could not connect to %s.\n' $systeminfourl
+    printf 'Could not connect to %s.\n' $systeminfourl
 
 elif [[ "$systeminfomessage" == *"statusCode"*  ]] && 
      [[ "$systeminfomessage" == *"401"*  ]]; 
