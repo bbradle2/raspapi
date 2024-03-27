@@ -1,9 +1,10 @@
 port=5000
 
+#start script
 printf "Start Test\n"
 
-
 printf "\n"
+# memory info
 meminfourl="http://localhost:$port/RaspberryPiInfo/GetMemoryInfo"
 printf "Calling $meminfourl\n"
 memoryinfomessage=$(curl -s -GET $meminfourl -H "AUTHORIZED_USER: $USER")
@@ -27,9 +28,9 @@ then
 else
     printf 'Success\n'
 fi
+
+# cpu info
 printf "\n"
-
-
 cpuinfourl="http://localhost:$port/RaspberryPiInfo/GetCPUInfo"
 printf "Calling $cpuinfourl\n"
 cpuinfomessage=$(curl -s -GET $cpuinfourl -H "AUTHORIZED_USER: $USER")
@@ -52,9 +53,9 @@ then
 else
     printf 'Success\n'
 fi
+
+#system info
 printf "\n"
-
-
 systeminfourl="http://localhost:$port/RaspberryPiInfo/GetSystemInfo"
 printf "Calling $systeminfourl\n"
 systeminfomessage=$(curl -s -GET $systeminfourl -H "AUTHORIZED_USER: $USER")
@@ -79,6 +80,7 @@ else
     printf 'Success\n'
 
 fi
-printf "\n"
 
+#end script
+printf "\n"
 printf "End Test\n"
