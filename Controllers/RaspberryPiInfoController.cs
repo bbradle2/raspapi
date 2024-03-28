@@ -46,7 +46,7 @@ namespace raspapi.Controllers
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
-                return BadRequest();
+                return BadRequest(new BadRequestResult());
             }
         }
 
@@ -75,7 +75,7 @@ namespace raspapi.Controllers
             catch (Exception e)
             {
                 _logger.LogCritical(e.Message);
-                return BadRequest();
+                return BadRequest(new BadRequestResult());
             }
         }
 
@@ -97,7 +97,7 @@ namespace raspapi.Controllers
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
-                return BadRequest();
+                return BadRequest(new BadRequestResult());
             }
         }
     }   

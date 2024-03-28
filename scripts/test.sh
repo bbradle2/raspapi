@@ -1,86 +1,38 @@
 port=5000
-
+programuser="bbra"
 #start script
 printf "Start Test\n"
 
-printf "\n"
-# memory info
-meminfourl="http://localhost:$port/RaspberryPiInfo/GetMemoryInfo"
-printf "Calling $meminfourl\n"
-memoryinfomessage=$(curl -s -GET $meminfourl -H "AUTHORIZED_USER: $USER")
+printf "___________\n\n"
 
-if [[ "$memoryinfomessage" == "" ]]; 
-then
-    printf 'Could not connect to %s.\n' $meminfourl
+process_test()
+{
+    url=$1
+    echo "$url"
+    message=$(curl -s -GET $url -H "AUTHORIZED_USER: $programuser" | jq .)
+    if [[ "$message" == "" ]]; 
+    then
+        printf 'Could not connect to %s.\n' $url
 
-elif [[ "$memoryinfomessage" == *"statusCode"*  ]] && 
-     [[ "$memoryinfomessage" == *"401"*  ]]; 
-then
-    printf "401 Unauthorized\n"
+    elif [[ "$message" == *"statusCode"*  ]] && 
+         [[ "$message" == *"401"*  ]]; 
+    then
+        printf '%s\n' $message
 
-elif [[ "$memoryinfomessage" == *"status"*  ]] && 
-     [[ "$memoryinfomessage" == *"400"*  ]] &&  
-     [[ "$memoryinfomessage" == *"title"*  ]] &&
-     [[ "$memoryinfomessage" == *"Bad Request"*  ]]; 
-then
-     printf "400 Bad Request\n"
+    elif [[ "$message" == *"statusCode"*  ]] && 
+     [[ "$message" == *"400"*  ]];
+    then
+        printf '%s\n' $message
 
-else
-    printf 'Success\n'
-fi
+    else
+        printf 'Success\n'
+    fi
+}
 
-# cpu info
-printf "\n"
-cpuinfourl="http://localhost:$port/RaspberryPiInfo/GetCPUInfo"
-printf "Calling $cpuinfourl\n"
-cpuinfomessage=$(curl -s -GET $cpuinfourl -H "AUTHORIZED_USER: $USER")
+process_test "http://localhost:$port/RaspberryPiInfo/GetMemoryInfo"
+process_test "http://localhost:$port/RaspberryPiInfo/GetCPUInfo"
+process_test "http://localhost:$port/RaspberryPiInfo/GetSystemInfo"
 
-if [[ "$cpuinfomessage" == "" ]]; then
-    printf 'Could not connect to %s.\n' $cpuinfourl
-
-elif [[ "$cpuinfomessage" == *"statusCode"*  ]] && 
-     [[ "$cpuinfomessage" == *"401"*  ]];
-then
-    printf "401 Unauthorized\n"
-
-elif [[ "$cpuinfomessage" == *"status"*  ]] && 
-     [[ "$cpuinfomessage" == *"400"*  ]] &&  
-     [[ "$cpuinfomessage" == *"title"*  ]] &&
-     [[ "$cpuinfomessage" == *"Bad Request"*  ]];
-then
-    printf "400 Bad Request\n"
-
-else
-    printf 'Success\n'
-fi
-
-#system info
-printf "\n"
-systeminfourl="http://localhost:$port/RaspberryPiInfo/GetSystemInfo"
-printf "Calling $systeminfourl\n"
-systeminfomessage=$(curl -s -GET $systeminfourl -H "AUTHORIZED_USER: $USER")
-
-if [[ "$systeminfomessage" == "" ]]; 
-then
-    printf 'Could not connect to %s.\n' $systeminfourl
-
-elif [[ "$systeminfomessage" == *"statusCode"*  ]] && 
-     [[ "$systeminfomessage" == *"401"*  ]]; 
-then
-    printf "401 Unauthorized\n"
-
-elif [[ "$systeminfomessage" == *"status"*  ]] && 
-     [[ "$systeminfomessage" == *"400"*  ]] &&  
-     [[ "$systeminfomessage" == *"title"*  ]] &&
-     [[ "$systeminfomessage" == *"Bad Request"*  ]];
-then
-    printf "400 Bad Request\n"
-
-else 
-    printf 'Success\n'
-
-fi
-
+printf "___________\n\n"
 #end script
-printf "\n"
 printf "End Test\n"
