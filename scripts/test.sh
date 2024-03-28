@@ -1,6 +1,10 @@
+#assign global variables
 port=5000
-programuser="bbra"
-#start script
+programuser=$USER
+host="localhost"
+
+
+#start test
 printf "Start Test\n"
 
 printf "___________\n\n"
@@ -8,8 +12,9 @@ printf "___________\n\n"
 process_test()
 {
     url=$1
-    echo "$url"
+    printf "$url\n"
     message=$(curl -s -GET $url -H "AUTHORIZED_USER: $programuser" | jq .)
+
     if [[ "$message" == "" ]]; 
     then
         printf 'Could not connect to %s.\n' $url
@@ -20,7 +25,7 @@ process_test()
         printf '%s\n' $message
 
     elif [[ "$message" == *"statusCode"*  ]] && 
-     [[ "$message" == *"400"*  ]];
+         [[ "$message" == *"400"*  ]];
     then
         printf '%s\n' $message
 
@@ -29,10 +34,10 @@ process_test()
     fi
 }
 
-process_test "http://localhost:$port/RaspberryPiInfo/GetMemoryInfo"
-process_test "http://localhost:$port/RaspberryPiInfo/GetCPUInfo"
-process_test "http://localhost:$port/RaspberryPiInfo/GetSystemInfo"
+process_test "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
+process_test "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
+process_test "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 
 printf "___________\n\n"
-#end script
 printf "End Test\n"
+#end test
