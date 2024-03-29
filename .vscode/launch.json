@@ -8,7 +8,8 @@
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
-            "program": "${workspaceFolder}/bin/Debug/net8.0/raspapi.dll"
+            "program": "${workspaceFolder}/bin/Debug/net8.0/raspapi.dll",
+            "preLaunchTask": "builds"
         },
         {
             "name": "C#: raspapi Production",
@@ -17,7 +18,8 @@
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Production"
             },
-            "program": "${workspaceFolder}/bin/Debug/net8.0/raspapi.dll"
+            "program": "${workspaceFolder}/bin/Debug/net8.0/raspapi.dll",
+            "preLaunchTask": "builds"
         },
         // {
         //     "name": "C#: raspapi",
@@ -29,5 +31,5 @@
         //     },
         //     "program": "${workspaceFolder}/bin/Debug/net8.0/raspapi.dll"
         // }
-    ]
+    ],    
 }
