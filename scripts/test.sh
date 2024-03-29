@@ -7,9 +7,9 @@ host="localhost"
 #start test
 printf "Start Test\n"
 
-printf "___________\n\n"
+printf "###########\n\n"
 
-process_test()
+runtest()
 {
     url=$1
     printf "$url\n"
@@ -32,13 +32,13 @@ process_test()
     else
         printf 'Success\n'
     fi
+     printf '\n'
 }
 
-process_test "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
-process_test "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
-process_test "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
+runtest "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
+runtest "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
+runtest "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 
-
-printf "___________\n\n"
+printf "###########\n"
 printf "End Test\n"
 #end test
