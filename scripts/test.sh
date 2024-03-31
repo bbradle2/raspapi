@@ -6,13 +6,15 @@ host="localhost"
 process_id=$!
 
 #start test
-printf "Start Test\n"
+
 cd ..
+dotnet build
 dotnet run &
 printf "Waiting for server to build and start\n\n"
 sleep 5
 
-
+printf "\nServer Started\n\n"
+printf "Start Test\n"
 printf "###########\n\n"
 
 runtest()
@@ -44,13 +46,16 @@ runtest()
 runtest "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 runtest "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 runtest "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
+#for pid in $(jobs -p); do echo $pid; done
 
-#for pid in $(jobs -p); do kill $pid; done
-
-printf "###########\n"
-printf "End Test\n"
-kill $(jobs -p)
+kill -SIGTERM $(jobs -p)
 
 wait $process_id
+
+printf "\nServer Stopped\n"
+printf "\n"
+printf "###########\n"
+printf "End Test\n\n"
+
 #echo "Exit status: $?"
 #end test
