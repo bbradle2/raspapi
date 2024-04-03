@@ -16,7 +16,7 @@ namespace raspapi.Controllers
         private readonly ILogger<RaspberryPiInfoController> _logger;
         private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
 
-        public RaspberryPiInfoController(ILogger<RaspberryPiInfoController> logger) 
+        public RaspberryPiInfoController(ILogger<RaspberryPiInfoController> logger)
         {
             _logger = logger;
         }
@@ -84,13 +84,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                var meminfoLines = await System.IO.File.ReadAllLinesAsync("/proc/meminfo");
-                if(meminfoLines.Length == 0) 
-                {
-                    throw new Exception("Meminfo has no entries");
-                }
-                
-                var memInfoObject = MemoryInfoObject.ParseMemoryInfo(meminfoLines);
+                var memInfoObject = await MemoryInfoObject.ParseMemoryInfoAsync();
                 _logger.LogInformation("Returning memInfoObject");
                 return Ok(memInfoObject);
             }
@@ -100,5 +94,5 @@ namespace raspapi.Controllers
                 return BadRequest(new BadRequestResult());
             }
         }
-    }   
+    }
 }
