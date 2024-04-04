@@ -5,16 +5,22 @@ programuser=$USER
 host="localhost"
 process_id=$!
 
+arg=$1
 #start test
 
-cd ..
-dotnet clean
-dotnet build
-dotnet run &
-printf "Waiting for server to build and start\n\n"
-sleep 5
+if [[ "$arg" == "1" ]];
+then
 
-printf "\nServer Started\n\n"
+    cd ..
+    dotnet clean
+    dotnet build
+    dotnet run &
+    printf "Waiting for server to build and start\n\n"
+    sleep 5
+    printf "\nServer Started\n\n"
+
+fi
+
 printf "Start Test\n"
 printf "###########\n\n"
 
@@ -49,11 +55,14 @@ runtest "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 runtest "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 #for pid in $(jobs -p); do echo $pid; done
 
-kill -SIGTERM $(jobs -p)
+if [[ "$arg" == "1" ]];
+then
+    kill -SIGTERM $(jobs -p)
 
-wait $process_id
+    wait $process_id
+    printf "\nServer Stopped\n"
+fi
 
-printf "\nServer Stopped\n"
 printf "\n"
 printf "###########\n"
 printf "End Test\n\n"
