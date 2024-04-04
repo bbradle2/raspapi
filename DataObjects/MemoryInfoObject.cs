@@ -1,14 +1,10 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace raspapi.DataObjects
 {
     public class MemoryInfoObject : BaseInfoObject
     {
-        public MemoryInfoObject()
-        {
-            Name = "memoryinfo";
-            Description = "Raspberry PI 5 memoryinfo.";
-        }
 
         public string? MemoryTotal { get; set; }
         public string? MemoryFree { get; set; }
@@ -49,6 +45,8 @@ namespace raspapi.DataObjects
 
             MemoryInfoObject memInfoObject = new()
             {
+                Name = "memoryinfo", 
+                Description = "Raspberry PI 5 memoryinfo.",
                 MemoryTotal = memTotalValue,
                 MemoryFree = memFreeValue,
                 MemoryAvailable = memAvailableValue,

@@ -37,6 +37,8 @@ namespace raspapi.Controllers
 
                 CPUInfoObject cpuInfoObject = new()
                 {
+                    Name = "cpuinfo",
+                    Description = "Raspberry PI 5 cpuinfo.",
                     CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamCPUInfo(), _options)
                 };
 
@@ -65,6 +67,8 @@ namespace raspapi.Controllers
 
                 SystemInfoObject systemInfoObject = new()
                 {
+                    Name = "systeminfo",
+                    Description = "Raspberry PI 5 systeminfo.",
                     SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), _options)
                 };
 

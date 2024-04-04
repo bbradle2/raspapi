@@ -5,11 +5,6 @@ namespace raspapi.DataObjects
     public class SystemInfoObject : BaseInfoObject
     {
 
-        public SystemInfoObject()
-        {
-            Name = "systeminfo";
-            Description = "Raspberry PI 5 systeminfo.";
-        }
 
         public SystemObject[]? SystemObjects { get; set; }
         

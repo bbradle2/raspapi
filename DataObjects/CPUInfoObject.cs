@@ -4,12 +4,6 @@ namespace raspapi.DataObjects
 {
     public class CPUInfoObject : BaseInfoObject
     {
-        public CPUInfoObject() 
-        {
-            Name = "cpuinfo";
-            Description = "Raspberry PI 5 cpuinfo.";
-        }
-
        
         public CPUObject[]? CPUObjects { get; set; }
 
