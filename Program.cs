@@ -18,11 +18,12 @@ namespace raspapi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            
             builder.Logging.AddConsole();
             builder.Services.AddControllers();
            
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            //builder.Services.AddEndpointsApiExplorer();
+           // builder.Services.AddSwaggerGen();
 
             builder.Services.AddSingleton<GpioController>();
             //builder.Services.AddSingleton<IRaspberryPiGpioController, RaspberryPiGpioController>();
@@ -33,8 +34,8 @@ namespace raspapi
 
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                //app.UseSwagger();
+                //app.UseSwaggerUI();
             }
 
             //app.Logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
