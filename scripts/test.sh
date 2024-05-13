@@ -13,7 +13,7 @@ then
 
     cd ..
     dotnet clean
-    dotnet build
+    #dotnet build
     dotnet run &
     printf "Waiting for server to build and start\n\n"
     sleep 5
