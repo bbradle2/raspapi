@@ -22,23 +22,20 @@ namespace raspapi
             builder.Logging.AddConsole();
             builder.Services.AddControllers();
            
-            //builder.Services.AddEndpointsApiExplorer();
-           // builder.Services.AddSwaggerGen();
-
             builder.Services.AddSingleton<GpioController>();
             //builder.Services.AddSingleton<IRaspberryPiGpioController, RaspberryPiGpioController>();
 
             var app = builder.Build();
-
+            var logger = app.Logger;
             app.UseMiddleware<ApiIntercept>();
 
             if (app.Environment.IsDevelopment())
             {
-                //app.UseSwagger();
-                //app.UseSwaggerUI();
+                logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
             }
-            var logger = app.Logger;
-            logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
+
+            
+           
             //app.Logger.LogInformation($"BRIAN_TEST:{app.Configuration["BRIAN_TEST"]}");
             //app.Logger.LogInformation($"AllowedHosts:{app.Configuration["AllowedHosts"]}");
 
