@@ -37,8 +37,8 @@ namespace raspapi
                 //app.UseSwagger();
                 //app.UseSwaggerUI();
             }
-
-            //app.Logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
+            var logger = app.Logger;
+            logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
             //app.Logger.LogInformation($"BRIAN_TEST:{app.Configuration["BRIAN_TEST"]}");
             //app.Logger.LogInformation($"AllowedHosts:{app.Configuration["AllowedHosts"]}");
 
@@ -47,7 +47,7 @@ namespace raspapi
             // piController.StartGpio(app);
             app.MapControllers();
 
-            app.Logger.LogInformation($"Git Version {GitVersionInformation.SemVer}.");
+            logger.LogInformation($"Git Version {GitVersionInformation.SemVer}.");
             app.Run();
 
         }
