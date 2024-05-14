@@ -13,7 +13,8 @@ public class ApiIntercept(RequestDelegate next, ILogger<ApiIntercept> logger)
         else
         {
             context.Response.StatusCode = 401;
-            logger.LogError($"Invalid User {context.Request.Headers["AUTHORIZED_USER"]}");
+            string authorizedUser = context.Request.Headers["AUTHORIZED_USER"]!;
+            logger.LogError("Invalid User {AuthorizedUser}", authorizedUser);
             await context.Response.WriteAsJsonAsync(new UnauthorizedResult());
             return;
         }
