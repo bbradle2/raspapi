@@ -17,7 +17,6 @@ namespace raspapi
         static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
             
             builder.Logging.AddConsole();
             builder.Services.AddControllers();
@@ -29,13 +28,13 @@ namespace raspapi
             var logger = app.Logger;
             app.UseMiddleware<ApiIntercept>();
 
-            if (app.Environment.IsDevelopment())
-            {
-                logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
-            }
+            // if (app.Environment.IsDevelopment())
+            // {
+                
+            // }
 
-            
-           
+            logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
+
             //app.Logger.LogInformation($"BRIAN_TEST:{app.Configuration["BRIAN_TEST"]}");
             //app.Logger.LogInformation($"AllowedHosts:{app.Configuration["AllowedHosts"]}");
 
@@ -43,8 +42,6 @@ namespace raspapi
             // ArgumentNullException.ThrowIfNull(piController);
             // piController.StartGpio(app);
             app.MapControllers();
-
-            logger.LogInformation($"Git Version {GitVersionInformation.SemVer}.");
             app.Run();
 
         }
