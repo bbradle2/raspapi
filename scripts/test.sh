@@ -4,11 +4,11 @@ port=5000
 programuser=$USER
 host="localhost"
 process_id=$!
+startserver=$1
 
-arg=$1
 #start test
 
-if [[ "$arg" == "1" ]];
+if [[ "$startserver" == "1" ]];
 then
 
     cd ..
@@ -55,7 +55,7 @@ runtest "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 runtest "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 #for pid in $(jobs -p); do echo $pid; done
 
-if [[ "$arg" == "1" ]];
+if [[ "$startserver" == "1" ]];
 then
     kill -SIGTERM $(jobs -p)
 
