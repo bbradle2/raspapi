@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace raspapi.DataObjects
 {
@@ -21,7 +19,6 @@ namespace raspapi.DataObjects
             {
                 throw new Exception("Meminfo has no entries");
             }
-
 
             var memTotalValue = meminfoLines.SingleOrDefault(item => item.Contains($"memtotal{delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{delimeter}")[1].Trim();
 

@@ -1,14 +1,15 @@
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using Microsoft.AspNetCore.Routing;
 
 namespace raspapi.Controllers
 {
-    using System.Text.Json;
+    
     using DataObjects;
     using LinuxExtensions;
-    using Microsoft.AspNetCore.Routing;
-
+   
     [ApiController]
     [Route("[controller]")]
     public class RaspberryPiInfoController : ControllerBase

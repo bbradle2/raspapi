@@ -1,7 +1,3 @@
-
-using System.Device.Spi;
-using System.Text;
-
 using Microsoft.AspNetCore.Builder;
 
 

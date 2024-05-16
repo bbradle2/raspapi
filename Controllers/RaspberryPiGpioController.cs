@@ -1,12 +1,13 @@
-
 using System.Device.Gpio;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
+using Microsoft.Extensions.Configuration;
+
 namespace raspapi.Controllers
 {
+
     using Interfaces;
-    using Microsoft.Extensions.Configuration;
 
     public class RaspberryPiGpioController: IRaspberryPiGpioController
     {
