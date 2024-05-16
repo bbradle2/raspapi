@@ -16,7 +16,7 @@ then
     #dotnet build
     dotnet run &
     printf "Waiting for server to build and start\n\n"
-    sleep 10
+    sleep 15
     printf "\nServer Started\n\n"
 
 fi
