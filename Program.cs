@@ -33,7 +33,7 @@ namespace raspapi
                 
             // }
 
-            logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
+            logger.LogInformation("ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}", app.Environment.EnvironmentName);
 
             //app.Logger.LogInformation($"BRIAN_TEST:{app.Configuration["BRIAN_TEST"]}");
             //app.Logger.LogInformation($"AllowedHosts:{app.Configuration["AllowedHosts"]}");
