@@ -1,16 +1,11 @@
 ﻿using System.Device.Gpio;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-
+using Microsoft.Extensions.Logging;
 
 namespace raspapi
 {
-    using Interfaces;
-    using Controllers;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.Hosting;
-    using Microsoft.Extensions.Logging;
-
+    
     class Program
     {
 
