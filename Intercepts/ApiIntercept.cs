@@ -9,8 +9,8 @@ public class ApiIntercept(RequestDelegate next, ILogger<ApiIntercept> logger)
     {
        
         string semVer = GitVersionInformation.SemVer;
-        context.Request.Headers.Remove("GitSemVer");
-        context.Request.Headers.Append("GitSemVer", semVer);
+        context.Response.Headers.Remove("GitSemVer");
+        context.Response.Headers.Append("GitSemVer", semVer);
 
         if (context.Request.Headers["AUTHORIZED_USER"] == Environment.UserName)
         {
@@ -19,7 +19,7 @@ public class ApiIntercept(RequestDelegate next, ILogger<ApiIntercept> logger)
         else
         {
             context.Response.StatusCode = 401;
-            
+        
             string authorizedUser = context.Request.Headers["AUTHORIZED_USER"]!;
             logger.LogError("Invalid User {AuthorizedUser}", authorizedUser);
             await context.Response.WriteAsJsonAsync(new UnauthorizedResult());
