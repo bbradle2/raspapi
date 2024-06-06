@@ -57,8 +57,6 @@ EOF
 
 }
 
-
-
 runtest()
 {
     url=$1

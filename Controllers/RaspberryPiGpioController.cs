@@ -1,76 +1,102 @@
-using System.Device.Gpio;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-
-using Microsoft.Extensions.Configuration;
-
 namespace raspapi.Controllers
 {
+    using System.Device.Gpio;
+    using System.Text.Json;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
+    using raspapi.DataObjects;
 
-    using Interfaces;
-
-    public class RaspberryPiGpioController: IRaspberryPiGpioController
+    [ApiController]
+    [Route("[controller]")]
+    public class RaspberryPiGpioController: ControllerBase
     {
         private static readonly int pin = 23;
-        public void StartGpio(WebApplication app)  
+        private readonly ILogger<RaspberryPiGpioController> _logger;
+        private readonly GpioController _gpioController;
+        private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
+
+        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController)
         {
-       
-            app.MapGet("/RaspberryPiGpio/ledstatus", (GpioController gpioController, IConfiguration config) =>
+            _logger = logger;
+            _gpioController = gpioController;
+        }
+
+        [HttpGet("GetLedStatus")]
+        public async Task<IActionResult?> GetLedStatus()
+        {
+            ArgumentNullException.ThrowIfNull(_gpioController);
+
+            var openPin = _gpioController.OpenPin(pin, PinMode.Output);
+
+            try
             {
-                ArgumentNullException.ThrowIfNull(gpioController);
+                Led led = new();
+                led.LedPin = pin;
 
-                var openPin = gpioController.OpenPin(pin, PinMode.Output);
-                
-                try
+                await Task.Run(() =>
                 {
-                    return Results.Json(openPin.Read().ToString());
-                }
-                finally
-                {
-                  
-                }
-            });
+                    led.LedValue = openPin.Read() == 1 ? "On" : "Off";
+                });
 
-            app.MapPut("/RaspberryPiGpio/ledon", (GpioController gpioController) =>
+                return Ok(led);
+            }
+            catch (Exception e)
             {
-                ArgumentNullException.ThrowIfNull(gpioController);
+                _logger.LogCritical("{Message}", e.Message);
+                return BadRequest(new BadRequestResult());
+            }
+        }
 
-                var openPin = gpioController.OpenPin(pin, PinMode.Output);
+        [HttpPut("SetLedOn")]
+        public async Task<IActionResult?> SetLedOn()
+        {
+            var openPin = _gpioController.OpenPin(pin, PinMode.Output);
 
-                try
-                {
-                    gpioController.Write(pin, PinValue.High);
-                    var pinValue = openPin.Read();
-                    return Results.Json(pinValue.ToString());
-                }
-                finally
-                {
-
-                }
-            });
-
-            app.MapPut("/RaspberryPiGpio/ledoff", (HttpContext context, GpioController gpioController) =>
+            try
             {
-
-                ArgumentNullException.ThrowIfNull(gpioController);
-
-                var openPin = gpioController.OpenPin(pin, PinMode.Output);
-
-                try
+                _gpioController.Write(pin, PinValue.High);
+                Led led = new();
+                led.LedPin = pin;
+                await Task.Run(() =>
                 {
-                    gpioController.Write(pin, PinValue.Low);
-                    var pinValue = openPin.Read();
-                    return Results.Json(pinValue.ToString());
-                }
-                finally
-                {
+                   led.LedValue = openPin.Read() == 1 ? "On" : "Off";
+                });
 
-                }
-            });
+                return Ok(led);
 
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical("{Message}", e.Message);
+                return BadRequest(new BadRequestResult());
+            }
 
         }
-    }
 
-    
+        [HttpPut("SetLedOff")]
+        public async Task<IActionResult?> SetLedOff()
+        {
+            var openPin = _gpioController.OpenPin(pin, PinMode.Output);
+
+            try
+            {
+                _gpioController.Write(pin, PinValue.Low);
+                Led led = new();
+                led.LedPin = pin;
+                await Task.Run(() =>
+                {
+                    led.LedValue = openPin.Read() == 1 ? "On" : "Off";
+                });
+
+                return Ok(led);
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical("{Message}", e.Message);
+                return BadRequest(new BadRequestResult());
+            }
+
+        }
+    }  
 }

@@ -1,15 +1,14 @@
-using System.Text;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using Microsoft.AspNetCore.Routing;
-
 namespace raspapi.Controllers
 {
-    
+    using System.Text;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
+    using System.Text.Json;
+    using Microsoft.AspNetCore.Routing;
     using DataObjects;
     using LinuxExtensions;
-   
+    using raspapi.MemoryInfoObjectExtension;
+
     [ApiController]
     [Route("[controller]")]
     public class RaspberryPiInfoController : ControllerBase
@@ -89,9 +88,15 @@ namespace raspapi.Controllers
         {
             try
             {
-                var memInfoObject = await MemoryInfoObject.ParseMemoryInfoAsync();
+                var memObject = new MemoryInfoObject
+                {
+                    Name = "memoryinfo",
+                    Description = "Raspberry PI 5 memoryinfo.",
+                };
+
+                var memInfo = await memObject.PopulateMemoryInfoAsync();
                 _logger.LogInformation("Returning memInfoObject");
-                return Ok(memInfoObject);
+                return Ok(memInfo);
             }
             catch (Exception e)
             {

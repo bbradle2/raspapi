@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using raspapi.Controllers;
 
 namespace raspapi
 {
@@ -23,56 +24,67 @@ namespace raspapi
         
         private static void OnSigTerm(object? sender, EventArgs e)
         {
+
             SendMessageToTerminal("SIGTERM Received...");
         }
 
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.ProcessExit += OnSigTerm;
-            Console.CancelKeyPress += OnSigInt;
-
-           
+            Console.CancelKeyPress += OnSigInt;          
 
             var builder = WebApplication.CreateBuilder(args);
-            
+
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
             builder.Logging.AddConsole();
-            builder.Services.AddControllers();
-                     
+            builder.Services.AddControllers();        
 
             builder.Services.AddSingleton<GpioController>();
 
-            //builder.Services.AddSingleton<IRaspberryPiGpioController, RaspberryPiGpioController>();
-
             var app = builder.Build();
             var logger = app.Logger;
+            app.UseSwagger();
+            app.UseSwaggerUI();
             app.UseMiddleware<ApiIntercept>();
-
+          
             // if (app.Environment.IsDevelopment())
             // {
-                
+
             // }
 
             logger.LogInformation("ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}", app.Environment.EnvironmentName);
 
-            //app.Logger.LogInformation($"BRIAN_TEST:{app.Configuration["BRIAN_TEST"]}");
-            //app.Logger.LogInformation($"AllowedHosts:{app.Configuration["AllowedHosts"]}");
-
-            // var piController = app.Services.GetService<IRaspberryPiGpioController>();
-            // ArgumentNullException.ThrowIfNull(piController);
-            // piController.StartGpio(app);
             app.MapControllers();
 
-            //AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
+
             AssemblyName[] names = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
-           
+
+            app.Lifetime.ApplicationStopped.Register(() => 
+            {
+                var gpioController = app.Services.GetRequiredService<GpioController>();
+                SendMessageToTerminal("Checking for Open Pins....");
+
+                if (gpioController.IsPinOpen(23))
+                {
+                    Console.WriteLine($"Turning Off and Closing Pin {23}");
+                    gpioController.Write(23, PinValue.Low);
+                    gpioController.ClosePin(23);
+                }
+            });
+
             app.Run();
+            
 
         }
 
-        // private static void OnAssemblyLoad(object? sender, AssemblyLoadEventArgs args)
-        // {
-        //     if(args.LoadedAssembly.FullName.Contains("GitVersion"))
-        //         Console.WriteLine(args.LoadedAssembly.FullName);
-        // }
+        private void OnShutdown()
+        {
+
+            //Wait while the data is flushed
+            System.Threading.Thread.Sleep(1000);
+        }
+
     }
 }
