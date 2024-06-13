@@ -1,10 +1,8 @@
 ﻿using System.Device.Gpio;
-using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using raspapi.Controllers;
 
 namespace raspapi
 {
@@ -75,8 +73,6 @@ namespace raspapi
             });
 
             app.Run();
-            
-
         }
 
         private void OnShutdown()

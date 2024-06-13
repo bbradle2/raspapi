@@ -1,4 +1,3 @@
-
 namespace raspapi.DataObjects
 {
     public class MemoryInfoObject : BaseInfoObject

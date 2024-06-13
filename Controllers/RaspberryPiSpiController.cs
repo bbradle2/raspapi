@@ -4,7 +4,6 @@ namespace raspapi.Controllers
     using System.Text.Json;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
-    using raspapi.DataObjects;
 
     [ApiController]
     [Route("[controller]")]

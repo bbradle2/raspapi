@@ -1,5 +1,3 @@
-using System.Device.Gpio;
-
 namespace raspapi.DataObjects
 {
     public class Led 

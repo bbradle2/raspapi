@@ -22,7 +22,7 @@ namespace raspapi.Controllers
         }
 
         [HttpGet("GetLedStatus")]
-        public async Task<IActionResult?> GetLedStatus()
+        public IActionResult? GetLedStatus()
         {
             ArgumentNullException.ThrowIfNull(_gpioController);
 
@@ -30,13 +30,11 @@ namespace raspapi.Controllers
 
             try
             {
-                Led led = new();
-                led.LedPin = pin;
-
-                await Task.Run(() =>
+                Led led = new()
                 {
-                    led.LedValue = openPin.Read() == 1 ? "On" : "Off";
-                });
+                    LedPin = pin,
+                    LedValue = openPin.Read() == 1 ? "On" : "Off"
+                };
 
                 return Ok(led);
             }
@@ -48,19 +46,18 @@ namespace raspapi.Controllers
         }
 
         [HttpPut("SetLedOn")]
-        public async Task<IActionResult?> SetLedOn()
+        public IActionResult? SetLedOn()
         {
             var openPin = _gpioController.OpenPin(pin, PinMode.Output);
 
             try
             {
                 _gpioController.Write(pin, PinValue.High);
-                Led led = new();
-                led.LedPin = pin;
-                await Task.Run(() =>
+                Led led = new()
                 {
-                   led.LedValue = openPin.Read() == 1 ? "On" : "Off";
-                });
+                    LedPin = pin,
+                    LedValue = openPin.Read() == 1 ? "On" : "Off"
+                };
 
                 return Ok(led);
 
@@ -74,19 +71,18 @@ namespace raspapi.Controllers
         }
 
         [HttpPut("SetLedOff")]
-        public async Task<IActionResult?> SetLedOff()
+        public IActionResult? SetLedOff()
         {
             var openPin = _gpioController.OpenPin(pin, PinMode.Output);
 
             try
             {
                 _gpioController.Write(pin, PinValue.Low);
-                Led led = new();
-                led.LedPin = pin;
-                await Task.Run(() =>
+                Led led = new()
                 {
-                    led.LedValue = openPin.Read() == 1 ? "On" : "Off";
-                });
+                    LedPin = pin,
+                    LedValue = openPin.Read() == 1 ? "On" : "Off"
+                };
 
                 return Ok(led);
 
