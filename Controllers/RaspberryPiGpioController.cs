@@ -5,20 +5,23 @@ namespace raspapi.Controllers
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using raspapi.DataObjects;
+    using raspapi.Interfaces;
+    using raspapi.Contants;
 
     [ApiController]
     [Route("[controller]")]
     public class RaspberryPiGpioController: ControllerBase
     {
-        private static readonly int pin = 23;
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
+        private readonly Dictionary<int, IPin> _pins;
         private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
 
-        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController)
+        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IPin> pins)
         {
             _logger = logger;
             _gpioController = gpioController;
+            _pins = pins;
         }
 
         [HttpGet("GetLedStatus")]
@@ -26,17 +29,13 @@ namespace raspapi.Controllers
         {
             ArgumentNullException.ThrowIfNull(_gpioController);
 
-            var openPin = _gpioController.OpenPin(pin, PinMode.Output);
+            var openPin = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN23].Pin, PinMode.Output);
 
             try
             {
-                Led led = new()
-                {
-                    LedPin = pin,
-                    LedValue = openPin.Read() == 1 ? "On" : "Off"
-                };
-
-                return Ok(led);
+                _pins[RaspBerryPiContants.PIN23].Status = openPin.Read() == 1 ? "On" : "Off";
+                _logger.LogInformation("Returning Pins");
+                return Ok(_pins);
             }
             catch (Exception e)
             {
@@ -48,18 +47,16 @@ namespace raspapi.Controllers
         [HttpPut("SetLedOn")]
         public IActionResult? SetLedOn()
         {
-            var openPin = _gpioController.OpenPin(pin, PinMode.Output);
+            ArgumentNullException.ThrowIfNull(_gpioController);
+
+            var openPin = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN23].Pin, PinMode.Output);
 
             try
             {
-                _gpioController.Write(pin, PinValue.High);
-                Led led = new()
-                {
-                    LedPin = pin,
-                    LedValue = openPin.Read() == 1 ? "On" : "Off"
-                };
-
-                return Ok(led);
+                _gpioController.Write(_pins[RaspBerryPiContants.PIN23].Pin, PinValue.High);
+                _pins[RaspBerryPiContants.PIN23].Status = openPin.Read() == 1 ? "On" : "Off";
+                _logger.LogInformation("Returning Pins");
+                return Ok(_pins);
 
             }
             catch (Exception e)
@@ -73,18 +70,16 @@ namespace raspapi.Controllers
         [HttpPut("SetLedOff")]
         public IActionResult? SetLedOff()
         {
-            var openPin = _gpioController.OpenPin(pin, PinMode.Output);
+            ArgumentNullException.ThrowIfNull(_gpioController);
+
+            var openPin = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN23].Pin, PinMode.Output);
 
             try
             {
-                _gpioController.Write(pin, PinValue.Low);
-                Led led = new()
-                {
-                    LedPin = pin,
-                    LedValue = openPin.Read() == 1 ? "On" : "Off"
-                };
-
-                return Ok(led);
+                _gpioController.Write(_pins[RaspBerryPiContants.PIN23].Pin, PinValue.Low);
+                _pins[RaspBerryPiContants.PIN23].Status = openPin.Read() == 1 ? "On" : "Off";
+                _logger.LogInformation("Returning Pins");
+                return Ok(_pins);
 
             }
             catch (Exception e)

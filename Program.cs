@@ -3,6 +3,9 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using raspapi.Contants;
+using raspapi.DataObjects;
+using raspapi.Interfaces;
 
 namespace raspapi
 {
@@ -10,21 +13,7 @@ namespace raspapi
     class Program
     {
 
-        private static void SendMessageToTerminal(string message)
-        {
-            Console.WriteLine("\r\n" + message);
-        }
-        private static void OnSigInt(object? sender, ConsoleCancelEventArgs e)
-        {
-            
-            SendMessageToTerminal("SIGINT Received...");
-        }
-        
-        private static void OnSigTerm(object? sender, EventArgs e)
-        {
-
-            SendMessageToTerminal("SIGTERM Received...");
-        }
+       
 
         static void Main(string[] args)
         {
@@ -40,13 +29,23 @@ namespace raspapi
             builder.Services.AddControllers();        
 
             builder.Services.AddSingleton<GpioController>();
+            builder.Services.AddSingleton<Dictionary<int, IPin>>();
+
 
             var app = builder.Build();
+
+            var gpioController = app.Services.GetRequiredService<GpioController>();
+
+
+            var pins = app.Services.GetRequiredService<Dictionary<int, IPin>>();
+            pins.Add(RaspBerryPiContants.PIN23 , new Pin23 { Status = "Off" });
+
+
             var logger = app.Logger;
             app.UseSwagger();
             app.UseSwaggerUI();
             app.UseMiddleware<ApiIntercept>();
-          
+
             // if (app.Environment.IsDevelopment())
             // {
 
@@ -56,23 +55,42 @@ namespace raspapi
 
             app.MapControllers();
 
+            //AssemblyName[] names = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
 
-            AssemblyName[] names = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
-
-            app.Lifetime.ApplicationStopped.Register(() => 
+            _ = app.Lifetime.ApplicationStopped.Register(() =>
             {
-                var gpioController = app.Services.GetRequiredService<GpioController>();
+                
                 SendMessageToTerminal("Checking for Open Pins....");
 
-                if (gpioController.IsPinOpen(23))
+                foreach (var pin in pins)
                 {
-                    Console.WriteLine($"Turning Off and Closing Pin {23}");
-                    gpioController.Write(23, PinValue.Low);
-                    gpioController.ClosePin(23);
+                    if (gpioController.IsPinOpen(pin.Key))
+                    {
+                        Console.WriteLine($"Turning Off and Closing Pin {pin.Key}");
+                        gpioController.Write(pin.Key, PinValue.Low);
+                        gpioController.ClosePin(pin.Key);
+                    }
                 }
             });
 
             app.Run();
+        }
+
+        private static void SendMessageToTerminal(string message)
+        {
+            Console.WriteLine("\r\n" + message);
+        }
+
+        private static void OnSigInt(object? sender, ConsoleCancelEventArgs e)
+        {
+
+            SendMessageToTerminal("SIGINT Received...");
+        }
+
+        private static void OnSigTerm(object? sender, EventArgs e)
+        {
+
+            SendMessageToTerminal("SIGTERM Received...");
         }
 
         private void OnShutdown()

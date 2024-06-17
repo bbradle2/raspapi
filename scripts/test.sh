@@ -59,10 +59,12 @@ EOF
 
 runtest()
 {
-    url=$1
+    verb=$1
+    url=$2
+    printf "$verb\n"
     printf "$url\n"
-   
-    json=$(curl -s -GET $url -H "AUTHORIZED_USER: $programuser" | jq .)
+
+    json=$(curl -s -X $verb $url -H "AUTHORIZED_USER: $programuser" | jq .)
 
     if [[ "$json" == "" ]]; 
     then
@@ -92,9 +94,15 @@ printf '\n'
 getheaders "http://$host:$port"
 
 
-runtest "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
-runtest "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
-runtest "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
+runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
+runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
+runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
+
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
+sleep 1
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
+sleep 1
+runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
 
 if [[ "$startserver" == "1" ]];
 then
