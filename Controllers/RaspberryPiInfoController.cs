@@ -18,12 +18,12 @@ namespace raspapi.Controllers
         }
 
         [HttpGet("GetCpuInfo")]
-        public IActionResult? GetCpuInfo()
+        public async Task<IActionResult?> GetCpuInfo()
         {
             try
             {
-                var cpuInfoObject = Utils.PopulateCpuInfoAsync("systeminfo", "Raspberry PI 5 systeminfo.");
-                _logger.LogInformation("Returning cpuInfoObject");
+                var cpuInfoObject = await Utils.PopulateCpuInfoAsync("cpuinfo", "Raspberry PI 5 cpuinfo.");
+                //_logger.LogInformation("Returning cpuInfoObject");
                 return Ok(cpuInfoObject);
             }
             catch (Exception e)
@@ -39,7 +39,7 @@ namespace raspapi.Controllers
             try
             {
                 var systemInfoObject = await Utils.PopulateSystemInfoAsync("systeminfo", "Raspberry PI 5 systeminfo.");
-                _logger.LogInformation("Returning systemInfoObject");
+                //_logger.LogInformation("Returning systemInfoObject");
                 return Ok(systemInfoObject);
 
             }
@@ -56,7 +56,7 @@ namespace raspapi.Controllers
             try
             {
                 var memInfo = await Utils.PopulateMemoryInfoAsync("memoryinfo", "Raspberry PI 5 memoryinfo.");
-                _logger.LogInformation("Returning memInfoObject");
+                //_logger.LogInformation("Returning memInfoObject");
                 return Ok(memInfo);
             }
             catch (Exception e)

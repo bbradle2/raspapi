@@ -6,6 +6,22 @@ host="localhost"
 process_id=$!
 startserver=$1
 
+BLACK=$(tput setaf 0)
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+YELLOW=$(tput setaf 3)
+LIME_YELLOW=$(tput setaf 190)
+POWDER_BLUE=$(tput setaf 153)
+BLUE=$(tput setaf 4)
+MAGENTA=$(tput setaf 5)
+CYAN=$(tput setaf 6)
+WHITE=$(tput setaf 7)
+BRIGHT=$(tput bold)
+NORMAL=$(tput sgr0)
+BLINK=$(tput blink)
+REVERSE=$(tput smso)
+UNDERLINE=$(tput smul)
+
 #start test
 
 
@@ -31,22 +47,22 @@ getheaders()
     mkfifo headers
     curl -si -d --request -GET $url -H "AUTHORIZED_USER: $programuser" > headers &
 
-    {
+{
   # This line is guaranteed to be first, before any headers.
   # Read it separately.
-read -r GitSemVer
+read -r GitSemVer 
 while IFS=':' read -r key value; do
     # trim whitespace in "value"
     read -r value <<EOF
 $value
 EOF
 
-      case $key in
-        GitSemVer) GitSemVer="$value"
-                 ;;
+    case $key in
+    GitSemVer) GitSemVer="$value"
+                ;;
 
-      esac
-  done
+    esac
+done
 } < headers
 
     rm headers
@@ -61,29 +77,34 @@ runtest()
 {
     verb=$1
     url=$2
-    printf "$verb\n"
+    printf "$verb "
     printf "$url\n"
 
-    json=$(curl -s -X $verb $url -H "AUTHORIZED_USER: $programuser" | jq .)
+    resp=$(curl -s -X $verb $url -H "AUTHORIZED_USER: $programuser")
 
-    if [[ "$json" == "" ]]; 
+    if [[ "$resp" == "" ]]; 
     then
-        printf 'Could not connect to %s.\n' $url
+        printf ''${RED}'Status:Fail\n'
+        printf ''${RED}'Could not connect to %s.\n' $url
 
-    elif [[ "$json" == *"statusCode"*  ]] && 
-         [[ "$json" == *"401"*  ]]; 
+    elif [[ "$resp" == *"statusCode"*  ]] && 
+         [[ "$resp" == *"401"*  ]]; 
     then
-        printf '%s\n' $json
+        printf ''${RED}'Status:Fail\n' 
+        printf '%s\n' $resp | jq .
 
-    elif [[ "$json" == *"statusCode"*  ]] && 
-         [[ "$json" == *"400"*  ]];
+    elif [[ "$resp" == *"statusCode"*  ]] && 
+         [[ "$resp" == *"400"*  ]];
     then
-        printf '%s\n' $json
+        printf ''${RED}'Status:Fail\n'
+        printf '%s' $resp | jq .
 
     else
-        printf 'Success\n'
+        printf ''${GREEN}'Status:Success\n'
+        printf '%s' "$resp" | jq .
     fi
-     printf '\n'
+    printf '\n\n'
+
 }
 
 
@@ -112,7 +133,7 @@ then
         if [ ${#jobs_running[@]} -eq 0 ]; then
             break
         fi
-        echo "Stopping job(s): ${jobs_running[@]}"
+        printf "Stopping job(s):%s\n\n" ${jobs_running[@]}
         kill -SIGTERM $jobs_running
     done
 

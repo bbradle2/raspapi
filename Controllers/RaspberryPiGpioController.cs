@@ -34,7 +34,7 @@ namespace raspapi.Controllers
             try
             {
                 _pins[RaspBerryPiContants.PIN23].Status = openPin.Read() == 1 ? "On" : "Off";
-                _logger.LogInformation("Returning Pins");
+                //_logger.LogInformation("Returning Pins");
                 return Ok(_pins);
             }
             catch (Exception e)
@@ -55,7 +55,7 @@ namespace raspapi.Controllers
             {
                 _gpioController.Write(_pins[RaspBerryPiContants.PIN23].Pin, PinValue.High);
                 _pins[RaspBerryPiContants.PIN23].Status = openPin.Read() == 1 ? "On" : "Off";
-                _logger.LogInformation("Returning Pins");
+                //_logger.LogInformation("Returning Pins");
                 return Ok(_pins);
 
             }
@@ -78,7 +78,7 @@ namespace raspapi.Controllers
             {
                 _gpioController.Write(_pins[RaspBerryPiContants.PIN23].Pin, PinValue.Low);
                 _pins[RaspBerryPiContants.PIN23].Status = openPin.Read() == 1 ? "On" : "Off";
-                _logger.LogInformation("Returning Pins");
+                //_logger.LogInformation("Returning Pins");
                 return Ok(_pins);
 
             }

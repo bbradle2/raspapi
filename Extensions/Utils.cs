@@ -92,19 +92,19 @@ namespace raspapi.Utils
             ArgumentException.ThrowIfNullOrWhiteSpace(Name);
             ArgumentException.ThrowIfNullOrWhiteSpace(Description);
 
-            static MemoryStream memoryStreamSystemInfo()
+            static MemoryStream memoryStreamcCPUInfo()
             {
-                string cpuInfoResult = "sudo lshw -class system -json".ExecuteBashScript();
+                string cpuInfoResult = "sudo lshw -class cpu -json".ExecuteBashScript();
                 ArgumentNullException.ThrowIfNullOrWhiteSpace(cpuInfoResult);
-                byte[] systemInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
-                return new MemoryStream(systemInfoByteArray);
+                byte[] cpuInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
+                return new MemoryStream(cpuInfoByteArray);
             }
 
             CPUInfoObject cpuInfoObject = new()
             {
                 Name = Name,
                 Description = Description,
-                CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamSystemInfo(), _options)
+                CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamcCPUInfo(), _options)
             };
 
             return cpuInfoObject;
