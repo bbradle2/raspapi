@@ -5,17 +5,17 @@ using raspapi.LinuxExtensions;
 
 namespace raspapi.Utils
 {
-    public static class Utils
+    public static class DataUtils
     {
         private readonly static JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
         public static async Task<MemoryInfoObject> PopulateMemoryInfoAsync(string Name, 
                                                                            string Description,
-                                                                           string delimeter = ":"
+                                                                           string Delimeter = ":"
                                                                           )
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(Name);
             ArgumentException.ThrowIfNullOrWhiteSpace(Description);
-            ArgumentException.ThrowIfNullOrWhiteSpace(delimeter);
+            ArgumentException.ThrowIfNullOrWhiteSpace(Delimeter);
 
             var meminfoLines = await File.ReadAllLinesAsync("/proc/meminfo");
             if (meminfoLines.Length == 0)
@@ -24,25 +24,25 @@ namespace raspapi.Utils
             }
 
             int valuePosition = 1;
-            var memTotalValue = meminfoLines.SingleOrDefault(item => item.Contains($"memtotal{delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{delimeter}")[valuePosition].Trim();
+            var memTotalValue = meminfoLines.SingleOrDefault(item => item.Contains($"memtotal{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
 
-            var memFreeValue = meminfoLines.SingleOrDefault(item => item.Contains($"memfree{delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{delimeter}")[valuePosition].Trim();
+            var memFreeValue = meminfoLines.SingleOrDefault(item => item.Contains($"memfree{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
 
-            var memAvailableValue = meminfoLines.SingleOrDefault(item => item.Contains($"memavailable{delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{delimeter}")[valuePosition].Trim();
+            var memAvailableValue = meminfoLines.SingleOrDefault(item => item.Contains($"memavailable{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
 
-            var cachedValue = meminfoLines.SingleOrDefault(item => item.Contains($"cached{delimeter}", StringComparison.CurrentCultureIgnoreCase)
+            var cachedValue = meminfoLines.SingleOrDefault(item => item.Contains($"cached{Delimeter}", StringComparison.CurrentCultureIgnoreCase)
                                                               &&
-                                                              !item.Contains($"swapcached{delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{delimeter}")[valuePosition].Trim();
+                                                              !item.Contains($"swapcached{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
 
-            var swapCachedValue = meminfoLines.SingleOrDefault(item => item.Contains($"swapcached{delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{delimeter}")[valuePosition].Trim();
+            var swapCachedValue = meminfoLines.SingleOrDefault(item => item.Contains($"swapcached{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
 
-            var swapFreeValue = meminfoLines.SingleOrDefault(item => item.Contains($"swapfree{delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{delimeter}")[valuePosition].Trim();
+            var swapFreeValue = meminfoLines.SingleOrDefault(item => item.Contains($"swapfree{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
 
-            var activeAnonValue = meminfoLines.SingleOrDefault(item => item.Contains($"active(anon){delimeter}", StringComparison.CurrentCultureIgnoreCase)
+            var activeAnonValue = meminfoLines.SingleOrDefault(item => item.Contains($"active(anon){Delimeter}", StringComparison.CurrentCultureIgnoreCase)
                                                                   &&
-                                                                  !item.Contains($"inactive(anon){delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{delimeter}")[valuePosition].Trim();
+                                                                  !item.Contains($"inactive(anon){Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
 
-            var inActiveAnonValue = meminfoLines.SingleOrDefault(item => item.Contains($"inactive(anon){delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{delimeter}")[valuePosition].Trim();
+            var inActiveAnonValue = meminfoLines.SingleOrDefault(item => item.Contains($"inactive(anon){Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
 
             MemoryInfoObject memInfoObject = new()
             {
@@ -61,7 +61,7 @@ namespace raspapi.Utils
 
 
         public static async Task<SystemInfoObject> PopulateSystemInfoAsync(string Name,
-                                                                           string Description
+                                                                           string Description = "No Description"
                                                                           )
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(Name);

@@ -7,6 +7,8 @@ namespace raspapi.Controllers
     using raspapi.DataObjects;
     using raspapi.Interfaces;
     using raspapi.Contants;
+    using System.Text.Json.Serialization.Metadata;
+    using raspapi.JsonDictionaryConverter;
 
     [ApiController]
     [Route("[controller]")]
@@ -14,27 +16,36 @@ namespace raspapi.Controllers
     {
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
-        private readonly Dictionary<int, IPin> _pins;
+        private readonly IDictionary<int, IGpioPin> _pins;
         private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
-
-        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IPin> pins)
+       
+        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IGpioPin> pins)
         {
             _logger = logger;
             _gpioController = gpioController;
             _pins = pins;
+           
         }
 
         [HttpGet("GetLedStatus")]
         public IActionResult? GetLedStatus()
         {
-            ArgumentNullException.ThrowIfNull(_gpioController);
-
-            var openPin = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN23].Pin, PinMode.Output);
+            ArgumentNullException.ThrowIfNull(_gpioController);          
 
             try
             {
-                _pins[RaspBerryPiContants.PIN23].Status = openPin.Read() == 1 ? "On" : "Off";
-                //_logger.LogInformation("Returning Pins");
+                var openPin23 = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN23].Pin, PinMode.Output);
+                var openPin24 = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN24].Pin, PinMode.Output);
+
+                _pins[RaspBerryPiContants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
+                _pins[RaspBerryPiContants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
+
+                //var options = new JsonSerializerOptions();
+                // _options.Converters.Add(new JsonDictionaryConverter.DictionaryInt32StringKeyValueConverter(_options));
+                // var p = JsonSerializer.Serialize(_pins, _options);
+                // //var t = JsonSerializer.Deserialize<Dictionary<int, GpioPin23>>(p, _options);
+
+
                 return Ok(_pins);
             }
             catch (Exception e)
@@ -48,14 +59,18 @@ namespace raspapi.Controllers
         public IActionResult? SetLedOn()
         {
             ArgumentNullException.ThrowIfNull(_gpioController);
-
-            var openPin = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN23].Pin, PinMode.Output);
-
+            
             try
             {
+                var openPin23 = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN23].Pin, PinMode.Output);
+                var openPin24 = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN24].Pin, PinMode.Output);
+
                 _gpioController.Write(_pins[RaspBerryPiContants.PIN23].Pin, PinValue.High);
-                _pins[RaspBerryPiContants.PIN23].Status = openPin.Read() == 1 ? "On" : "Off";
-                //_logger.LogInformation("Returning Pins");
+                _gpioController.Write(_pins[RaspBerryPiContants.PIN24].Pin, PinValue.High);
+
+                _pins[RaspBerryPiContants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
+                _pins[RaspBerryPiContants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
+
                 return Ok(_pins);
 
             }
@@ -72,15 +87,18 @@ namespace raspapi.Controllers
         {
             ArgumentNullException.ThrowIfNull(_gpioController);
 
-            var openPin = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN23].Pin, PinMode.Output);
-
             try
             {
-                _gpioController.Write(_pins[RaspBerryPiContants.PIN23].Pin, PinValue.Low);
-                _pins[RaspBerryPiContants.PIN23].Status = openPin.Read() == 1 ? "On" : "Off";
-                //_logger.LogInformation("Returning Pins");
-                return Ok(_pins);
+                var openPin23 = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN23].Pin, PinMode.Output);
+                var openPin24 = _gpioController.OpenPin(_pins[RaspBerryPiContants.PIN24].Pin, PinMode.Output);
 
+                _gpioController.Write(_pins[RaspBerryPiContants.PIN23].Pin, PinValue.Low);
+                _gpioController.Write(_pins[RaspBerryPiContants.PIN24].Pin, PinValue.Low);
+
+                _pins[RaspBerryPiContants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
+                _pins[RaspBerryPiContants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
+
+                return Ok(_pins);
             }
             catch (Exception e)
             {

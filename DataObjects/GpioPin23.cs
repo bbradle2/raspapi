@@ -1,14 +1,15 @@
+using System.Text.Json.Serialization;
 using raspapi.Contants;
 using raspapi.Interfaces;
 
 namespace raspapi.DataObjects
 {
-    public class Pin23: IPin
+    public class GpioPin23: IGpioPin
     {
+        
         public int Pin { get; } = RaspBerryPiContants.PIN23;
         public string Status { get; set; } = "Off";
-
-        public string Function { get; set; } = "Led";
+        public string Description { get; set; } = $"Led {RaspBerryPiContants.PIN23} On or Off";
 
     }
 }

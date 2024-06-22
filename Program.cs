@@ -13,12 +13,12 @@ namespace raspapi
     class Program
     {
 
-       
+        public static ILogger<Program> ?logger;
 
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.ProcessExit += OnSigTerm;
-            Console.CancelKeyPress += OnSigInt;          
+            Console.CancelKeyPress += OnSigInt;
 
             var builder = WebApplication.CreateBuilder(args);
 
@@ -26,25 +26,28 @@ namespace raspapi
             builder.Services.AddSwaggerGen();
 
             builder.Logging.AddConsole();
-            builder.Services.AddControllers();        
 
+            builder.Services.AddSingleton<GpioPin23>();
+            builder.Services.AddSingleton<GpioPin24>();
             builder.Services.AddSingleton<GpioController>();
-            builder.Services.AddSingleton<Dictionary<int, IPin>>();
+            builder.Services.AddSingleton<Dictionary<int, IGpioPin>>();
+            
 
+            builder.Services.AddControllers();
 
             var app = builder.Build();
 
             var gpioController = app.Services.GetRequiredService<GpioController>();
+            
+            var pins = app.Services.GetRequiredService<Dictionary<int, IGpioPin>>(); 
+            pins.Add(RaspBerryPiContants.PIN23 , app.Services.GetRequiredService<GpioPin23>());
+            pins.Add(RaspBerryPiContants.PIN24, app.Services.GetRequiredService<GpioPin24>());
 
-
-            var pins = app.Services.GetRequiredService<Dictionary<int, IPin>>();
-            pins.Add(RaspBerryPiContants.PIN23 , new Pin23 { Status = "Off" });
-
-
-            var logger = app.Logger;
+            logger = app.Services.GetRequiredService<ILogger<Program>>();
+            
             app.UseSwagger();
             app.UseSwaggerUI();
-            app.UseMiddleware<ApiIntercept>();
+            //app.UseMiddleware<ApiIntercept>();
 
             // if (app.Environment.IsDevelopment())
             // {
@@ -64,11 +67,11 @@ namespace raspapi
 
                 foreach (var pin in pins)
                 {
-                    if (gpioController.IsPinOpen(pin.Key))
+                    if (gpioController.IsPinOpen(pin.Value.Pin))
                     {
-                        Console.WriteLine($"Turning Off and Closing Pin {pin.Key}");
-                        gpioController.Write(pin.Key, PinValue.Low);
-                        gpioController.ClosePin(pin.Key);
+                        SendMessageToTerminal($"Turning Off and Closing Pin {pin.Key}");
+                        gpioController.Write(pin.Value.Pin, PinValue.Low);
+                        gpioController.ClosePin(pin.Value.Pin);
                     }
                 }
             });
@@ -78,12 +81,12 @@ namespace raspapi
 
         private static void SendMessageToTerminal(string message)
         {
-            Console.WriteLine("\r\n" + message);
+            
+            logger?.LogInformation("{message}", message);
         }
 
         private static void OnSigInt(object? sender, ConsoleCancelEventArgs e)
         {
-
             SendMessageToTerminal("SIGINT Received...");
         }
 
@@ -91,13 +94,6 @@ namespace raspapi
         {
 
             SendMessageToTerminal("SIGTERM Received...");
-        }
-
-        private void OnShutdown()
-        {
-
-            //Wait while the data is flushed
-            System.Threading.Thread.Sleep(1000);
         }
 
     }

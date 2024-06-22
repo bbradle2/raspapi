@@ -11,10 +11,13 @@ namespace raspapi.Controllers
     public class RaspberryPiInfoController : ControllerBase
     {
         private readonly ILogger<RaspberryPiInfoController> _logger;
-       
+        private readonly string ?_product;
         public RaspberryPiInfoController(ILogger<RaspberryPiInfoController> logger)
         {
             _logger = logger;
+            var systemInfo = DataUtils.PopulateSystemInfoAsync("systeminfo").GetAwaiter().GetResult();
+            _product = systemInfo.SystemObjects?[0]?.Product;
+
         }
 
         [HttpGet("GetCpuInfo")]
@@ -22,8 +25,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                var cpuInfoObject = await Utils.PopulateCpuInfoAsync("cpuinfo", "Raspberry PI 5 cpuinfo.");
-                //_logger.LogInformation("Returning cpuInfoObject");
+                var cpuInfoObject = await DataUtils.PopulateCpuInfoAsync("cpuinfo", $"{_product}.");
                 return Ok(cpuInfoObject);
             }
             catch (Exception e)
@@ -38,8 +40,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                var systemInfoObject = await Utils.PopulateSystemInfoAsync("systeminfo", "Raspberry PI 5 systeminfo.");
-                //_logger.LogInformation("Returning systemInfoObject");
+                var systemInfoObject = await DataUtils.PopulateSystemInfoAsync("systeminfo", $"{_product}.");
                 return Ok(systemInfoObject);
 
             }
@@ -55,8 +56,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                var memInfo = await Utils.PopulateMemoryInfoAsync("memoryinfo", "Raspberry PI 5 memoryinfo.");
-                //_logger.LogInformation("Returning memInfoObject");
+                var memInfo = await DataUtils.PopulateMemoryInfoAsync("memoryinfo", $"{_product}.");
                 return Ok(memInfo);
             }
             catch (Exception e)

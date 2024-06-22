@@ -24,24 +24,26 @@ UNDERLINE=$(tput smul)
 
 #start test
 
+cleanup()
+{
+    if [[ "$startserver" == "1" ]];
+    then
+        while true; do
+            sleep 1
+            jobs_running=($(jobs -l | grep Running | awk '{print $2}'))
+            if [ ${#jobs_running[@]} -eq 0 ]; then
+                break
+            fi
+            printf "${GREEN}Stopping job(s):%s\n\n" ${jobs_running[@]}
+            kill -SIGTERM $jobs_running
+        done
 
-if [[ "$startserver" == "1" ]];
-then
+        wait $process_id
+        printf "${GREEN}\nServer Stopped\n"
+    fi
+}
 
-    cd ..
-    dotnet clean
-    #dotnet build
-    dotnet run &
-    printf "Waiting for server to build and start\n\n"
-    sleep 15
-    printf "\nServer Started\n\n"
-
-fi
-
-printf "Start Test\n"
-printf "###########\n\n"
-
-getheaders()
+getheader()
 {
     url=$1
     mkfifo headers
@@ -66,10 +68,10 @@ done
 } < headers
 
     rm headers
-    printf 'GET Headers\n'
-    printf '###########\n'
-    printf 'GitSemVer:%s\n' $GitSemVer
-    printf '\n'
+    printf ''${YELLOW}'GET Headers\n'
+    printf ''${YELLOW}'###########\n'
+    printf ''${YELLOW}'GitSemVer:%s\n' $GitSemVer
+    printf ''${NORMAL}'\n'
 
 }
 
@@ -77,43 +79,67 @@ runtest()
 {
     verb=$1
     url=$2
-    printf "$verb "
-    printf "$url\n"
+    printf "${NORMAL}Calling $verb $url\n"
 
     resp=$(curl -s -X $verb $url -H "AUTHORIZED_USER: $programuser")
+    #jobs_running=($(jobs -l | grep Running | awk '{print $2}'))
 
     if [[ "$resp" == "" ]]; 
     then
-        printf ''${RED}'Status:Fail\n'
+        printf ''${RED}'Status: Fail\n'
         printf ''${RED}'Could not connect to %s.\n' $url
 
     elif [[ "$resp" == *"statusCode"*  ]] && 
          [[ "$resp" == *"401"*  ]]; 
     then
-        printf ''${RED}'Status:Fail\n' 
+        printf ''${RED}'Status: Fail\n' 
+        printf '%s\n' $resp | jq .
+
+    elif [[ "$resp" == *"statusCode"*  ]] && 
+         [[ "$resp" == *"403"*  ]]; 
+    then
+        printf ''${RED}'Status: Fail\n' 
         printf '%s\n' $resp | jq .
 
     elif [[ "$resp" == *"statusCode"*  ]] && 
          [[ "$resp" == *"400"*  ]];
     then
-        printf ''${RED}'Status:Fail\n'
+        printf ''${RED}'Status: Fail\n'
         printf '%s' $resp | jq .
 
     else
-        printf ''${GREEN}'Status:Success\n'
+        printf ''${GREEN}'Status: Success\n'
         printf '%s' "$resp" | jq .
+
     fi
+
     printf '\n\n'
 
 }
 
+startserver()
+{
+    if [[ "$startserver" == "1" ]];
+    then
+        cd ..
+        dotnet clean
+        #dotnet build
+        dotnet run &
+        printf "${GREEN}Waiting for server to build and start\n\n"
+        sleep 10
+        printf "${GREEN}\nServer Started\n\n"
+    fi
+}
 
+startserver
+
+printf "${GREEN}Start Test\n"
+printf "${GREEN}###########\n\n"
 printf 'Run Tests\n'
 printf '#########\n'
 printf '\n'
 
-getheaders "http://$host:$port"
-
+getheader "http://$host:$port"
 
 runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
@@ -121,27 +147,19 @@ runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
 sleep 1
+
+runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
+sleep 1
+
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
 sleep 1
+
 runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
+sleep 1
 
-if [[ "$startserver" == "1" ]];
-then
-    while true; do
-        sleep 1
-        jobs_running=($(jobs -l | grep Running | awk '{print $2}'))
-        if [ ${#jobs_running[@]} -eq 0 ]; then
-            break
-        fi
-        printf "Stopping job(s):%s\n\n" ${jobs_running[@]}
-        kill -SIGTERM $jobs_running
-    done
-
-    wait $process_id
-    printf "\nServer Stopped\n"
-fi
+cleanup
 
 printf "\n"
-printf "###########\n"
-printf "End Test\n\n"
+printf "${GREEN}###########\n"
+printf "${GREEN}End Test\n\n"
 
