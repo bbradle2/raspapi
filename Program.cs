@@ -40,8 +40,8 @@ namespace raspapi
             var gpioController = app.Services.GetRequiredService<GpioController>();
             
             var pins = app.Services.GetRequiredService<Dictionary<int, IGpioPin>>(); 
-            pins.Add(RaspBerryPiContants.PIN23 , app.Services.GetRequiredService<GpioPin23>());
-            pins.Add(RaspBerryPiContants.PIN24, app.Services.GetRequiredService<GpioPin24>());
+            pins.Add(GpioPinContants.PIN23 , app.Services.GetRequiredService<GpioPin23>());
+            pins.Add(GpioPinContants.PIN24, app.Services.GetRequiredService<GpioPin24>());
 
             logger = app.Services.GetRequiredService<ILogger<Program>>();
             
