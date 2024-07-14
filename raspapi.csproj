@@ -13,8 +13,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Iot.Device.Bindings" Version="3.1.0.*" />
-    <PackageReference Include="System.Device.Gpio" Version="3.1.0.*" />
+    <PackageReference Include="Iot.Device.Bindings" Version="3.2.0.*" />
+    <PackageReference Include="System.Device.Gpio" Version="3.2.0.*" />
     <PackageReference Include="GitVersion.MsBuild" Version="6.0.0-*"/>
     <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.*-*" />

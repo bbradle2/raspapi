@@ -126,7 +126,7 @@ startserver()
         #dotnet build
         dotnet run &
         printf "${GREEN}Waiting for server to build and start\n\n"
-        sleep 10
+        sleep 20
         printf "${GREEN}\nServer Started\n\n"
     fi
 }
@@ -141,21 +141,23 @@ printf '\n'
 
 getheader "http://$host:$port"
 
-runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
+
 runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
+
+runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
 sleep 1
 
 runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
-sleep 1
+# sleep 1
 
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
-sleep 1
+# sleep 1
 
 runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
-sleep 1
+# sleep 1
 
 cleanup
 

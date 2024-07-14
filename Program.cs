@@ -47,7 +47,7 @@ namespace raspapi
             
             app.UseSwagger();
             app.UseSwaggerUI();
-            //app.UseMiddleware<ApiIntercept>();
+            app.UseMiddleware<ApiIntercept>();
 
             // if (app.Environment.IsDevelopment())
             // {
