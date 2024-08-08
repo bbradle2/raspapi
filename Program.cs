@@ -1,11 +1,11 @@
 ﻿using System.Device.Gpio;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using raspapi.Contants;
+using raspapi.Constants.RaspberryPIConstants;
 using raspapi.DataObjects;
 using raspapi.Interfaces;
+using raspapi.Intercepts;
 
 namespace raspapi
 {
@@ -40,8 +40,8 @@ namespace raspapi
             var gpioController = app.Services.GetRequiredService<GpioController>();
             
             var pins = app.Services.GetRequiredService<Dictionary<int, IGpioPin>>(); 
-            pins.Add(GpioPinContants.PIN23 , app.Services.GetRequiredService<GpioPin23>());
-            pins.Add(GpioPinContants.PIN24, app.Services.GetRequiredService<GpioPin24>());
+            pins.Add(GpioPinConstants.PIN23 , app.Services.GetRequiredService<GpioPin23>());
+            pins.Add(GpioPinConstants.PIN24, app.Services.GetRequiredService<GpioPin24>());
 
             logger = app.Services.GetRequiredService<ILogger<Program>>();
             

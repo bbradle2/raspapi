@@ -4,11 +4,8 @@ namespace raspapi.Controllers
     using System.Text.Json;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
-    using raspapi.DataObjects;
     using raspapi.Interfaces;
-    using raspapi.Contants;
-    using System.Text.Json.Serialization.Metadata;
-    using raspapi.JsonDictionaryConverter;
+    using raspapi.Constants.RaspberryPIConstants;
 
     [ApiController]
     [Route("[controller]")]
@@ -34,11 +31,11 @@ namespace raspapi.Controllers
 
             try
             {
-                var openPin23 = _gpioController.OpenPin(_pins[GpioPinContants.PIN23].Pin, PinMode.Output);
-                var openPin24 = _gpioController.OpenPin(_pins[GpioPinContants.PIN24].Pin, PinMode.Output);
+                var openPin23 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN23].Pin, PinMode.Output);
+                var openPin24 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN24].Pin, PinMode.Output);
 
-                _pins[GpioPinContants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinContants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
+                _pins[GpioPinConstants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
+                _pins[GpioPinConstants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
 
                 return Ok(_pins);
             }
@@ -56,14 +53,14 @@ namespace raspapi.Controllers
             
             try
             {
-                var openPin23 = _gpioController.OpenPin(_pins[GpioPinContants.PIN23].Pin, PinMode.Output);
-                var openPin24 = _gpioController.OpenPin(_pins[GpioPinContants.PIN24].Pin, PinMode.Output);
+                var openPin23 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN23].Pin, PinMode.Output);
+                var openPin24 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN24].Pin, PinMode.Output);
 
-                _gpioController.Write(_pins[GpioPinContants.PIN23].Pin, PinValue.High);
-                _gpioController.Write(_pins[GpioPinContants.PIN24].Pin, PinValue.High);
+                _gpioController.Write(_pins[GpioPinConstants.PIN23].Pin, PinValue.High);
+                _gpioController.Write(_pins[GpioPinConstants.PIN24].Pin, PinValue.High);
 
-                _pins[GpioPinContants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinContants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
+                _pins[GpioPinConstants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
+                _pins[GpioPinConstants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
 
                 return Ok(_pins);
 
@@ -83,14 +80,14 @@ namespace raspapi.Controllers
 
             try
             {
-                var openPin23 = _gpioController.OpenPin(_pins[GpioPinContants.PIN23].Pin, PinMode.Output);
-                var openPin24 = _gpioController.OpenPin(_pins[GpioPinContants.PIN24].Pin, PinMode.Output);
+                var openPin23 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN23].Pin, PinMode.Output);
+                var openPin24 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN24].Pin, PinMode.Output);
 
-                _gpioController.Write(_pins[GpioPinContants.PIN23].Pin, PinValue.Low);
-                _gpioController.Write(_pins[GpioPinContants.PIN24].Pin, PinValue.Low);
+                _gpioController.Write(_pins[GpioPinConstants.PIN23].Pin, PinValue.Low);
+                _gpioController.Write(_pins[GpioPinConstants.PIN24].Pin, PinValue.Low);
 
-                _pins[GpioPinContants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinContants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
+                _pins[GpioPinConstants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
+                _pins[GpioPinConstants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
 
                 return Ok(_pins);
             }

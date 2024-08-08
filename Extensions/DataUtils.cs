@@ -1,10 +1,10 @@
-using System.Text;
-using System.Text.Json;
-using raspapi.DataObjects;
-using raspapi.LinuxExtensions;
-
 namespace raspapi.Utils
 {
+    using System.Text;
+    using System.Text.Json;
+    using raspapi.DataObjects;
+    using raspapi.LinuxExtensions;
+
     public static class DataUtils
     {
         private readonly static JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);

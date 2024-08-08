@@ -1,13 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 namespace raspapi.JsonDictionaryConverter
 {
+    using System.Text.Json;
+    using System.Text.Json.Serialization;
+
     internal class DictionaryInt32StringKeyValueConverter : JsonConverter<Dictionary<int, string>>
     {
         private JsonConverter<KeyValuePair<int, string>> _intToStringConverter;

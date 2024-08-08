@@ -1,7 +1,6 @@
-using System.Diagnostics;
-
 namespace raspapi.LinuxExtensions
 {
+    using System.Diagnostics;
     public static class LinuxExtensions
     {
         public static string ExecuteBashScript(this string cmd)

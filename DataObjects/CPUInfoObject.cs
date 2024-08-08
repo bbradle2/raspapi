@@ -2,7 +2,6 @@ namespace raspapi.DataObjects
 {
     public class CPUInfoObject : BaseInfoObject
     {
-       
         public CPUObject[]? CPUObjects { get; set; }
 
         public class Capabilities
