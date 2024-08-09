@@ -3,7 +3,7 @@ namespace raspapi.Utils
     using System.Text;
     using System.Text.Json;
     using raspapi.DataObjects;
-    using raspapi.LinuxExtensions;
+    using raspapi.Extensions;
 
     public static class DataUtils
     {
@@ -67,9 +67,9 @@ namespace raspapi.Utils
             ArgumentException.ThrowIfNullOrWhiteSpace(Name);
             ArgumentException.ThrowIfNullOrWhiteSpace(Description);
              
-            static MemoryStream memoryStreamSystemInfo()
+            static async Task<MemoryStream> memoryStreamSystemInfo()
             {
-                string systemInfoResult = "sudo lshw -class system -json".ExecuteBashScript();
+                string systemInfoResult = await "sudo lshw -class system -json".ExecuteBashScriptAsync();
                 ArgumentNullException.ThrowIfNullOrWhiteSpace(systemInfoResult);
                 byte[] systemInfoByteArray = Encoding.UTF8.GetBytes(systemInfoResult);
                 return new MemoryStream(systemInfoByteArray);
@@ -79,7 +79,7 @@ namespace raspapi.Utils
             {
                 Name = Name,
                 Description = Description,
-                SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(memoryStreamSystemInfo(), _options)
+                SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(await memoryStreamSystemInfo(), _options)
             };
 
             return systemInfoObject;
@@ -92,9 +92,9 @@ namespace raspapi.Utils
             ArgumentException.ThrowIfNullOrWhiteSpace(Name);
             ArgumentException.ThrowIfNullOrWhiteSpace(Description);
 
-            static MemoryStream memoryStreamcCPUInfo()
+            static async Task<MemoryStream> memoryStreamcCPUInfo()
             {
-                string cpuInfoResult = "sudo lshw -class cpu -json".ExecuteBashScript();
+                string cpuInfoResult = await "sudo lshw -class cpu -json".ExecuteBashScriptAsync();
                 ArgumentNullException.ThrowIfNullOrWhiteSpace(cpuInfoResult);
                 byte[] cpuInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
                 return new MemoryStream(cpuInfoByteArray);
@@ -104,7 +104,7 @@ namespace raspapi.Utils
             {
                 Name = Name,
                 Description = Description,
-                CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(memoryStreamcCPUInfo(), _options)
+                CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(await memoryStreamcCPUInfo(), _options)
             };
 
             return cpuInfoObject;

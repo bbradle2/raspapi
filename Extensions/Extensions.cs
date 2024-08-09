@@ -1,9 +1,9 @@
-namespace raspapi.LinuxExtensions
+namespace raspapi.Extensions
 {
     using System.Diagnostics;
-    public static class LinuxExtensions
+    public static class StringExtensions
     {
-        public static string ExecuteBashScript(this string cmd)
+        public static async Task<string> ExecuteBashScriptAsync(this string cmd)
         {
             var escapedArgs = cmd.Replace("\"", "\\\"");
             string? result = null;
@@ -23,7 +23,7 @@ namespace raspapi.LinuxExtensions
             try
             {
                 process.Start();
-                result = process.StandardOutput.ReadToEnd();
+                result = await process.StandardOutput.ReadToEndAsync();
                 process.WaitForExit();
                 return result;
             }
