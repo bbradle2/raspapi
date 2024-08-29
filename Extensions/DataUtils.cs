@@ -8,12 +8,12 @@ namespace raspapi.Utils
     public static class DataUtils
     {
         private readonly static JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
-        public static async Task<MemoryInfoObject> PopulateMemoryInfoAsync(string Name, 
+        public static async Task<MemoryInfoObject> PopulateMemoryInfoAsync(string ProductName, 
                                                                            string Description,
                                                                            string Delimeter = ":"
                                                                           )
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(Name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(ProductName);
             ArgumentException.ThrowIfNullOrWhiteSpace(Description);
             ArgumentException.ThrowIfNullOrWhiteSpace(Delimeter);
 
@@ -46,7 +46,7 @@ namespace raspapi.Utils
 
             MemoryInfoObject memInfoObject = new()
             {
-                Name = Name,
+                ProductName = ProductName,
                 Description = Description,
                 MemoryTotal = memTotalValue,
                 MemoryFree = memFreeValue,
@@ -60,11 +60,11 @@ namespace raspapi.Utils
         }
 
 
-        public static async Task<SystemInfoObject> PopulateSystemInfoAsync(string Name,
+        public static async Task<SystemInfoObject> PopulateSystemInfoAsync(string ProductName,
                                                                            string Description = "No Description"
                                                                           )
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(Name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(ProductName);
             ArgumentException.ThrowIfNullOrWhiteSpace(Description);
              
             static async Task<MemoryStream> memoryStreamSystemInfo()
@@ -77,7 +77,7 @@ namespace raspapi.Utils
 
             SystemInfoObject systemInfoObject = new()
             {
-                Name = Name,
+                ProductName = ProductName,
                 Description = Description,
                 SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(await memoryStreamSystemInfo(), _options)
             };
@@ -85,11 +85,11 @@ namespace raspapi.Utils
             return systemInfoObject;
         }
 
-        public static async Task<CPUInfoObject> PopulateCpuInfoAsync(string Name,
+        public static async Task<CPUInfoObject> PopulateCpuInfoAsync(string ProductName,
                                                                      string Description
                                                                     )
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(Name);
+            ArgumentException.ThrowIfNullOrWhiteSpace(ProductName);
             ArgumentException.ThrowIfNullOrWhiteSpace(Description);
 
             static async Task<MemoryStream> memoryStreamcCPUInfo()
@@ -102,7 +102,7 @@ namespace raspapi.Utils
 
             CPUInfoObject cpuInfoObject = new()
             {
-                Name = Name,
+                ProductName = ProductName,
                 Description = Description,
                 CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(await memoryStreamcCPUInfo(), _options)
             };

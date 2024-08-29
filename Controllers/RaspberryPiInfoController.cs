@@ -5,6 +5,7 @@ namespace raspapi.Controllers
     using Microsoft.Extensions.Logging;
     using Microsoft.AspNetCore.Routing;
     using raspapi.Utils;
+    using raspapi.DataObjects;
 
     [ApiController]
     [Route("[controller]")]
@@ -12,11 +13,15 @@ namespace raspapi.Controllers
     {
         private readonly ILogger<RaspberryPiInfoController> _logger;
         private readonly string ?_product;
+        private readonly SystemInfoObject? _systemInfoObject;
+        private readonly CPUInfoObject? _cpuInfoObject;
         public RaspberryPiInfoController(ILogger<RaspberryPiInfoController> logger)
         {
             _logger = logger;
-            var systemInfo = DataUtils.PopulateSystemInfoAsync("systeminfo").GetAwaiter().GetResult();
-            _product = systemInfo.SystemObjects?[0]?.Product;
+            _systemInfoObject = DataUtils.PopulateSystemInfoAsync("systeminfo").GetAwaiter().GetResult();
+            _product = _systemInfoObject.SystemObjects?[0]?.Product;
+
+            _cpuInfoObject = DataUtils.PopulateCpuInfoAsync("cpuinfo", $"{_product}.").GetAwaiter().GetResult();
 
         }
 
@@ -25,8 +30,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                var cpuInfoObject = await DataUtils.PopulateCpuInfoAsync("cpuinfo", $"{_product}.");
-                return Ok(cpuInfoObject);
+                return Ok(await Task.FromResult(_cpuInfoObject));
             }
             catch (Exception e)
             {
@@ -40,9 +44,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                var systemInfoObject = await DataUtils.PopulateSystemInfoAsync("systeminfo", $"{_product}.");
-                return Ok(systemInfoObject);
-
+                return Ok(await Task.FromResult(_systemInfoObject));
             }
             catch (Exception e)
             {
@@ -51,6 +53,7 @@ namespace raspapi.Controllers
             }
         }
 
+        
         [HttpGet("GetMemoryInfo")]
         public async Task<IActionResult?> GetMemoryInfo()
         {

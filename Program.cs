@@ -81,7 +81,6 @@ namespace raspapi
 
         private static void SendMessageToTerminal(string message)
         {
-            
             logger?.LogInformation("{message}", message);
         }
 
@@ -92,7 +91,6 @@ namespace raspapi
 
         private static void OnSigTerm(object? sender, EventArgs e)
         {
-
             SendMessageToTerminal("SIGTERM Received...");
         }
 
