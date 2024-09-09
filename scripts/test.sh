@@ -39,7 +39,7 @@ cleanup()
         done
 
         wait $process_id
-        printf "${GREEN}\nServer Stopped\n"
+        printf "${GREEN}\nService Stopped\n"
     fi
 }
 
@@ -125,9 +125,9 @@ startserver()
         dotnet clean
         #dotnet build
         dotnet run &
-        printf "${GREEN}Waiting for server to build and start\n\n"
+        printf "${GREEN}Waiting for Service to build and start\n\n"
         sleep 20
-        printf "${GREEN}\nServer Started\n\n"
+        printf "${GREEN}\nService Started\n\n"
     fi
 }
 
