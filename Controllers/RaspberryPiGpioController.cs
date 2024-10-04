@@ -15,22 +15,24 @@ namespace raspapi.Controllers
         private readonly GpioController _gpioController;
         private readonly IDictionary<int, IGpioPin> _pins;
         private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
-       
+        private static readonly SemaphoreSlim _semGpioController = new(1, 1);
+
         public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IGpioPin> pins)
-        {
+        { 
             _logger = logger;
             _gpioController = gpioController;
             _pins = pins;
-           
         }
 
         [HttpGet("GetLedStatus")]
-        public IActionResult? GetLedStatus()
+        public async Task<IActionResult?> GetLedStatus()
         {
-            ArgumentNullException.ThrowIfNull(_gpioController);          
-
             try
             {
+                await _semGpioController.WaitAsync();
+
+                ArgumentNullException.ThrowIfNull(_gpioController);
+
                 var openPin23 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN23].Pin, PinMode.Output);
                 var openPin24 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN24].Pin, PinMode.Output);
 
@@ -43,16 +45,22 @@ namespace raspapi.Controllers
             {
                 _logger.LogCritical("{Message}", e.Message);
                 return BadRequest(new BadRequestResult());
+            } 
+            finally 
+            {
+                _semGpioController.Release();
             }
         }
 
         [HttpPut("SetLedOn")]
-        public IActionResult? SetLedOn()
+        public async Task<IActionResult?> SetLedOn()
         {
-            ArgumentNullException.ThrowIfNull(_gpioController);
-            
             try
             {
+                await _semGpioController.WaitAsync();
+
+                ArgumentNullException.ThrowIfNull(_gpioController);
+
                 var openPin23 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN23].Pin, PinMode.Output);
                 var openPin24 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN24].Pin, PinMode.Output);
 
@@ -69,17 +77,22 @@ namespace raspapi.Controllers
             {
                 _logger.LogCritical("{Message}", e.Message);
                 return BadRequest(new BadRequestResult());
+            } 
+            finally 
+            {
+                _semGpioController.Release();
             }
-
         }
 
         [HttpPut("SetLedOff")]
-        public IActionResult? SetLedOff()
+        public async Task<IActionResult?> SetLedOff()
         {
-            ArgumentNullException.ThrowIfNull(_gpioController);
-
             try
             {
+                await _semGpioController.WaitAsync();
+
+                ArgumentNullException.ThrowIfNull(_gpioController);
+
                 var openPin23 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN23].Pin, PinMode.Output);
                 var openPin24 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN24].Pin, PinMode.Output);
 
@@ -95,8 +108,11 @@ namespace raspapi.Controllers
             {
                 _logger.LogCritical("{Message}", e.Message);
                 return BadRequest(new BadRequestResult());
+            } 
+            finally 
+            {
+                _semGpioController.Release();
             }
-
         }
     }  
 }

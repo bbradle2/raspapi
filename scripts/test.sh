@@ -4,7 +4,7 @@ port=5000
 programuser=$USER
 host="localhost"
 process_id=$!
-startserver=$1
+startservice=$1
 
 BLACK=$(tput setaf 0)
 RED=$(tput setaf 1)
@@ -26,7 +26,7 @@ UNDERLINE=$(tput smul)
 
 cleanup()
 {
-    if [[ "$startserver" == "1" ]];
+    if [[ "$startservice" == "1" ]];
     then
         while true; do
             sleep 1
@@ -117,9 +117,9 @@ runtest()
 
 }
 
-startserver()
+startservice()
 {
-    if [[ "$startserver" == "1" ]];
+    if [[ "$startservice" == "1" ]];
     then
         cd ..
         dotnet clean
@@ -131,7 +131,7 @@ startserver()
     fi
 }
 
-startserver
+startservice
 
 printf "${GREEN}Start Test\n"
 printf "${GREEN}###########\n\n"
@@ -141,23 +141,22 @@ printf '\n'
 
 getheader "http://$host:$port"
 
-
 runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
-
 runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
+runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
 sleep 1
 
 runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
-# sleep 1
+sleep 1
 
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
-# sleep 1
+sleep 1
 
 runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
-# sleep 1
+sleep 1
 
 cleanup
 
