@@ -11,6 +11,7 @@ namespace raspapi.Intercepts
 
             context.Response.Headers.Remove("GitSemVer");
             context.Response.Headers.Append("GitSemVer", GitVersionInformation.SemVer);
+            var appSettings = context.RequestServices.GetRequiredService<IConfiguration>();
 
             if (context.Request.Headers["AUTHORIZED_USER"] == Environment.UserName)
             {
@@ -19,8 +20,8 @@ namespace raspapi.Intercepts
             else
             {
                 context.Response.StatusCode = 401;
-                string unauthorizedizedUser = context.Request.Headers["AUTHORIZED_USER"]!;
-                logger.LogError("UnauthorizedizedUser {unauthorizedizedUser}", unauthorizedizedUser);
+                string unauthorizedUser = context.Request.Headers["AUTHORIZED_USER"]!;
+                logger.LogError("UnauthorizedUser {unauthorizedUser}", unauthorizedUser);
                 await context.Response.WriteAsJsonAsync(new UnauthorizedResult());
                 return;
             }

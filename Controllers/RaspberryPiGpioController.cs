@@ -15,13 +15,14 @@ namespace raspapi.Controllers
         private readonly GpioController _gpioController;
         private readonly IDictionary<int, IGpioPin> _pins;
         private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
-        private static readonly SemaphoreSlim _semGpioController = new(1, 1);
+        private readonly SemaphoreSlim _semaphoreGpioController;
 
-        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IGpioPin> pins)
+        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IGpioPin> pins, SemaphoreSlim semaphoreGpioController)
         { 
             _logger = logger;
             _gpioController = gpioController;
             _pins = pins;
+            _semaphoreGpioController = semaphoreGpioController;
         }
 
         [HttpGet("GetLedStatus")]
@@ -29,7 +30,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                await _semGpioController.WaitAsync();
+                await _semaphoreGpioController.WaitAsync();
 
                 ArgumentNullException.ThrowIfNull(_gpioController);
 
@@ -48,7 +49,7 @@ namespace raspapi.Controllers
             } 
             finally 
             {
-                _semGpioController.Release();
+                _semaphoreGpioController.Release();
             }
         }
 
@@ -57,7 +58,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                await _semGpioController.WaitAsync();
+                await _semaphoreGpioController.WaitAsync();
 
                 ArgumentNullException.ThrowIfNull(_gpioController);
 
@@ -80,7 +81,7 @@ namespace raspapi.Controllers
             } 
             finally 
             {
-                _semGpioController.Release();
+                _semaphoreGpioController.Release();
             }
         }
 
@@ -89,7 +90,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                await _semGpioController.WaitAsync();
+                await _semaphoreGpioController.WaitAsync();
 
                 ArgumentNullException.ThrowIfNull(_gpioController);
 
@@ -111,7 +112,7 @@ namespace raspapi.Controllers
             } 
             finally 
             {
-                _semGpioController.Release();
+                _semaphoreGpioController.Release();
             }
         }
     }  

@@ -31,7 +31,7 @@ namespace raspapi
             builder.Services.AddSingleton<GpioPin24>();
             builder.Services.AddSingleton<GpioController>();
             builder.Services.AddSingleton<Dictionary<int, IGpioPin>>();
-            
+            builder.Services.AddSingleton(new SemaphoreSlim(1,1));
 
             builder.Services.AddControllers();
 
