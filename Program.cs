@@ -67,11 +67,17 @@ namespace raspapi
 
                 foreach (var pin in pins)
                 {
+                    SendMessageToTerminal($"Checking Pin {pin.Key}");
                     if (gpioController.IsPinOpen(pin.Value.Pin))
                     {
+                        SendMessageToTerminal($"Pin {pin.Key} Open");
                         SendMessageToTerminal($"Turning Off and Closing Pin {pin.Key}");
                         gpioController.Write(pin.Value.Pin, PinValue.Low);
                         gpioController.ClosePin(pin.Value.Pin);
+                    } 
+                    else 
+                    {
+                        SendMessageToTerminal($"Pin {pin.Key} not Open");
                     }
                 }
             });
