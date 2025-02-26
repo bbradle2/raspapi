@@ -11,8 +11,7 @@ namespace raspapi.Controllers
     {
         private readonly ILogger<RaspberryPiSpiController> _logger;
         private readonly GpioController _gpioController;
-        private readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
-
+        
         public RaspberryPiSpiController(ILogger<RaspberryPiSpiController> logger, GpioController gpioController)
         {
             _logger = logger;

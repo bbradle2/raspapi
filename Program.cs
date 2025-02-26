@@ -6,6 +6,7 @@ using raspapi.Constants.RaspberryPIConstants;
 using raspapi.DataObjects;
 using raspapi.Interfaces;
 using raspapi.Intercepts;
+using System.Text.Json;
 
 namespace raspapi
 {
@@ -32,7 +33,7 @@ namespace raspapi
             builder.Services.AddSingleton<GpioController>();
             builder.Services.AddSingleton<Dictionary<int, IGpioPin>>();
             builder.Services.AddSingleton(new SemaphoreSlim(1,1));
-
+            
             builder.Services.AddControllers();
 
             var app = builder.Build();
@@ -42,6 +43,8 @@ namespace raspapi
             var pins = app.Services.GetRequiredService<Dictionary<int, IGpioPin>>(); 
             pins.Add(GpioPinConstants.PIN23 , app.Services.GetRequiredService<GpioPin23>());
             pins.Add(GpioPinConstants.PIN24, app.Services.GetRequiredService<GpioPin24>());
+
+            var semaphore = app.Services.GetRequiredService<SemaphoreSlim>();
 
             logger = app.Services.GetRequiredService<ILogger<Program>>();
             
@@ -62,23 +65,36 @@ namespace raspapi
 
             _ = app.Lifetime.ApplicationStopped.Register(() =>
             {
-                
-                SendMessageToTerminal("Checking for Open Pins....");
 
-                foreach (var pin in pins)
+                try
                 {
-                    SendMessageToTerminal($"Checking Pin {pin.Key}");
-                    if (gpioController.IsPinOpen(pin.Value.Pin))
+                    // Wait on all calls to complete before shut down.
+                    semaphore.Wait();
+                    SendMessageToTerminal("Checking for Open Pins....");
+
+                    foreach (var pin in pins)
                     {
-                        SendMessageToTerminal($"Pin {pin.Key} Open");
-                        SendMessageToTerminal($"Turning Off and Closing Pin {pin.Key}");
-                        gpioController.Write(pin.Value.Pin, PinValue.Low);
-                        gpioController.ClosePin(pin.Value.Pin);
-                    } 
-                    else 
-                    {
-                        SendMessageToTerminal($"Pin {pin.Key} not Open");
+                        SendMessageToTerminal($"Checking Pin {pin.Key}");
+                        if (gpioController.IsPinOpen(pin.Value.Pin))
+                        {
+                            SendMessageToTerminal($"Pin {pin.Key} Open");
+                            SendMessageToTerminal($"Turning Off and Closing Pin {pin.Key}");
+                            gpioController.Write(pin.Value.Pin, PinValue.Low);
+                            gpioController.ClosePin(pin.Value.Pin);
+                        }
+                        else
+                        {
+                            SendMessageToTerminal($"Pin {pin.Key} not Open");
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    SendMessageToTerminal($"Exception:  {ex.Message}");
+                }
+                finally
+                {
+                    semaphore.Release();
                 }
             });
 

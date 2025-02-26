@@ -79,7 +79,7 @@ runtest()
 {
     verb=$1
     url=$2
-    printf "${NORMAL}Calling $verb $url\n"
+    printf "${GREEN}Calling $verb $url\n"
 
     resp=$(curl -s -X $verb $url -H "AUTHORIZED_USER: $programuser")
     #jobs_running=($(jobs -l | grep Running | awk '{print $2}'))
@@ -146,17 +146,30 @@ runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn" 
 sleep 1
 
-runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
+runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus" 
 sleep 1
 
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
 sleep 1
 
-runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
+#should blink 2 times and take around 8 seconds.
+#START=$(date "+%s")
+runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLed"
+#END=$(date "+%s")
+#echo Blinking led 2 times took $((END-START)) seconds.
 sleep 1
+
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
+sleep 1
+
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
+sleep 1
+
+#runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
+#sleep 1
 
 cleanup
 
