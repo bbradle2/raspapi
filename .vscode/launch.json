@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
-    "configurations": [
+    "configurations": 
+    [
         
         {
             "name": "C#: raspapi Debug",
@@ -23,6 +24,5 @@
             "program": "${workspaceFolder}/bin/Debug/net9.0/raspapi.dll",
             "preLaunchTask": "buildfirst"
         },
-       
     ],    
 }
