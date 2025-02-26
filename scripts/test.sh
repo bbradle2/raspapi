@@ -155,9 +155,13 @@ sleep 1
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
 sleep 1
 
+
+runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLed"
+
+#This call will test semaphore code. should not be able to set any gpios without semaphore release. 
 #should blink 2 times and take around 8 seconds.
 #START=$(date "+%s")
-runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLed"
+#runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLed" &
 #END=$(date "+%s")
 #echo Blinking led 2 times took $((END-START)) seconds.
 sleep 1
