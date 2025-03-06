@@ -30,9 +30,10 @@ namespace raspapi
 
             builder.Services.AddSingleton<GpioPin23>();
             builder.Services.AddSingleton<GpioPin24>();
+            builder.Services.AddSingleton<GpioPin25>();
             builder.Services.AddSingleton<GpioController>();
             builder.Services.AddSingleton<Dictionary<int, IGpioPin>>();
-            builder.Services.AddSingleton(new SemaphoreSlim(1,1));
+            builder.Services.AddKeyedSingleton(MiscConstants.gpioSemaphore, new SemaphoreSlim(1, 1));
             
             builder.Services.AddControllers();
 
@@ -43,8 +44,9 @@ namespace raspapi
             var pins = app.Services.GetRequiredService<Dictionary<int, IGpioPin>>(); 
             pins.Add(GpioPinConstants.PIN23 , app.Services.GetRequiredService<GpioPin23>());
             pins.Add(GpioPinConstants.PIN24, app.Services.GetRequiredService<GpioPin24>());
+            pins.Add(GpioPinConstants.PIN25, app.Services.GetRequiredService<GpioPin25>());
 
-            var semaphore = app.Services.GetRequiredService<SemaphoreSlim>();
+            var semaphore = app.Services.GetKeyedService<SemaphoreSlim>(MiscConstants.gpioSemaphore);
 
             logger = app.Services.GetRequiredService<ILogger<Program>>();
             
@@ -69,7 +71,7 @@ namespace raspapi
                 try
                 {
                     // Wait on all calls to complete before shut down.
-                    semaphore.Wait();
+                    semaphore?.Wait();
                     SendMessageToTerminal("Checking for Open Pins....");
 
                     foreach (var pin in pins)
@@ -94,7 +96,7 @@ namespace raspapi
                 }
                 finally
                 {
-                    semaphore.Release();
+                    semaphore?.Release();
                 }
             });
 
