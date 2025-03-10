@@ -33,7 +33,7 @@ namespace raspapi
             builder.Services.AddSingleton<GpioPin25>();
             builder.Services.AddSingleton<GpioController>();
             builder.Services.AddSingleton<Dictionary<int, IGpioPin>>();
-            builder.Services.AddKeyedSingleton(MiscConstants.gpioSemaphore, new SemaphoreSlim(1, 1));
+            builder.Services.AddKeyedSingleton(MiscConstants.gpioSemaphoreName, new SemaphoreSlim(1, 1));
             
             builder.Services.AddControllers();
 
@@ -46,7 +46,7 @@ namespace raspapi
             pins.Add(GpioPinConstants.PIN24, app.Services.GetRequiredService<GpioPin24>());
             pins.Add(GpioPinConstants.PIN25, app.Services.GetRequiredService<GpioPin25>());
 
-            var semaphore = app.Services.GetKeyedService<SemaphoreSlim>(MiscConstants.gpioSemaphore);
+            var semaphore = app.Services.GetRequiredKeyedService<SemaphoreSlim>(MiscConstants.gpioSemaphoreName);
 
             logger = app.Services.GetRequiredService<ILogger<Program>>();
             
@@ -97,6 +97,7 @@ namespace raspapi
                 finally
                 {
                     semaphore?.Release();
+                    semaphore?.Dispose();
                 }
             });
 

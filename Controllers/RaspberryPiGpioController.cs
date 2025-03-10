@@ -17,7 +17,7 @@ namespace raspapi.Controllers
         private readonly IDictionary<int, IGpioPin> _pins;
         private readonly SemaphoreSlim _semaphoreGpioController;
 
-        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IGpioPin> pins, [FromKeyedServices(MiscConstants.gpioSemaphore)] SemaphoreSlim semaphoreGpioController)
+        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IGpioPin> pins, [FromKeyedServices(MiscConstants.gpioSemaphoreName)] SemaphoreSlim semaphoreGpioController)
         {
             _logger = logger;
             _gpioController = gpioController;
