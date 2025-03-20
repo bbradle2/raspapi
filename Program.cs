@@ -1,12 +1,11 @@
 ﻿using System.Device.Gpio;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using raspapi.Constants.RaspberryPIConstants;
 using raspapi.DataObjects;
 using raspapi.Interfaces;
 using raspapi.Intercepts;
-using System.Text.Json;
+//using System.Runtime.InteropServices;
+//using Nextended.Core.Extensions;
+//using System.ComponentModel.DataAnnotations;
 
 namespace raspapi
 {
@@ -20,13 +19,20 @@ namespace raspapi
         {
             AppDomain.CurrentDomain.ProcessExit += OnSigTerm;
             Console.CancelKeyPress += OnSigInt;
+            // PosixSignalRegistration.Create(PosixSignal.SIGCONT, (context) =>
+            // {
+            //     SendMessageToTerminal("Received SIGCONT");
+            // });
 
+           
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            //builder.Services.AddSwaggerGen();
+            //builder.Services.AddOpenApi();
 
             builder.Logging.AddConsole();
+            
 
             builder.Services.AddSingleton<GpioPin23>();
             builder.Services.AddSingleton<GpioPin24>();
@@ -46,20 +52,77 @@ namespace raspapi
             pins.Add(GpioPinConstants.PIN24, app.Services.GetRequiredService<GpioPin24>());
             pins.Add(GpioPinConstants.PIN25, app.Services.GetRequiredService<GpioPin25>());
 
-            var semaphore = app.Services.GetRequiredKeyedService<SemaphoreSlim>(MiscConstants.gpioSemaphoreName);
+            var gpioSemaphore = app.Services.GetRequiredKeyedService<SemaphoreSlim>(MiscConstants.gpioSemaphoreName);
 
             logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+            //app.UseSwagger();
+            //app.UseSwaggerUI();
             
-            app.UseSwagger();
-            app.UseSwaggerUI();
             app.UseMiddleware<ApiIntercept>();
 
-            // if (app.Environment.IsDevelopment())
+            // _ = Task.Factory.StartNew(() =>
             // {
+            //     while (true)
+            //     {
+            //         if (Console.ReadLine() == "QUIT")
+            //         {
+            //             app.StopAsync();
+            //         }
+            //     }
+            // });
 
-            // }
+            if (app.Environment.IsDevelopment())
+            {
+                _ = Task.Factory.StartNew(() =>
+                {
+                    while (true)
+                    {
 
-            logger.LogInformation("ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}", app.Environment.EnvironmentName);
+                        if (Console.ReadLine() == "INFO")
+                        {
+                            logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
+                            logger.LogInformation($"APPICATION_NAME:{app.Environment.ApplicationName}");
+                            logger.LogInformation($"IS_DEV:{app.Environment.IsDevelopment().ToString()}");
+                            logger.LogInformation($"WEB_ROOT_PATH:{app.Environment.WebRootPath}");
+                            
+
+                            var endpoints = app
+                            .Services
+                            .GetServices<EndpointDataSource>()
+                            .SelectMany(x => x!.Endpoints);
+                            
+                            logger.LogInformation($"ENDPOINTS:");
+
+                            foreach (var endpoint in endpoints)
+                            {
+                                if (endpoint is RouteEndpoint routeEndpoint)
+                                {
+                                    _ = routeEndpoint.RoutePattern.RawText;
+                                    _ = routeEndpoint.RoutePattern.PathSegments;
+                                    _ = routeEndpoint.RoutePattern.Parameters;
+                                    _ = routeEndpoint.RoutePattern.InboundPrecedence;
+                                    _ = routeEndpoint.RoutePattern.OutboundPrecedence;
+                                    logger.LogInformation($"ROUTEPATTERN:{routeEndpoint.RoutePattern.RawText}");
+                                }
+
+                                var routeNameMetadata = endpoint.Metadata.OfType<Microsoft.AspNetCore.Routing.RouteNameMetadata>().FirstOrDefault();
+                                _ = routeNameMetadata?.RouteName;
+
+                                var httpMethodsMetadata = endpoint.Metadata.OfType<HttpMethodMetadata>().FirstOrDefault();
+                                _ = httpMethodsMetadata?.HttpMethods;
+
+                            }
+                            
+
+                        }
+
+                    }
+
+                });
+            }
+
+            //logger.LogInformation("ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}", app.Environment.EnvironmentName);
 
             app.MapControllers();
 
@@ -71,52 +134,52 @@ namespace raspapi
                 try
                 {
                     // Wait on all calls to complete before shut down.
-                    semaphore?.Wait();
-                    SendMessageToTerminal("Checking for Open Pins....");
+                    gpioSemaphore?.Wait();
+                    SendLogMessage("Checking for Open Pins....");
 
                     foreach (var pin in pins)
                     {
-                        SendMessageToTerminal($"Checking Pin {pin.Key}");
+                        SendLogMessage($"Checking Pin {pin.Key}");
                         if (gpioController.IsPinOpen(pin.Value.Pin))
                         {
-                            SendMessageToTerminal($"Pin {pin.Key} Open");
-                            SendMessageToTerminal($"Turning Off and Closing Pin {pin.Key}");
+                            SendLogMessage($"Pin {pin.Key} Open");
+                            SendLogMessage($"Turning Off and Closing Pin {pin.Key}");
                             gpioController.Write(pin.Value.Pin, PinValue.Low);
                             gpioController.ClosePin(pin.Value.Pin);
                         }
                         else
                         {
-                            SendMessageToTerminal($"Pin {pin.Key} not Open");
+                            SendLogMessage($"Pin {pin.Key} not Open");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    SendMessageToTerminal($"Exception:  {ex.Message}");
+                    SendLogMessage($"Exception:  {ex.Message}");
                 }
                 finally
                 {
-                    semaphore?.Release();
-                    semaphore?.Dispose();
+                    gpioSemaphore?.Release();
+                    gpioSemaphore?.Dispose();
                 }
             });
 
             app.Run();
         }
 
-        private static void SendMessageToTerminal(string message)
+        private static void SendLogMessage(string message)
         {
             logger?.LogInformation("{message}", message);
         }
 
         private static void OnSigInt(object? sender, ConsoleCancelEventArgs e)
         {
-            SendMessageToTerminal("SIGINT Received...");
+            SendLogMessage("SIGINT Received...");
         }
-
+       
         private static void OnSigTerm(object? sender, EventArgs e)
         {
-            SendMessageToTerminal("SIGTERM Received...");
+            SendLogMessage("SIGTERM Received...");
         }
 
     }
