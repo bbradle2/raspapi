@@ -84,14 +84,14 @@ namespace raspapi
                 {
                     while (true)
                     {
-
+                        
                         if (Console.ReadLine() == "INFO")
                         {
-                            logger.LogInformation($"ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}");
-                            logger.LogInformation($"APPICATION_NAME:{app.Environment.ApplicationName}");
-                            logger.LogInformation($"IS_DEV:{app.Environment.IsDevelopment().ToString()}");
-                            logger.LogInformation($"WEB_ROOT_PATH:{app.Environment.WebRootPath}");
-
+                            logger.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}",app.Environment.EnvironmentName);
+                            logger.LogInformation("APPICATION_NAME:{ApplicationName}",app.Environment.ApplicationName);
+                            logger.LogInformation("WEB_ROOT_PATH:{WebRootPath}", app.Environment.WebRootPath);
+                            string hostName = System.Net.Dns.GetHostName();
+                            var urls = app.Urls;
 
                             var endpoints = app
                             .Services
@@ -104,12 +104,8 @@ namespace raspapi
                             {
                                 if (endpoint is RouteEndpoint routeEndpoint)
                                 {
-                                    _ = routeEndpoint.RoutePattern.RawText;
-                                    _ = routeEndpoint.RoutePattern.PathSegments;
-                                    _ = routeEndpoint.RoutePattern.Parameters;
-                                    _ = routeEndpoint.RoutePattern.InboundPrecedence;
-                                    _ = routeEndpoint.RoutePattern.OutboundPrecedence;
-                                    logger.LogInformation($"ENDPOINT:{routeEndpoint.RoutePattern.RawText}");
+                                    var url = urls.FirstOrDefault();
+                                    logger.LogInformation("ENDPOINT:{url}/{RawText}", url, routeEndpoint.RoutePattern.RawText);
                                 }
 
                                 var routeNameMetadata = endpoint.Metadata.OfType<Microsoft.AspNetCore.Routing.RouteNameMetadata>().FirstOrDefault();
