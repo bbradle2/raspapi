@@ -72,6 +72,12 @@ namespace raspapi
             //     }
             // });
 
+            
+
+            //logger.LogInformation("ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}", app.Environment.EnvironmentName);
+
+            app.MapControllers();
+
             if (app.Environment.IsDevelopment())
             {
                 _ = Task.Factory.StartNew(() =>
@@ -85,13 +91,13 @@ namespace raspapi
                             logger.LogInformation($"APPICATION_NAME:{app.Environment.ApplicationName}");
                             logger.LogInformation($"IS_DEV:{app.Environment.IsDevelopment().ToString()}");
                             logger.LogInformation($"WEB_ROOT_PATH:{app.Environment.WebRootPath}");
-                            
+
 
                             var endpoints = app
                             .Services
                             .GetServices<EndpointDataSource>()
                             .SelectMany(x => x!.Endpoints);
-                            
+
                             logger.LogInformation($"ENDPOINTS:");
 
                             foreach (var endpoint in endpoints)
@@ -103,17 +109,17 @@ namespace raspapi
                                     _ = routeEndpoint.RoutePattern.Parameters;
                                     _ = routeEndpoint.RoutePattern.InboundPrecedence;
                                     _ = routeEndpoint.RoutePattern.OutboundPrecedence;
-                                    logger.LogInformation($"ROUTEPATTERN:{routeEndpoint.RoutePattern.RawText}");
+                                    logger.LogInformation($"ENDPOINT:{routeEndpoint.RoutePattern.RawText}");
                                 }
 
                                 var routeNameMetadata = endpoint.Metadata.OfType<Microsoft.AspNetCore.Routing.RouteNameMetadata>().FirstOrDefault();
-                                _ = routeNameMetadata?.RouteName;
+                                var routName = routeNameMetadata?.RouteName;
 
                                 var httpMethodsMetadata = endpoint.Metadata.OfType<HttpMethodMetadata>().FirstOrDefault();
-                                _ = httpMethodsMetadata?.HttpMethods;
+                                var httpMethods = httpMethodsMetadata?.HttpMethods;
 
                             }
-                            
+
 
                         }
 
@@ -121,10 +127,6 @@ namespace raspapi
 
                 });
             }
-
-            //logger.LogInformation("ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}", app.Environment.EnvironmentName);
-
-            app.MapControllers();
 
             //AssemblyName[] names = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
 
