@@ -7,16 +7,16 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
- 
-
+  
   <ItemGroup>
     <PackageReference Include="Iot.Device.Bindings" Version="3.2.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.1.2" />
     <PackageReference Include="System.Device.Gpio" Version="3.2.0" />
-    <PackageReference Include="GitVersion.MsBuild" Version="6.1.0"/>
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
-    <PackageReference Include="Nextended.Core" Version="9.0.3" />
+    <PackageReference Include="GitVersion.MsBuild" Version="6.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3" />
+    <PackageReference Include="Nextended.Core" Version="9.0.9" />
+
 
   </ItemGroup>
 

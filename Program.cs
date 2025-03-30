@@ -2,9 +2,14 @@
 using raspapi.Constants.RaspberryPIConstants;
 using raspapi.DataObjects;
 using raspapi.Interfaces;
+using System.Net.NetworkInformation;
+using Scalar.AspNetCore;
 using raspapi.Intercepts;
+
+
 //using System.Runtime.InteropServices;
-//using Nextended.Core.Extensions;
+using Nextended.Core;
+using raspapi.Extensions;
 //using System.ComponentModel.DataAnnotations;
 
 namespace raspapi
@@ -12,8 +17,8 @@ namespace raspapi
     
     class Program
     {
-
-        public static ILogger<Program> ?logger;
+        
+        public static ILogger<Program>? logger;
 
         static void Main(string[] args)
         {
@@ -26,17 +31,12 @@ namespace raspapi
 
            
             var builder = WebApplication.CreateBuilder(args);
-
-            builder.Services.AddEndpointsApiExplorer();
-            //builder.Services.AddSwaggerGen();
-            //builder.Services.AddOpenApi();
-
+           
+            builder.Services.AddOpenApi();
             builder.Logging.AddConsole();
-            
-
-            builder.Services.AddSingleton<GpioPin23>();
-            builder.Services.AddSingleton<GpioPin24>();
-            builder.Services.AddSingleton<GpioPin25>();
+           
+            builder.Services.AddSingleton<MyGpioPin23>();
+            builder.Services.AddSingleton<MyGpioPin24>();
             builder.Services.AddSingleton<GpioController>();
             builder.Services.AddSingleton<Dictionary<int, IGpioPin>>();
             builder.Services.AddKeyedSingleton(MiscConstants.gpioSemaphoreName, new SemaphoreSlim(1, 1));
@@ -45,34 +45,25 @@ namespace raspapi
 
             var app = builder.Build();
 
+
+
+           
+            //var t = builder.Configuration["ASPNETCORE_URLS"];
+
+            app.UseRouting();
+
             var gpioController = app.Services.GetRequiredService<GpioController>();
             
             var pins = app.Services.GetRequiredService<Dictionary<int, IGpioPin>>(); 
-            pins.Add(GpioPinConstants.PIN23 , app.Services.GetRequiredService<GpioPin23>());
-            pins.Add(GpioPinConstants.PIN24, app.Services.GetRequiredService<GpioPin24>());
-            pins.Add(GpioPinConstants.PIN25, app.Services.GetRequiredService<GpioPin25>());
+            pins.Add(GpioPinConstants.PIN23 , app.Services.GetRequiredService<MyGpioPin23>());
+            pins.Add(GpioPinConstants.PIN24, app.Services.GetRequiredService<MyGpioPin24>());
 
             var gpioSemaphore = app.Services.GetRequiredKeyedService<SemaphoreSlim>(MiscConstants.gpioSemaphoreName);
 
             logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-            //app.UseSwagger();
-            //app.UseSwaggerUI();
-            
-            app.UseMiddleware<ApiIntercept>();
-
-            // _ = Task.Factory.StartNew(() =>
-            // {
-            //     while (true)
-            //     {
-            //         if (Console.ReadLine() == "QUIT")
-            //         {
-            //             app.StopAsync();
-            //         }
-            //     }
-            // });
-
-            
+            //if(app.Environment.IsProduction())
+            app.UseMiddleware<ApiIntercept>();                      
 
             //logger.LogInformation("ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}", app.Environment.EnvironmentName);
 
@@ -80,52 +71,19 @@ namespace raspapi
 
             if (app.Environment.IsDevelopment())
             {
-                _ = Task.Factory.StartNew(() =>
-                {
-                    while (true)
-                    {
-                        
-                        if (Console.ReadLine() == "INFO")
-                        {
-                            logger.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}",app.Environment.EnvironmentName);
-                            logger.LogInformation("APPICATION_NAME:{ApplicationName}",app.Environment.ApplicationName);
-                            logger.LogInformation("WEB_ROOT_PATH:{WebRootPath}", app.Environment.WebRootPath);
-                            string hostName = System.Net.Dns.GetHostName();
-                            var urls = app.Urls;
+                // foreach (var t in builder.Configuration.AsEnumerable())
+                // {
+                //     logger.LogInformation($"Key:Value::{{Key}}:{{Value}}", t.Key, t.Value);
+                // }
 
-                            var endpoints = app
-                            .Services
-                            .GetServices<EndpointDataSource>()
-                            .SelectMany(x => x!.Endpoints);
+                //app.MapOpenApi();
+                //app.MapScalarApiReference();
 
-                            logger.LogInformation($"ENDPOINTS:");
-
-                            foreach (var endpoint in endpoints)
-                            {
-                                if (endpoint is RouteEndpoint routeEndpoint)
-                                {
-                                    var url = urls.FirstOrDefault();
-                                    logger.LogInformation("ENDPOINT:{url}/{RawText}", url, routeEndpoint.RoutePattern.RawText);
-                                }
-
-                                var routeNameMetadata = endpoint.Metadata.OfType<Microsoft.AspNetCore.Routing.RouteNameMetadata>().FirstOrDefault();
-                                var routName = routeNameMetadata?.RouteName;
-
-                                var httpMethodsMetadata = endpoint.Metadata.OfType<HttpMethodMetadata>().FirstOrDefault();
-                                var httpMethods = httpMethodsMetadata?.HttpMethods;
-
-                            }
-
-
-                        }
-
-                    }
-
-                });
+                RunCommandLineTask(app, logger);
             }
 
             //AssemblyName[] names = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
-
+            
             _ = app.Lifetime.ApplicationStopped.Register(() =>
             {
 
@@ -133,23 +91,8 @@ namespace raspapi
                 {
                     // Wait on all calls to complete before shut down.
                     gpioSemaphore?.Wait();
-                    SendLogMessage("Checking for Open Pins....");
-
-                    foreach (var pin in pins)
-                    {
-                        SendLogMessage($"Checking Pin {pin.Key}");
-                        if (gpioController.IsPinOpen(pin.Value.Pin))
-                        {
-                            SendLogMessage($"Pin {pin.Key} Open");
-                            SendLogMessage($"Turning Off and Closing Pin {pin.Key}");
-                            gpioController.Write(pin.Value.Pin, PinValue.Low);
-                            gpioController.ClosePin(pin.Value.Pin);
-                        }
-                        else
-                        {
-                            SendLogMessage($"Pin {pin.Key} not Open");
-                        }
-                    }
+                    SendLogMessage("Turning off and closing gpio pins....");
+                    gpioController.CloseGpioPin([.. pins.Values]);
                 }
                 catch (Exception ex)
                 {
@@ -163,6 +106,77 @@ namespace raspapi
             });
 
             app.Run();
+        }
+
+        /*For debugging in development*/
+        private static void RunCommandLineTask(WebApplication app, ILogger<Program> _logger)
+        {
+            _ = Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    var command = Console.ReadLine();
+
+                    if (command!.Equals("INFO", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        _logger.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}", app.Environment.EnvironmentName);
+                        _logger.LogInformation("APPICATION_NAME:{ApplicationName}", app.Environment.ApplicationName);
+                        _logger.LogInformation("WEB_ROOT_PATH:{WebRootPath}", app.Environment.WebRootPath);
+                        var urls = app.Urls;
+                        //List<Uri> uris = [];
+
+                        //foreach (var val in urls)
+                        //{
+                        //    uris.Add(new Uri(val));
+                        //}
+
+                        var endpoints = app
+                        .Services
+                        .GetServices<EndpointDataSource>()
+                        .SelectMany(x => x!.Endpoints);
+
+                        _logger.LogInformation($"ENDPOINTS:");
+
+                        foreach (var endpoint in endpoints)
+                        {
+                            if (endpoint is RouteEndpoint routeEndpoint)
+                            {
+                                var url = urls.FirstOrDefault();
+                                var routepatternrawtext = routeEndpoint.RoutePattern.RawText;
+
+                                if (routepatternrawtext!.StartsWith('/'))
+                                    _logger.LogInformation("ENDPOINT:{url}{RawText}", url, routepatternrawtext);
+                                else
+                                    _logger.LogInformation("ENDPOINT:{url}/{RawText}", url, routepatternrawtext);
+
+                            }
+
+                            //Uri myUri = new(urls.FirstOrDefault()!);
+
+                            var routeNameMetadata = endpoint.Metadata.OfType<RouteNameMetadata>().FirstOrDefault();
+                            var routName = routeNameMetadata?.RouteName;
+
+                            var httpMethodsMetadata = endpoint.Metadata.OfType<HttpMethodMetadata>().FirstOrDefault();
+                            var httpMethods = httpMethodsMetadata?.HttpMethods;
+                        }
+
+                        var properties = IPGlobalProperties.GetIPGlobalProperties();
+                        var httpConnections = from connection in properties.GetActiveTcpConnections()
+                                                   where connection.LocalEndPoint.Port == new Uri(urls.FirstOrDefault()!).Port
+                                                   select connection;
+
+                        _logger.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
+
+                    }
+
+                    if (command == "QUIT")
+                    {
+                        app.StopAsync();
+                    }
+
+                }
+
+            });
         }
 
         private static void SendLogMessage(string message)

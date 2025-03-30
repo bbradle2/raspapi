@@ -3,7 +3,7 @@ namespace raspapi.Utils
     using System.Text;
     using System.Text.Json;
     using raspapi.DataObjects;
-    using raspapi.Extensions;
+    using raspapi.StringExtensions;
 
     public static class DataUtils
     {

@@ -7,62 +7,30 @@ namespace raspapi.Controllers
     using raspapi.Interfaces;
     using raspapi.Constants.RaspberryPIConstants;
     using System.ComponentModel.DataAnnotations;
+    using Nextended.Core.Extensions;
+    using Nextended.Core.Helper;
+    using raspapi.Utils;
+    using raspapi.Extensions;
 
-    [ApiController]
     [Route("[controller]")]
-    public class RaspberryPiGpioController: ControllerBase
+    [ApiController]
+    public class RaspberryPiGpioController : ControllerBase
     {
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
-        private readonly IDictionary<int, IGpioPin> _pins;
+        private readonly IDictionary<int, IGpioPin> _ledpins;
         private readonly SemaphoreSlim _semaphoreGpioController;
 
-        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IGpioPin> pins, [FromKeyedServices(MiscConstants.gpioSemaphoreName)] SemaphoreSlim semaphoreGpioController)
+        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IGpioPin> ledpins, [FromKeyedServices(MiscConstants.gpioSemaphoreName)] SemaphoreSlim semaphoreGpioController)
         {
             _logger = logger;
             _gpioController = gpioController;
-            _pins = pins;
+            _ledpins = ledpins;
             _semaphoreGpioController = semaphoreGpioController;
 
         }
 
-        [HttpGet("GetLedStatus")]
-        public async Task<IActionResult?> GetLedStatus()
-        {
-            try
-            {
-                ArgumentNullException.ThrowIfNull(_semaphoreGpioController);
-                ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_pins);
-                ArgumentNullException.ThrowIfNull(_logger);
-
-                await _semaphoreGpioController.WaitAsync();              
-
-                var openPin23 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN23].Pin, PinMode.Output);
-                var openPin24 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN24].Pin, PinMode.Output);
-                var openPin25 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN25].Pin, PinMode.Output);
-
-                _pins[GpioPinConstants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinConstants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinConstants.PIN25].Status = openPin25.Read() == 1 ? "On" : "Off";
-
-                return Ok(_pins);
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical("{Message}", e.Message);
-                return BadRequest(e.Message);
-            } 
-            finally 
-            {
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN23].Pin);
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN24].Pin);
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN25].Pin);
-
-                _semaphoreGpioController.Release();
-            }
-        }
-
+        
         [HttpPut("SetLedOn")]
         public async Task<IActionResult?> SetLedOn()
         {
@@ -70,24 +38,15 @@ namespace raspapi.Controllers
             {
                 ArgumentNullException.ThrowIfNull(_semaphoreGpioController);
                 ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_pins);
+                ArgumentNullException.ThrowIfNull(_ledpins);
                 ArgumentNullException.ThrowIfNull(_logger);
 
                 await _semaphoreGpioController.WaitAsync();
 
-                var openPin23 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN23].Pin, PinMode.Output);
-                var openPin24 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN24].Pin, PinMode.Output);
-                var openPin25 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN25].Pin, PinMode.Output);
+                _gpioController.OpenGpioPinOutput([.. _ledpins.Values]);
+                _gpioController.GpioPinWriteHighValue([.. _ledpins.Values]);
 
-                _gpioController.Write(_pins[GpioPinConstants.PIN23].Pin, PinValue.High);
-                _gpioController.Write(_pins[GpioPinConstants.PIN24].Pin, PinValue.High);
-                _gpioController.Write(_pins[GpioPinConstants.PIN25].Pin, PinValue.High);
-
-                _pins[GpioPinConstants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinConstants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinConstants.PIN25].Status = openPin25.Read() == 1 ? "On" : "Off";
-
-                return Ok(_pins);
+                return Ok(_ledpins);
 
             }
             catch (Exception e)
@@ -97,58 +56,38 @@ namespace raspapi.Controllers
             }
             finally
             {
+
+                //_gpioController.CloseGpioPins([.. _pins.Values]);
+
                 _semaphoreGpioController.Release();
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN23].Pin);
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN24].Pin);
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN25].Pin);
             }
         }
 
-        [HttpPut("BlinkLed")]
-        public async Task<IActionResult?> BlinkLed()
+        [HttpPut("BlinkLeds")]
+        public async Task<IActionResult?> BlinkLeds()
         {
             try
             {
                 ArgumentNullException.ThrowIfNull(_semaphoreGpioController);
                 ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_pins);
+                ArgumentNullException.ThrowIfNull(_ledpins);
                 ArgumentNullException.ThrowIfNull(_logger);
-
 
                 await _semaphoreGpioController.WaitAsync();
 
-                var openPin23 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN23].Pin, PinMode.Output);
-                var openPin24 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN24].Pin, PinMode.Output);
-                var openPin25 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN25].Pin, PinMode.Output);
+                _gpioController.GpioPinWriteLowValue([.. _ledpins.Values]);
+                await Task.Delay(500);
 
+                _gpioController.GpioPinWriteHighValue([.. _ledpins.Values]);
+                await Task.Delay(500);
 
-                _gpioController.Write(_pins[GpioPinConstants.PIN23].Pin, PinValue.High);
-                _gpioController.Write(_pins[GpioPinConstants.PIN24].Pin, PinValue.High);
-                _gpioController.Write(_pins[GpioPinConstants.PIN25].Pin, PinValue.High);
-                await Task.Delay(2000);
+                _gpioController.GpioPinWriteLowValue([.. _ledpins.Values]);
+                await Task.Delay(500);
 
-                _gpioController.Write(_pins[GpioPinConstants.PIN23].Pin, PinValue.Low);
-                _gpioController.Write(_pins[GpioPinConstants.PIN24].Pin, PinValue.Low);
-                _gpioController.Write(_pins[GpioPinConstants.PIN25].Pin, PinValue.Low);
-                await Task.Delay(2000);
-
-
-                _gpioController.Write(_pins[GpioPinConstants.PIN23].Pin, PinValue.High);
-                _gpioController.Write(_pins[GpioPinConstants.PIN24].Pin, PinValue.High);
-                _gpioController.Write(_pins[GpioPinConstants.PIN25].Pin, PinValue.High);
-                await Task.Delay(2000);
-
-                _gpioController.Write(_pins[GpioPinConstants.PIN23].Pin, PinValue.Low);
-                _gpioController.Write(_pins[GpioPinConstants.PIN24].Pin, PinValue.Low);
-                _gpioController.Write(_pins[GpioPinConstants.PIN25].Pin, PinValue.Low);
-                await Task.Delay(2000);
-
-
-                _pins[GpioPinConstants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinConstants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinConstants.PIN25].Status = openPin25.Read() == 1 ? "On" : "Off";
-
-                return Ok(_pins);
+                _gpioController.GpioPinWriteHighValue([.. _ledpins.Values]);                             
+                await Task.Delay(500);
+                
+                return Ok(_ledpins);
 
             }
             catch (Exception e)
@@ -158,10 +97,8 @@ namespace raspapi.Controllers
             }
             finally
             {
+                //_gpioController.CloseGpioPins([.. _pins.Values]);
                 _semaphoreGpioController.Release();
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN23].Pin);
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN24].Pin);
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN25].Pin);
             }
         }
 
@@ -172,36 +109,25 @@ namespace raspapi.Controllers
             {
                 ArgumentNullException.ThrowIfNull(_semaphoreGpioController);
                 ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_pins);
+                ArgumentNullException.ThrowIfNull(_ledpins);
                 ArgumentNullException.ThrowIfNull(_logger);
 
                 await _semaphoreGpioController.WaitAsync();
 
-                var openPin23 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN23].Pin, PinMode.Output);
-                var openPin24 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN24].Pin, PinMode.Output);
-                var openPin25 = _gpioController.OpenPin(_pins[GpioPinConstants.PIN25].Pin, PinMode.Output);
-
-                _gpioController.Write(_pins[GpioPinConstants.PIN23].Pin, PinValue.Low);
-                _gpioController.Write(_pins[GpioPinConstants.PIN24].Pin, PinValue.Low);
-                _gpioController.Write(_pins[GpioPinConstants.PIN25].Pin, PinValue.Low);
-
-                _pins[GpioPinConstants.PIN23].Status = openPin23.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinConstants.PIN24].Status = openPin24.Read() == 1 ? "On" : "Off";
-                _pins[GpioPinConstants.PIN25].Status = openPin25.Read() == 1 ? "On" : "Off";
-
-                return Ok(_pins);
+                _gpioController.OpenGpioPinOutput([.. _ledpins.Values]);
+                _gpioController.GpioPinWriteLowValue([.. _ledpins.Values]);
+             
+                return Ok(_ledpins);
             }
             catch (Exception e)
             {
                 _logger.LogCritical("{Message}", e.Message);
                 return BadRequest(e.Message);
-            } 
-            finally 
+            }
+            finally
             {
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN23].Pin);
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN24].Pin);
-                _gpioController.ClosePin(_pins[GpioPinConstants.PIN25].Pin);
-                
+                //_gpioController.CloseGpioPins([.. _pins.Values]);
+               
                 _semaphoreGpioController.Release();
             }
         }

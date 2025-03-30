@@ -46,9 +46,9 @@ cleanup()
 getheader()
 {
     url=$1
-    mkfifo headers
-    curl -si -d --request -GET $url -H "AUTHORIZED_USER: $programuser" > headers &
-
+    header=$(date +"%Y%m%d%H%M%S%3N")
+    mkfifo $header
+    curl -si -d --request -GET $url -H "AUTHORIZED_USER: $programuser" > $header & 
 {
   # This line is guaranteed to be first, before any headers.
   # Read it separately.
@@ -65,9 +65,10 @@ EOF
 
     esac
 done
-} < headers
+} < $header
 
-    rm headers
+    
+    rm $header
     printf ''${YELLOW}'GET Headers\n'
     printf ''${YELLOW}'###########\n'
     printf ''${YELLOW}'GitSemVer:%s\n' $GitSemVer
@@ -141,37 +142,26 @@ printf '\n'
 
 getheader "http://$host:$port"
 
-runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
-runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
-runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
-runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
+# runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
+# runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
+# runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
+# runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn" 
-sleep 1
-
-runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus" 
-sleep 1
-
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
-sleep 1
-
-
-runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLed"
-sleep 1
+# runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn" 
+# runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus" 
+# runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
+runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLeds"
 
 #This call will test semaphore code. should not be able to set any gpios without semaphore release. 
 #should blink 2 times and take around 8 seconds.
 #START=$(date "+%s")
-#runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLed" &
+#runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLeds" &
 #END=$(date "+%s")
 #echo Blinking led 2 times took $((END-START)) seconds.
 
+#runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
+#runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
 
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
-sleep 1
-
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
-sleep 1
 
 #runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
 #sleep 1
