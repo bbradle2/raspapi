@@ -81,8 +81,9 @@ runtest()
     verb=$1
     url=$2
     printf "${GREEN}Calling $verb $url\n"
+    jsondata='[{"pinNumber":23},{"pinNumber":24},{"pinNumber":25}]'
 
-    resp=$(curl -s -X $verb $url -H "AUTHORIZED_USER: $programuser")
+    resp=$(curl -s -X  $verb $url -H 'Content-Type: application/json; charset=UTF-8' -H "AUTHORIZED_USER: $programuser" -d $jsondata )
     #jobs_running=($(jobs -l | grep Running | awk '{print $2}'))
 
     if [[ "$resp" == "" ]]; 
@@ -147,10 +148,14 @@ getheader "http://$host:$port"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
-# runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn" 
-# runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus" 
-# runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
+sleep 1
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
+sleep 1
 runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLeds"
+sleep 1
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
+sleep 1
 
 #This call will test semaphore code. should not be able to set any gpios without semaphore release. 
 #should blink 2 times and take around 8 seconds.

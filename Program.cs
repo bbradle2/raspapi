@@ -1,15 +1,9 @@
 ﻿using System.Device.Gpio;
 using raspapi.Constants.RaspberryPIConstants;
-using raspapi.DataObjects;
-using raspapi.Interfaces;
 using System.Net.NetworkInformation;
 using Scalar.AspNetCore;
 using raspapi.Intercepts;
 
-
-//using System.Runtime.InteropServices;
-using Nextended.Core;
-using raspapi.Extensions;
 //using System.ComponentModel.DataAnnotations;
 
 namespace raspapi
@@ -34,19 +28,13 @@ namespace raspapi
            
             builder.Services.AddOpenApi();
             builder.Logging.AddConsole();
-           
-            builder.Services.AddSingleton<MyGpioPin23>();
-            builder.Services.AddSingleton<MyGpioPin24>();
+
             builder.Services.AddSingleton<GpioController>();
-            builder.Services.AddSingleton<Dictionary<int, IGpioPin>>();
             builder.Services.AddKeyedSingleton(MiscConstants.gpioSemaphoreName, new SemaphoreSlim(1, 1));
             
             builder.Services.AddControllers();
 
             var app = builder.Build();
-
-
-
            
             //var t = builder.Configuration["ASPNETCORE_URLS"];
 
@@ -54,57 +42,20 @@ namespace raspapi
 
             var gpioController = app.Services.GetRequiredService<GpioController>();
             
-            var pins = app.Services.GetRequiredService<Dictionary<int, IGpioPin>>(); 
-            pins.Add(GpioPinConstants.PIN23 , app.Services.GetRequiredService<MyGpioPin23>());
-            pins.Add(GpioPinConstants.PIN24, app.Services.GetRequiredService<MyGpioPin24>());
-
+            
             var gpioSemaphore = app.Services.GetRequiredKeyedService<SemaphoreSlim>(MiscConstants.gpioSemaphoreName);
-
             logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-            //if(app.Environment.IsProduction())
             app.UseMiddleware<ApiIntercept>();                      
-
-            //logger.LogInformation("ASPNETCORE_ENVIRONMENT:{app.Environment.EnvironmentName}", app.Environment.EnvironmentName);
-
             app.MapControllers();
 
             if (app.Environment.IsDevelopment())
             {
-                // foreach (var t in builder.Configuration.AsEnumerable())
-                // {
-                //     logger.LogInformation($"Key:Value::{{Key}}:{{Value}}", t.Key, t.Value);
-                // }
-
-                //app.MapOpenApi();
-                //app.MapScalarApiReference();
-
                 RunCommandLineTask(app, logger);
             }
 
             //AssemblyName[] names = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
             
-            _ = app.Lifetime.ApplicationStopped.Register(() =>
-            {
-
-                try
-                {
-                    // Wait on all calls to complete before shut down.
-                    gpioSemaphore?.Wait();
-                    SendLogMessage("Turning off and closing gpio pins....");
-                    gpioController.CloseGpioPin([.. pins.Values]);
-                }
-                catch (Exception ex)
-                {
-                    SendLogMessage($"Exception:  {ex.Message}");
-                }
-                finally
-                {
-                    gpioSemaphore?.Release();
-                    gpioSemaphore?.Dispose();
-                }
-            });
-
             app.Run();
         }
 
@@ -123,17 +74,11 @@ namespace raspapi
                         _logger.LogInformation("APPICATION_NAME:{ApplicationName}", app.Environment.ApplicationName);
                         _logger.LogInformation("WEB_ROOT_PATH:{WebRootPath}", app.Environment.WebRootPath);
                         var urls = app.Urls;
-                        //List<Uri> uris = [];
-
-                        //foreach (var val in urls)
-                        //{
-                        //    uris.Add(new Uri(val));
-                        //}
 
                         var endpoints = app
-                        .Services
-                        .GetServices<EndpointDataSource>()
-                        .SelectMany(x => x!.Endpoints);
+                                        .Services
+                                        .GetServices<EndpointDataSource>()
+                                        .SelectMany(x => x!.Endpoints);
 
                         _logger.LogInformation($"ENDPOINTS:");
 
@@ -150,8 +95,6 @@ namespace raspapi
                                     _logger.LogInformation("ENDPOINT:{url}/{RawText}", url, routepatternrawtext);
 
                             }
-
-                            //Uri myUri = new(urls.FirstOrDefault()!);
 
                             var routeNameMetadata = endpoint.Metadata.OfType<RouteNameMetadata>().FirstOrDefault();
                             var routName = routeNameMetadata?.RouteName;

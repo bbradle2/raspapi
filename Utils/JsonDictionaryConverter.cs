@@ -1,4 +1,4 @@
-namespace raspapi.JsonDictionaryConverter
+namespace raspapi.Utils
 {
     using System.Text.Json;
     using System.Text.Json.Serialization;
@@ -9,10 +9,7 @@ namespace raspapi.JsonDictionaryConverter
 
         public DictionaryInt32StringKeyValueConverter(JsonSerializerOptions options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            ArgumentNullException.ThrowIfNull(options);
 
             _intToStringConverter = (JsonConverter<KeyValuePair<int, string>>)options.GetConverter(typeof(KeyValuePair<int, string>));
 

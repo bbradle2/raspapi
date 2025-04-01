@@ -4,49 +4,58 @@ namespace raspapi.Controllers
     using System.Text.Json;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
-    using raspapi.Interfaces;
     using raspapi.Constants.RaspberryPIConstants;
     using System.ComponentModel.DataAnnotations;
-    using Nextended.Core.Extensions;
-    using Nextended.Core.Helper;
     using raspapi.Utils;
     using raspapi.Extensions;
+    using System.Linq;
+    using System.Text.Json.Nodes;
 
-    [Route("[controller]")]
     [ApiController]
+    [Route("[controller]")]
     public class RaspberryPiGpioController : ControllerBase
     {
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
-        private readonly IDictionary<int, IGpioPin> _ledpins;
         private readonly SemaphoreSlim _semaphoreGpioController;
 
-        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger, GpioController gpioController, Dictionary<int, IGpioPin> ledpins, [FromKeyedServices(MiscConstants.gpioSemaphoreName)] SemaphoreSlim semaphoreGpioController)
+        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
+                                         GpioController gpioController,
+                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] SemaphoreSlim semaphoreGpioController)
         {
             _logger = logger;
             _gpioController = gpioController;
-            _ledpins = ledpins;
             _semaphoreGpioController = semaphoreGpioController;
 
         }
 
-        
+
         [HttpPut("SetLedOn")]
-        public async Task<IActionResult?> SetLedOn()
+        public async Task<IActionResult?> SetLedOn(JsonArray pinNumbers)
         {
             try
             {
                 ArgumentNullException.ThrowIfNull(_semaphoreGpioController);
                 ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_ledpins);
                 ArgumentNullException.ThrowIfNull(_logger);
 
+
                 await _semaphoreGpioController.WaitAsync();
+                JsonNode[] nodePins = [.. pinNumbers.ToArray()!];
+                List<int> pins = [];
 
-                _gpioController.OpenGpioPinOutput([.. _ledpins.Values]);
-                _gpioController.GpioPinWriteHighValue([.. _ledpins.Values]);
+                foreach (var n in pinNumbers)
+                {
+                    var pinObject = n!.AsObject();
+                    var pinNumber = pinObject["pinNumber"];
+                    var s = pinNumber!.GetValue<int>();
+                    pins.Add(s);
+                }
 
-                return Ok(_ledpins);
+                _gpioController.GpioPinWriteHighValue([.. pins]);
+
+                return Ok(pinNumbers);
+
 
             }
             catch (Exception e)
@@ -56,38 +65,46 @@ namespace raspapi.Controllers
             }
             finally
             {
-
-                //_gpioController.CloseGpioPins([.. _pins.Values]);
-
                 _semaphoreGpioController.Release();
             }
         }
 
         [HttpPut("BlinkLeds")]
-        public async Task<IActionResult?> BlinkLeds()
+        public async Task<IActionResult?> BlinkLeds(JsonArray pinNumbers)
         {
             try
             {
                 ArgumentNullException.ThrowIfNull(_semaphoreGpioController);
                 ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_ledpins);
                 ArgumentNullException.ThrowIfNull(_logger);
 
                 await _semaphoreGpioController.WaitAsync();
 
-                _gpioController.GpioPinWriteLowValue([.. _ledpins.Values]);
-                await Task.Delay(500);
+                JsonNode[] nodePins = [.. pinNumbers.ToArray()!];
+                List<int> pins = [];
 
-                _gpioController.GpioPinWriteHighValue([.. _ledpins.Values]);
-                await Task.Delay(500);
+                foreach (var n in pinNumbers)
+                {
+                    var pinObject = n!.AsObject();
+                    var pinNumber = pinObject["pinNumber"];
+                    var s = pinNumber!.GetValue<int>();
+                    pins.Add(s);
+                }
 
-                _gpioController.GpioPinWriteLowValue([.. _ledpins.Values]);
-                await Task.Delay(500);
-
-                _gpioController.GpioPinWriteHighValue([.. _ledpins.Values]);                             
-                await Task.Delay(500);
                 
-                return Ok(_ledpins);
+                _gpioController.GpioPinWriteHighValue([.. pins]);
+                await Task.Delay(500);
+
+                _gpioController.GpioPinWriteLowValue([.. pins]);
+                await Task.Delay(500);
+
+                _gpioController.GpioPinWriteHighValue([.. pins]);
+                await Task.Delay(500);
+
+                _gpioController.GpioPinWriteLowValue([.. pins]);
+                await Task.Delay(500);
+
+                return Ok(pinNumbers);
 
             }
             catch (Exception e)
@@ -97,27 +114,36 @@ namespace raspapi.Controllers
             }
             finally
             {
-                //_gpioController.CloseGpioPins([.. _pins.Values]);
                 _semaphoreGpioController.Release();
             }
         }
 
         [HttpPut("SetLedOff")]
-        public async Task<IActionResult?> SetLedOff()
+        public async Task<IActionResult?> SetLedOff(JsonArray pinNumbers)
         {
             try
             {
                 ArgumentNullException.ThrowIfNull(_semaphoreGpioController);
                 ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_ledpins);
                 ArgumentNullException.ThrowIfNull(_logger);
 
                 await _semaphoreGpioController.WaitAsync();
+                JsonNode[] nodePins = [.. pinNumbers.ToArray()!];
+                List<int> pins = [];
 
-                _gpioController.OpenGpioPinOutput([.. _ledpins.Values]);
-                _gpioController.GpioPinWriteLowValue([.. _ledpins.Values]);
-             
-                return Ok(_ledpins);
+                foreach (var n in pinNumbers)
+                {
+                    var pinObject = n!.AsObject();
+                    var pinNumber = pinObject["pinNumber"];
+                    var s = pinNumber!.GetValue<int>();
+                    pins.Add(s);
+                }
+
+                _gpioController.GpioPinWriteLowValue([.. pins]);
+
+                return Ok(pinNumbers);
+
+               
             }
             catch (Exception e)
             {
@@ -126,8 +152,6 @@ namespace raspapi.Controllers
             }
             finally
             {
-                //_gpioController.CloseGpioPins([.. _pins.Values]);
-               
                 _semaphoreGpioController.Release();
             }
         }
