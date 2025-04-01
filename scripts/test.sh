@@ -81,11 +81,13 @@ runtest()
     verb=$1
     url=$2
     printf "${GREEN}Calling $verb $url\n"
-    jsondata='[{"pinNumber":23},{"pinNumber":24},{"pinNumber":25}]'
+    #jsondata='[{"pinNumber":23},{"pinNumber":24},{"pinNumber":25}]'
 
-    resp=$(curl -s -X  $verb $url -H 'Content-Type: application/json; charset=UTF-8' -H "AUTHORIZED_USER: $programuser" -d $jsondata )
-    #jobs_running=($(jobs -l | grep Running | awk '{print $2}'))
-
+    pins='[23,24,25,26]'
+    #pins='[]'
+    
+    
+    resp=$(curl -s -X  $verb $url -H 'Content-Type: application/json; charset=UTF-8' -H "AUTHORIZED_USER: $programuser" -d $pins )
     if [[ "$resp" == "" ]]; 
     then
         printf ''${RED}'Status: Fail\n'
@@ -108,6 +110,11 @@ runtest()
     then
         printf ''${RED}'Status: Fail\n'
         printf '%s' $resp | jq .
+
+    elif [[ "$resp" == *"417 No Pins Selected"*  ]]; 
+    then
+        printf ''${YELLOW}'Status: Warning\n'
+        printf '417 No Pins Selected\n'
 
     else
         printf ''${GREEN}'Status: Success\n'

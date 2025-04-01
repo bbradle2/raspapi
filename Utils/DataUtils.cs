@@ -2,6 +2,8 @@ namespace raspapi.Utils
 {
     using System.Text;
     using System.Text.Json;
+    using System.Text.Json.Nodes;
+    using Microsoft.AspNetCore.Http;
     using raspapi.DataObjects;
     using raspapi.StringExtensions;
 
@@ -12,9 +14,21 @@ namespace raspapi.Utils
         private static readonly SemaphoreSlim _semSysInfo = new(1, 1);
         private static readonly SemaphoreSlim _semTemperatureInfo = new(1, 1);
         private static readonly SemaphoreSlim _semCpuInfo = new(1, 1);
+       
+        public static int[] ToIntArray(JsonArray pinNumbers)
+        {
+            List<int> pins = [];
 
+            foreach (var pin in pinNumbers)
+            {
+                var pinValue = pin!.GetValue<int>();
+                pins.Add(pinValue);
+            }
+
+            return [.. pins];
+        }
         
-        public static async Task<MemoryInfoObject> PopulateMemoryInfoAsync(string ProductName,string Description,string Delimeter = ":")
+        public static async Task<MemoryInfoObject> PopulateMemoryInfoAsync(string ProductName, string Description, string Delimeter = ":")
         {
             try
             {
@@ -64,12 +78,12 @@ namespace raspapi.Utils
                 };
 
                 return memInfoObject;
-            } 
+            }
             catch
             {
                 throw;
-            } 
-            finally 
+            }
+            finally
             {
                 _semMemInfo.Release();
             }

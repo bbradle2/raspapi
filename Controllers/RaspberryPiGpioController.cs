@@ -29,7 +29,7 @@ namespace raspapi.Controllers
 
         }
 
-
+        
         [HttpPut("SetLedOn")]
         public async Task<IActionResult?> SetLedOn(JsonArray pinNumbers)
         {
@@ -41,16 +41,13 @@ namespace raspapi.Controllers
 
 
                 await _semaphoreGpioController.WaitAsync();
-                JsonNode[] nodePins = [.. pinNumbers.ToArray()!];
-                List<int> pins = [];
 
-                foreach (var n in pinNumbers)
+                if (pinNumbers.Count < 1)
                 {
-                    var pinObject = n!.AsObject();
-                    var pinNumber = pinObject["pinNumber"];
-                    var s = pinNumber!.GetValue<int>();
-                    pins.Add(s);
+                    return StatusCode(StatusCodes.Status417ExpectationFailed, "417 No Pins Selected.");
                 }
+
+                var pins = DataUtils.ToIntArray(pinNumbers);
 
                 _gpioController.GpioPinWriteHighValue([.. pins]);
 
@@ -80,18 +77,13 @@ namespace raspapi.Controllers
 
                 await _semaphoreGpioController.WaitAsync();
 
-                JsonNode[] nodePins = [.. pinNumbers.ToArray()!];
-                List<int> pins = [];
-
-                foreach (var n in pinNumbers)
+                if (pinNumbers.Count < 1)
                 {
-                    var pinObject = n!.AsObject();
-                    var pinNumber = pinObject["pinNumber"];
-                    var s = pinNumber!.GetValue<int>();
-                    pins.Add(s);
+                    return StatusCode(StatusCodes.Status417ExpectationFailed, "417 No Pins Selected.");
                 }
 
-                
+                var pins = DataUtils.ToIntArray(pinNumbers);
+
                 _gpioController.GpioPinWriteHighValue([.. pins]);
                 await Task.Delay(500);
 
@@ -128,19 +120,15 @@ namespace raspapi.Controllers
                 ArgumentNullException.ThrowIfNull(_logger);
 
                 await _semaphoreGpioController.WaitAsync();
-                JsonNode[] nodePins = [.. pinNumbers.ToArray()!];
-                List<int> pins = [];
 
-                foreach (var n in pinNumbers)
+                if (pinNumbers.Count < 1)
                 {
-                    var pinObject = n!.AsObject();
-                    var pinNumber = pinObject["pinNumber"];
-                    var s = pinNumber!.GetValue<int>();
-                    pins.Add(s);
+                    return StatusCode(StatusCodes.Status417ExpectationFailed, "417 No Pins Selected.");
                 }
 
+                var pins = DataUtils.ToIntArray(pinNumbers);
                 _gpioController.GpioPinWriteLowValue([.. pins]);
-
+               
                 return Ok(pinNumbers);
 
                
