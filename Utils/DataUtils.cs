@@ -15,7 +15,7 @@ namespace raspapi.Utils
         private static readonly SemaphoreSlim _semTemperatureInfo = new(1, 1);
         private static readonly SemaphoreSlim _semCpuInfo = new(1, 1);
        
-        public static int[] ToIntArray(JsonArray pinNumbers)
+        public static int[] JsonArrayToIntArray(JsonArray pinNumbers)
         {
             List<int> pins = [];
 
@@ -25,7 +25,8 @@ namespace raspapi.Utils
                 pins.Add(pinValue);
             }
 
-            return [.. pins];
+            var p = pins.DistinctBy(s => s);
+            return [.. p];
         }
         
         public static async Task<MemoryInfoObject> PopulateMemoryInfoAsync(string ProductName, string Description, string Delimeter = ":")

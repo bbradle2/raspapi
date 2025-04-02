@@ -17,11 +17,11 @@ namespace raspapi.Controllers
     {
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
-        private readonly SemaphoreSlim _semaphoreGpioController;
+        private readonly BinarySemaphoreSlim _semaphoreGpioController;
 
         public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
                                          GpioController gpioController,
-                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] SemaphoreSlim semaphoreGpioController)
+                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] BinarySemaphoreSlim semaphoreGpioController)
         {
             _logger = logger;
             _gpioController = gpioController;
@@ -31,7 +31,7 @@ namespace raspapi.Controllers
 
         
         [HttpPut("SetLedOn")]
-        public async Task<IActionResult?> SetLedOn(JsonArray pinNumbers)
+        public async Task<IActionResult?> SetLedOn(int[] pinNumbers)
         {
             try
             {
@@ -39,19 +39,18 @@ namespace raspapi.Controllers
                 ArgumentNullException.ThrowIfNull(_gpioController);
                 ArgumentNullException.ThrowIfNull(_logger);
 
-
                 await _semaphoreGpioController.WaitAsync();
 
-                if (pinNumbers.Count < 1)
+                var pins = pinNumbers.DistinctBy(s => s);
+                
+                if (!pins.Any())
                 {
-                    return StatusCode(StatusCodes.Status417ExpectationFailed, "417 No Pins Selected.");
+                    return UnprocessableEntity(MiscConstants.Status422PinArrayIsEmpty);
                 }
-
-                var pins = DataUtils.ToIntArray(pinNumbers);
-
+                
                 _gpioController.GpioPinWriteHighValue([.. pins]);
 
-                return Ok(pinNumbers);
+                return Ok(pins);
 
 
             }
@@ -67,7 +66,7 @@ namespace raspapi.Controllers
         }
 
         [HttpPut("BlinkLeds")]
-        public async Task<IActionResult?> BlinkLeds(JsonArray pinNumbers)
+        public async Task<IActionResult?> BlinkLeds(int[] pinNumbers)
         {
             try
             {
@@ -77,13 +76,13 @@ namespace raspapi.Controllers
 
                 await _semaphoreGpioController.WaitAsync();
 
-                if (pinNumbers.Count < 1)
+                var pins = pinNumbers.DistinctBy(s => s);
+
+                if (!pins.Any())
                 {
-                    return StatusCode(StatusCodes.Status417ExpectationFailed, "417 No Pins Selected.");
+                    return UnprocessableEntity(MiscConstants.Status422PinArrayIsEmpty);
                 }
-
-                var pins = DataUtils.ToIntArray(pinNumbers);
-
+                
                 _gpioController.GpioPinWriteHighValue([.. pins]);
                 await Task.Delay(500);
 
@@ -96,7 +95,7 @@ namespace raspapi.Controllers
                 _gpioController.GpioPinWriteLowValue([.. pins]);
                 await Task.Delay(500);
 
-                return Ok(pinNumbers);
+                return Ok(pins);
 
             }
             catch (Exception e)
@@ -111,7 +110,7 @@ namespace raspapi.Controllers
         }
 
         [HttpPut("SetLedOff")]
-        public async Task<IActionResult?> SetLedOff(JsonArray pinNumbers)
+        public async Task<IActionResult?> SetLedOff(int[] pinNumbers)
         {
             try
             {
@@ -121,15 +120,16 @@ namespace raspapi.Controllers
 
                 await _semaphoreGpioController.WaitAsync();
 
-                if (pinNumbers.Count < 1)
-                {
-                    return StatusCode(StatusCodes.Status417ExpectationFailed, "417 No Pins Selected.");
-                }
+                var pins = pinNumbers.DistinctBy(s => s);
 
-                var pins = DataUtils.ToIntArray(pinNumbers);
+                if (!pins.Any())
+                {
+                    return UnprocessableEntity(MiscConstants.Status422PinArrayIsEmpty);
+                }               
+
                 _gpioController.GpioPinWriteLowValue([.. pins]);
-               
-                return Ok(pinNumbers);
+
+                return Ok(pins);
 
                
             }

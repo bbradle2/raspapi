@@ -3,6 +3,7 @@ using raspapi.Constants.RaspberryPIConstants;
 using System.Net.NetworkInformation;
 using Scalar.AspNetCore;
 using raspapi.Intercepts;
+using raspapi.Utils;
 
 //using System.ComponentModel.DataAnnotations;
 
@@ -30,7 +31,7 @@ namespace raspapi
             builder.Logging.AddConsole();
 
             builder.Services.AddSingleton<GpioController>();
-            builder.Services.AddKeyedSingleton(MiscConstants.gpioSemaphoreName, new SemaphoreSlim(1, 1));
+            builder.Services.AddKeyedSingleton<BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
             
             builder.Services.AddControllers();
 
@@ -43,7 +44,7 @@ namespace raspapi
             var gpioController = app.Services.GetRequiredService<GpioController>();
             
             
-            var gpioSemaphore = app.Services.GetRequiredKeyedService<SemaphoreSlim>(MiscConstants.gpioSemaphoreName);
+            var gpioSemaphore = app.Services.GetRequiredKeyedService<BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
             logger = app.Services.GetRequiredService<ILogger<Program>>();
 
             app.UseMiddleware<ApiIntercept>();                      

@@ -83,7 +83,7 @@ runtest()
     printf "${GREEN}Calling $verb $url\n"
     #jsondata='[{"pinNumber":23},{"pinNumber":24},{"pinNumber":25}]'
 
-    pins='[23,24,25,26]'
+    pins='[23]'
     #pins='[]'
     
     
@@ -111,10 +111,10 @@ runtest()
         printf ''${RED}'Status: Fail\n'
         printf '%s' $resp | jq .
 
-    elif [[ "$resp" == *"417 No Pins Selected"*  ]]; 
+    elif [[ "$resp" == *"422"*  ]]; 
     then
         printf ''${YELLOW}'Status: Warning\n'
-        printf '417 No Pins Selected\n'
+        printf '%s' $resp 
 
     else
         printf ''${GREEN}'Status: Success\n'
