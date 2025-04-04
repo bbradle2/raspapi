@@ -2,7 +2,7 @@
 #assign global variables
 port=5000
 programuser=$USER
-host="localhost"
+host="raspberrypi51"
 process_id=$!
 startservice=$1
 
@@ -80,10 +80,11 @@ runtest()
 {
     verb=$1
     url=$2
+    pins=$3
     printf "${GREEN}Calling $verb $url\n"
     #jsondata='[{"pinNumber":23},{"pinNumber":24},{"pinNumber":25}]'
 
-    pins='[23]'
+    #pins='[23,24]'
     #pins='[]'
     
     
@@ -155,14 +156,28 @@ getheader "http://$host:$port"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
+pinObjects='[{"pinNumber":23,"pinValue":null},{"pinNumber":24,"pinValue":null}]'
+
+runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus"  $pinObjects
 sleep 1
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsHigh" $pinObjects
 sleep 1
-runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLeds"
+runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
 sleep 1
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $pinObjects
 sleep 1
+runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
+sleep 1
+runtest PUT "http://$host:$port/RaspberryPiGpio/TogglePins" $pinObjects
+sleep 1
+runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
+sleep 1
+# runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" '[23,24]'
+# sleep 1
+# runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" '[23,24]'
+# sleep 1
+# runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" '[23,24]'
+# sleep 1
 
 #This call will test semaphore code. should not be able to set any gpios without semaphore release. 
 #should blink 2 times and take around 8 seconds.

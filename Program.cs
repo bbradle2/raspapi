@@ -4,6 +4,10 @@ using System.Net.NetworkInformation;
 using Scalar.AspNetCore;
 using raspapi.Intercepts;
 using raspapi.Utils;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Http.Metadata;
+
 
 //using System.ComponentModel.DataAnnotations;
 
@@ -19,12 +23,7 @@ namespace raspapi
         {
             AppDomain.CurrentDomain.ProcessExit += OnSigTerm;
             Console.CancelKeyPress += OnSigInt;
-            // PosixSignalRegistration.Create(PosixSignal.SIGCONT, (context) =>
-            // {
-            //     SendMessageToTerminal("Received SIGCONT");
-            // });
-
-           
+                      
             var builder = WebApplication.CreateBuilder(args);
            
             builder.Services.AddOpenApi();
@@ -37,26 +36,18 @@ namespace raspapi
 
             var app = builder.Build();
            
-            //var t = builder.Configuration["ASPNETCORE_URLS"];
-
             app.UseRouting();
-
-            var gpioController = app.Services.GetRequiredService<GpioController>();
-            
-            
-            var gpioSemaphore = app.Services.GetRequiredKeyedService<BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
+                       
             logger = app.Services.GetRequiredService<ILogger<Program>>();
-
-            app.UseMiddleware<ApiIntercept>();                      
+                                  
             app.MapControllers();
 
             if (app.Environment.IsDevelopment())
             {
+                app.UseMiddleware<ApiIntercept>();
                 RunCommandLineTask(app, logger);
             }
 
-            //AssemblyName[] names = Assembly.GetExecutingAssembly().GetReferencedAssemblies();
-            
             app.Run();
         }
 
@@ -67,9 +58,9 @@ namespace raspapi
             {
                 while (true)
                 {
-                    var command = Console.ReadLine();
+                    var command = Console.ReadLine()!.Trim();
 
-                    if (command!.Equals("INFO", StringComparison.CurrentCultureIgnoreCase))
+                    if (command!.Equals("INFO".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
                         _logger.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}", app.Environment.EnvironmentName);
                         _logger.LogInformation("APPICATION_NAME:{ApplicationName}", app.Environment.ApplicationName);
@@ -82,7 +73,7 @@ namespace raspapi
                                         .SelectMany(x => x!.Endpoints);
 
                         _logger.LogInformation($"ENDPOINTS:");
-
+                        
                         foreach (var endpoint in endpoints)
                         {
                             if (endpoint is RouteEndpoint routeEndpoint)
@@ -90,11 +81,20 @@ namespace raspapi
                                 var url = urls.FirstOrDefault();
                                 var routepatternrawtext = routeEndpoint.RoutePattern.RawText;
 
+
                                 if (routepatternrawtext!.StartsWith('/'))
                                     _logger.LogInformation("ENDPOINT:{url}{RawText}", url, routepatternrawtext);
                                 else
                                     _logger.LogInformation("ENDPOINT:{url}/{RawText}", url, routepatternrawtext);
 
+                            }
+
+                            foreach (var endpointMetadata in endpoint.Metadata)
+                            {
+                                if (endpointMetadata.GetType().ToString().Contains("httpget", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    Console.WriteLine(endpointMetadata.GetType().ToString());
+                                }
                             }
 
                             var routeNameMetadata = endpoint.Metadata.OfType<RouteNameMetadata>().FirstOrDefault();
@@ -106,20 +106,22 @@ namespace raspapi
 
                         var properties = IPGlobalProperties.GetIPGlobalProperties();
                         var httpConnections = from connection in properties.GetActiveTcpConnections()
-                                                   where connection.LocalEndPoint.Port == new Uri(urls.FirstOrDefault()!).Port
-                                                   select connection;
+                                              where connection.LocalEndPoint.Port == new Uri(urls.FirstOrDefault()!).Port
+                                              select connection;
 
                         _logger.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
 
                     }
 
-                    if (command == "QUIT")
+                    else if (command!.Equals("QUIT".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
                         app.StopAsync();
                     }
-
+                    else
+                    {
+                        _logger.LogWarning("Invalid command. Valid commands are quit or info");
+                    }
                 }
-
             });
         }
 

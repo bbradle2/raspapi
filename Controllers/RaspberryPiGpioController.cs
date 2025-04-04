@@ -1,15 +1,13 @@
 namespace raspapi.Controllers
 {
     using System.Device.Gpio;
-    using System.Text.Json;
-    using Microsoft.AspNetCore.Mvc;
+     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using raspapi.Constants.RaspberryPIConstants;
-    using System.ComponentModel.DataAnnotations;
     using raspapi.Utils;
     using raspapi.Extensions;
     using System.Linq;
-    using System.Text.Json.Nodes;
+    using raspapi.DataObjects;
 
     [ApiController]
     [Route("[controller]")]
@@ -17,121 +15,140 @@ namespace raspapi.Controllers
     {
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
-        private readonly BinarySemaphoreSlim _semaphoreGpioController;
+        private readonly BinarySemaphoreSlim _semaphoreGpio;
 
         public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
                                          GpioController gpioController,
-                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] BinarySemaphoreSlim semaphoreGpioController)
+                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] BinarySemaphoreSlim semaphoreGpio)
         {
             _logger = logger;
             _gpioController = gpioController;
-            _semaphoreGpioController = semaphoreGpioController;
+            _semaphoreGpio = semaphoreGpio;
+        }
 
+
+        [HttpPut("SetPinsHigh")]
+        public async Task<IActionResult?> SetPinsHigh(PinObject[] pinObjs)
+        {          
+    
+            try
+            {
+                ArgumentNullException.ThrowIfNull(_semaphoreGpio);
+                ArgumentNullException.ThrowIfNull(_gpioController);
+                ArgumentNullException.ThrowIfNull(_logger);
+                
+                await _semaphoreGpio.WaitAsync();
+
+                var pins = pinObjs.DistinctBy(s => s.PinNumber);
+                var pinsStatus = _gpioController.GpioPinWriteHighValue([.. pins]);
+                var pinsStatusArray = _gpioController.GetPinsStatusArray(pinsStatus);
+
+                return Ok(pinsStatusArray);
+
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical("{Message}", e.Message);
+                return BadRequest(e.Message);
+            }
+            finally
+            {
+                _semaphoreGpio.Release();
+            }
+        }
+
+        [HttpPut("TogglePins")]
+        public async Task<IActionResult?> TogglePins(PinObject[] pinNumbers)
+        {
+            try
+            {
+                ArgumentNullException.ThrowIfNull(_semaphoreGpio);
+                ArgumentNullException.ThrowIfNull(_gpioController);
+                ArgumentNullException.ThrowIfNull(_logger);
+
+                await _semaphoreGpio.WaitAsync();
+
+                var pins = pinNumbers.DistinctBy(s => s);
+                var pinsStatusArray = new List<PinObject>();
+
+                for (int i = 0; i < 2; i++)
+                {
+                    var pinsStatus = _gpioController.GpioPinWriteHighValue([.. pins]);
+                    pinsStatusArray = _gpioController.GetPinsStatusArray(pinsStatus);
+                    await Task.Delay(500);
+
+                    pinsStatus = _gpioController.GpioPinWriteLowValue([.. pins]);
+                    pinsStatusArray = _gpioController.GetPinsStatusArray(pinsStatus);
+                    await Task.Delay(500);
+
+                    
+
+                    
+                }
+
+                return Ok(pinsStatusArray);
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical("{Message}", e.Message);
+                return BadRequest(e.Message);
+            }
+            finally
+            {
+                _semaphoreGpio.Release();
+            }
+        }
+
+        [HttpPut("SetPinsLow")]
+        public async Task<IActionResult?> SetPinsLow(PinObject[] pinObjs)
+        {
+            try
+            {
+                ArgumentNullException.ThrowIfNull(_semaphoreGpio);
+                ArgumentNullException.ThrowIfNull(_gpioController);
+                ArgumentNullException.ThrowIfNull(_logger);
+
+                await _semaphoreGpio.WaitAsync();
+
+                var pins = pinObjs.DistinctBy(s => s.PinNumber);
+                var pinsStatus = _gpioController.GpioPinWriteLowValue([.. pins]);
+                var pinsStatusArray = _gpioController.GetPinsStatusArray(pinsStatus);
+
+                return Ok(pinsStatusArray);
+
+
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical("{Message}", e.Message);
+                return BadRequest(e.Message);
+            }
+            finally
+            {
+                _semaphoreGpio.Release();
+            }
         }
 
         
-        [HttpPut("SetLedOn")]
-        public async Task<IActionResult?> SetLedOn(int[] pinNumbers)
+        [HttpGet("GetPinsStatus")]
+        public async Task<IActionResult?> GetPinsStatus(PinObject[] pinObjs)
         {
             try
             {
-                ArgumentNullException.ThrowIfNull(_semaphoreGpioController);
+                ArgumentNullException.ThrowIfNull(_semaphoreGpio);
                 ArgumentNullException.ThrowIfNull(_gpioController);
                 ArgumentNullException.ThrowIfNull(_logger);
-
-                await _semaphoreGpioController.WaitAsync();
-
-                var pins = pinNumbers.DistinctBy(s => s);
-                
-                if (!pins.Any())
-                {
-                    return UnprocessableEntity(MiscConstants.Status422PinArrayIsEmpty);
-                }
-                
-                _gpioController.GpioPinWriteHighValue([.. pins]);
-
-                return Ok(pins);
-
-
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical("{Message}", e.Message);
-                return BadRequest(e.Message);
-            }
-            finally
-            {
-                _semaphoreGpioController.Release();
-            }
-        }
-
-        [HttpPut("BlinkLeds")]
-        public async Task<IActionResult?> BlinkLeds(int[] pinNumbers)
-        {
-            try
-            {
-                ArgumentNullException.ThrowIfNull(_semaphoreGpioController);
-                ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_logger);
-
-                await _semaphoreGpioController.WaitAsync();
-
-                var pins = pinNumbers.DistinctBy(s => s);
-
-                if (!pins.Any())
-                {
-                    return UnprocessableEntity(MiscConstants.Status422PinArrayIsEmpty);
-                }
-                
-                _gpioController.GpioPinWriteHighValue([.. pins]);
-                await Task.Delay(500);
-
-                _gpioController.GpioPinWriteLowValue([.. pins]);
-                await Task.Delay(500);
-
-                _gpioController.GpioPinWriteHighValue([.. pins]);
-                await Task.Delay(500);
-
-                _gpioController.GpioPinWriteLowValue([.. pins]);
-                await Task.Delay(500);
-
-                return Ok(pins);
-
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical("{Message}", e.Message);
-                return BadRequest(e.Message);
-            }
-            finally
-            {
-                _semaphoreGpioController.Release();
-            }
-        }
-
-        [HttpPut("SetLedOff")]
-        public async Task<IActionResult?> SetLedOff(int[] pinNumbers)
-        {
-            try
-            {
-                ArgumentNullException.ThrowIfNull(_semaphoreGpioController);
-                ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_logger);
-
-                await _semaphoreGpioController.WaitAsync();
-
-                var pins = pinNumbers.DistinctBy(s => s);
-
-                if (!pins.Any())
-                {
-                    return UnprocessableEntity(MiscConstants.Status422PinArrayIsEmpty);
-                }               
-
-                _gpioController.GpioPinWriteLowValue([.. pins]);
-
-                return Ok(pins);
-
                
+                await _semaphoreGpio.WaitAsync();
+
+                var pins = pinObjs.DistinctBy(s => s.PinNumber);               
+                var pinsStatus = _gpioController.GpioGetPinValue([.. pins]);
+                var pinsStatusArray = _gpioController.GetPinsStatusArray(pinsStatus);
+
+                return Ok(pinsStatusArray);
+
             }
             catch (Exception e)
             {
@@ -140,7 +157,7 @@ namespace raspapi.Controllers
             }
             finally
             {
-                _semaphoreGpioController.Release();
+                _semaphoreGpio.Release();
             }
         }
     }  

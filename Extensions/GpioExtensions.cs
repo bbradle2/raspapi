@@ -1,19 +1,20 @@
 namespace raspapi.Extensions
 {
     using System.Device.Gpio;
+    using raspapi.DataObjects;
 
-      public static class GpioExtensions
+    public static class GpioExtensions
     {
-        private static void CloseGpioPin(this GpioController gpioController, int pin)
+        private static void CloseGpioPin(this GpioController gpioController, PinObject pin)
         {
-            if (gpioController.IsPinOpen(pin))
+            if (gpioController.IsPinOpen(pin.PinNumber))
             {
                 gpioController.GpioPinWriteLowValue(pin);
-                gpioController.ClosePin(pin);
+                gpioController.ClosePin(pin.PinNumber);
             }
         }
 
-        public static void CloseGpioPin(this GpioController gpioController, int [] gpioPins)
+        public static void CloseGpioPin(this GpioController gpioController, PinObject[] gpioPins)
         {
             foreach (var gpioPin in gpioPins)
             {
@@ -21,15 +22,15 @@ namespace raspapi.Extensions
             }
         }
 
-        private static int OpenGpioPinOutput(this GpioController gpioController, int pin, PinMode pinMode = PinMode.Output)
+        private static PinObject OpenGpioPinOutput(this GpioController gpioController, PinObject pin, PinMode pinMode = PinMode.Output)
         {
-            if (!gpioController.IsPinOpen(pin))
-                gpioController.OpenPin(pin, pinMode);
+            if (!gpioController.IsPinOpen(pin.PinNumber))
+                gpioController!.OpenPin(pin.PinNumber, pinMode);
 
             return pin;
         }
 
-        public static int[] OpenGpioPinOutput(this GpioController gpioController, int[] gpioPins)
+        public static PinObject[] OpenGpioPinOutput(this GpioController gpioController, PinObject[] gpioPins)
         {
 
             foreach (var gpioPin in gpioPins)
@@ -40,14 +41,13 @@ namespace raspapi.Extensions
             return gpioPins;
         }
 
-
-        private static void OpenGpioPinInput(this GpioController gpioController, int pin, PinMode pinMode = PinMode.Input)
+        private static void OpenGpioPinInput(this GpioController gpioController, PinObject pin, PinMode pinMode = PinMode.Input)
         {
-            if (!gpioController.IsPinOpen(pin))
-                gpioController.OpenPin(pin, pinMode);
+            if (!gpioController.IsPinOpen(pin.PinNumber))
+                gpioController.OpenPin(pin.PinNumber, pinMode);
         }
 
-        public static void OpenGpioPinInput(this GpioController gpioController, int[] gpioPins)
+        public static void OpenGpioPinInput(this GpioController gpioController, PinObject[] gpioPins)
         {
             foreach (var gpioPin in gpioPins)
             {
@@ -55,14 +55,14 @@ namespace raspapi.Extensions
             }
         }
 
-        private static void OpenGpioPinInputPullDown(this GpioController gpioController, int pin, PinMode pinMode = PinMode.InputPullDown)
+        private static void OpenGpioPinInputPullDown(this GpioController gpioController, PinObject pin, PinMode pinMode = PinMode.InputPullDown)
         {
 
-            if (!gpioController.IsPinOpen(pin))
-                gpioController.OpenPin(pin, pinMode);
+            if (!gpioController.IsPinOpen(pin.PinNumber))
+                gpioController.OpenPin(pin.PinNumber, pinMode);
         }
 
-        public static void OpenGpioPinInputPullDown(this GpioController gpioController, int[] gpioPins)
+        public static void OpenGpioPinInputPullDown(this GpioController gpioController, PinObject[] gpioPins)
         {
             foreach (var gpioPin in gpioPins)
             {
@@ -70,14 +70,13 @@ namespace raspapi.Extensions
             }
         }
 
-
-        private static void OpenGpioPinInputPullUp(this GpioController gpioController, int pin, PinMode pinMode = PinMode.InputPullUp)
+        private static void OpenGpioPinInputPullUp(this GpioController gpioController, PinObject pin, PinMode pinMode = PinMode.InputPullUp)
         {
-            if (!gpioController.IsPinOpen(pin))
-                gpioController.OpenPin(pin, pinMode);
+            if (!gpioController.IsPinOpen(pin.PinNumber))
+                gpioController.OpenPin(pin.PinNumber, pinMode);
         }
 
-        public static void OpenGpioPinInputPullUp(this GpioController gpioController, int[] gpioPins)
+        public static void OpenGpioPinInputPullUp(this GpioController gpioController, PinObject[] gpioPins)
         {
             foreach (var gpioPin in gpioPins)
             {
@@ -85,16 +84,15 @@ namespace raspapi.Extensions
             }
         }
 
-
-        private static void GpioPinWriteLowValue(this GpioController gpioController, int pin)
+        private static bool GpioPinWriteLowValue(this GpioController gpioController, PinObject pin)
         {
-            if (gpioController.IsPinOpen(pin))
+            if (gpioController.IsPinOpen(pin.PinNumber))
             {
                 var status = gpioController.GpioGetPinValue(pin);
                 if (status != PinValue.Low)
                 {
-                    gpioController.Write(pin, PinValue.Low);
-                    
+                    gpioController.Write(pin.PinNumber, PinValue.Low);
+
                 }
             }
             else
@@ -103,30 +101,38 @@ namespace raspapi.Extensions
                 var status = gpioController.GpioGetPinValue(pin);
                 if (status != PinValue.Low)
                 {
-                    gpioController.Write(pin, PinValue.Low);
-                    
+                    gpioController.Write(pin.PinNumber, PinValue.Low);
+
                 }
             }
 
+            return false;
+
         }
 
-        public static void GpioPinWriteLowValue(this GpioController gpioController, int[] pins)
+        public static Dictionary<int, bool?> GpioPinWriteLowValue(this GpioController gpioController, PinObject[] pins)
         {
+
+            Dictionary<int, bool?> retVals = [];
 
             foreach (var pin in pins)
             {
-                gpioController.GpioPinWriteLowValue(pin);
+                var status = gpioController.GpioPinWriteLowValue(pin);
+                retVals.Add(pin.PinNumber, status);
             }
+
+            return retVals;
         }
 
-        private static void GpioPinWriteHighValue(this GpioController gpioController, int pin)
+        private static bool GpioPinWriteHighValue(this GpioController gpioController, PinObject pin)
         {
-            if (gpioController.IsPinOpen(pin))
+            if (gpioController.IsPinOpen(pin.PinNumber))
             {
                 var status = gpioController.GpioGetPinValue(pin);
                 if (status != PinValue.High)
                 {
-                    gpioController.Write(pin, PinValue.High);
+                    gpioController.Write(pin.PinNumber, PinValue.High);
+
                 }
             }
             else
@@ -135,46 +141,69 @@ namespace raspapi.Extensions
                 var status = gpioController.GpioGetPinValue(pin);
                 if (status != PinValue.High)
                 {
-                    gpioController.Write(pin, PinValue.High);
-                   
+                    gpioController.Write(pin.PinNumber, PinValue.High);
+
                 }
             }
 
-            
+
+            return true;
+
         }
 
-        public static void GpioPinWriteHighValue(this GpioController gpioController, int[] pins)
+        public static Dictionary<int, bool?> GpioPinWriteHighValue(this GpioController gpioController, PinObject[] pins)
         {
+            Dictionary<int, bool?> retVals = [];
+
             foreach (var pin in pins)
             {
-                gpioController.GpioPinWriteHighValue(pin);
+                var status = gpioController.GpioPinWriteHighValue(pin);
+                retVals.Add(pin.PinNumber, status);
             }
+
+            return retVals;
+
         }
 
-
-        private static bool? GpioGetPinValue(this GpioController gpioController, int pin)
+        private static bool? GpioGetPinValue(this GpioController gpioController, PinObject pin)
         {
-            if (gpioController.IsPinOpen(pin))
+            if (gpioController.IsPinOpen(pin.PinNumber))
             {
-                if (gpioController.Read(pin) == PinValue.High)
-                    return true;
+               
+                return gpioController.Read(pin.PinNumber) == PinValue.High ? true : false;
 
-                return false;
             }
 
-            return null;
+            return false;
         }
 
-        public static bool?[] GpioGetPinValue(this GpioController gpioController, int[] pins)
+        public static Dictionary<int, bool?> GpioGetPinValue(this GpioController gpioController, PinObject[] pins)
         {
-            List<bool?> retVals = [];
+            Dictionary<int, bool?> retVals = [];
             foreach (var pin in pins)
             {
-                retVals.Add(GpioGetPinValue(gpioController, pin));
+                retVals.Add(pin.PinNumber, GpioGetPinValue(gpioController, pin));
             }
 
-            return [.. retVals];
+            return retVals;
         }
+
+        public static List<PinObject> GetPinsStatusArray(this GpioController gpioController, Dictionary<int, bool?> pinStates)
+        {
+            List<PinObject> pinStatusArray = [];
+            foreach (KeyValuePair<int, bool?> kvp in pinStates)
+            {
+                PinObject pinObject = new()
+                {
+                    PinNumber = kvp.Key,
+                    PinValue = kvp.Value
+                };
+
+                pinStatusArray.Add(pinObject);
+            }
+            return pinStatusArray;
+        }
+
 
     }
 }

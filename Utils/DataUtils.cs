@@ -14,7 +14,8 @@ namespace raspapi.Utils
         private static readonly SemaphoreSlim _semSysInfo = new(1, 1);
         private static readonly SemaphoreSlim _semTemperatureInfo = new(1, 1);
         private static readonly SemaphoreSlim _semCpuInfo = new(1, 1);
-       
+
+        
         public static int[] JsonArrayToIntArray(JsonArray pinNumbers)
         {
             List<int> pins = [];
