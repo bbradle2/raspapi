@@ -4,7 +4,7 @@ namespace raspapi.Utils
     using System.Text.Json;
     using System.Text.Json.Nodes;
     using Microsoft.AspNetCore.Http;
-    using raspapi.DataObjects;
+    using raspapi.Models;
     using raspapi.StringExtensions;
 
     public static class DataUtils
@@ -15,7 +15,21 @@ namespace raspapi.Utils
         private static readonly SemaphoreSlim _semTemperatureInfo = new(1, 1);
         private static readonly SemaphoreSlim _semCpuInfo = new(1, 1);
 
-        
+        public static List<PinObject> JsonArrayToPinObjectArray(JsonArray pinNumbers)
+        {
+            List<PinObject> pins = [];
+
+            foreach (var pin in pinNumbers)
+            {
+                var pinNumber = pin![0]!.GetValue<int>();
+                var pinValue = pin![1]!.GetValue<bool>();
+                var pinObject = new PinObject { PinNumber = pinNumber, PinValue = pinValue };
+                pins.Add(pinObject);
+
+            }
+
+            return pins;
+        }
         public static int[] JsonArrayToIntArray(JsonArray pinNumbers)
         {
             List<int> pins = [];

@@ -149,7 +149,7 @@ printf 'Run Tests\n'
 printf '#########\n'
 printf '\n'
 
-getheader "http://$host:$port"
+#getheader "http://$host:$port"
 
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
@@ -158,26 +158,25 @@ getheader "http://$host:$port"
 
 pinObjects='[{"pinNumber":23,"pinValue":null},{"pinNumber":24,"pinValue":null}]'
 
-runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus"  $pinObjects
-sleep 1
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsHigh" $pinObjects
-sleep 1
-runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
-sleep 1
+# runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus"  $pinObjects
+# sleep 1
+#runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $pinObjects
+#sleep 1
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $pinObjects
-sleep 1
-runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
-sleep 1
-runtest PUT "http://$host:$port/RaspberryPiGpio/TogglePins" $pinObjects
-sleep 1
-runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
-sleep 1
-# runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" '[23,24]'
+#sleep 1
+#runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
+#sleep 1
+#runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $pinObjects
+#runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsHigh" $pinObjects
+#sleep 1
+#sleep 1
+#runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
 # sleep 1
-# runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" '[23,24]'
-# sleep 1
-# runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" '[23,24]'
-# sleep 1
+#runtest PUT "http://$host:$port/RaspberryPiGpio/TogglePins" $pinObjects
+#sleep 1
+#runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
+#sleep 1
+
 
 #This call will test semaphore code. should not be able to set any gpios without semaphore release. 
 #should blink 2 times and take around 8 seconds.

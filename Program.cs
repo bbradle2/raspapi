@@ -7,6 +7,11 @@ using raspapi.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http.Metadata;
+using System.Text;
+using System.Text.Json.Nodes;
+using raspapi.Models;
+using System.Text.Json;
+using Iot.Device.Usb;
 
 
 //using System.ComponentModel.DataAnnotations;
@@ -29,24 +34,107 @@ namespace raspapi
             builder.Services.AddOpenApi();
             builder.Logging.AddConsole();
 
-            builder.Services.AddSingleton<GpioController>();
+            builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
             builder.Services.AddKeyedSingleton<BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
-            
+            builder.Services.AddSingleton<HashSet<PinObject>>();
+
             builder.Services.AddControllers();
 
             var app = builder.Build();
            
             app.UseRouting();
-                       
+
+            app.UseWebSockets();
+
             logger = app.Services.GetRequiredService<ILogger<Program>>();
-                                  
+
+            var gpioController = app.Services.GetKeyedService<GpioController>(MiscConstants.gpioControllerName);
+            var gpioSemaphore = app.Services.GetKeyedService<BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
+            var pinObjectArray = app.Services.GetService<HashSet<PinObject>>();
+
+
             app.MapControllers();
+            _ = app.Use(async (context, next) =>
+            {
+
+                if (context.Request.Path == "/GetPinsStatus")
+                {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
+                        using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+
+                        await gpioSemaphore!.WaitAsync();
+                        try
+                        {
+
+                            await WebSocketPinStatus.GetPinsStatus(webSocket!, gpioController!, pinObjectArray!);
+                        }
+                        catch (Exception ex)
+                        {
+                            SendLogMessage(ex.Message);
+                        }
+                        finally
+                        {
+                            gpioSemaphore!.Release();
+                        }
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    }
+                }
+                else
+                {
+                    await next(context);
+                }
+
+            });
 
             if (app.Environment.IsDevelopment())
             {
-                app.UseMiddleware<ApiIntercept>();
+                //app.UseMiddleware<ApiIntercept>();
                 RunCommandLineTask(app, logger);
             }
+
+            _ = app.Lifetime.ApplicationStopped.Register(() =>
+            {
+
+                try
+                {
+                    // Wait on all calls to complete before shut down.
+                    gpioSemaphore?.WaitAsync().GetAwaiter();
+                    SendLogMessage("Checking for Open Pins....");
+
+                    if (pinObjectArray == null)
+                    {
+                        return;
+                    }
+
+                    foreach (var pin in pinObjectArray!.DistinctBy(s => s.PinNumber))
+                    {
+                        SendLogMessage($"Checking Pin {pin.PinNumber}");
+                        if (gpioController!.IsPinOpen(pin.PinNumber))
+                        {
+                            SendLogMessage($"Pin {pin.PinNumber} Open");
+                            SendLogMessage($"Turning Off and Closing Pin {pin.PinNumber}");
+                            gpioController.Write(pin.PinNumber, PinValue.Low);
+                            gpioController.ClosePin(pin.PinNumber);
+                        }
+                        else
+                        {
+                            SendLogMessage($"Pin {pin.PinNumber} not Open");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SendLogErrorMessage($"Exception:  {ex.Message}");
+                }
+                finally
+                {
+                    gpioSemaphore?.Release();
+                }
+            });
 
             app.Run();
         }
@@ -88,15 +176,7 @@ namespace raspapi
                                     _logger.LogInformation("ENDPOINT:{url}/{RawText}", url, routepatternrawtext);
 
                             }
-
-                            foreach (var endpointMetadata in endpoint.Metadata)
-                            {
-                                if (endpointMetadata.GetType().ToString().Contains("httpget", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    Console.WriteLine(endpointMetadata.GetType().ToString());
-                                }
-                            }
-
+                           
                             var routeNameMetadata = endpoint.Metadata.OfType<RouteNameMetadata>().FirstOrDefault();
                             var routName = routeNameMetadata?.RouteName;
 
@@ -129,6 +209,12 @@ namespace raspapi
         {
             logger?.LogInformation("{message}", message);
         }
+
+        private static void SendLogErrorMessage(string message)
+        {
+            logger?.LogError("{message}", message);
+        }
+
 
         private static void OnSigInt(object? sender, ConsoleCancelEventArgs e)
         {

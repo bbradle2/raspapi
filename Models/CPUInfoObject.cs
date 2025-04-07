@@ -1,4 +1,4 @@
-namespace raspapi.DataObjects
+namespace raspapi.Models
 {
     public class CPUInfoObject : BaseInfoObject
     {

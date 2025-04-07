@@ -5,9 +5,9 @@ namespace raspapi.Controllers
     using Microsoft.Extensions.Logging;
     using raspapi.Constants.RaspberryPIConstants;
     using raspapi.Utils;
-    using raspapi.Extensions;
     using System.Linq;
-    using raspapi.DataObjects;
+    using raspapi.Models;
+    using System.Net.WebSockets;
 
     [ApiController]
     [Route("[controller]")]
@@ -16,15 +16,32 @@ namespace raspapi.Controllers
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
         private readonly BinarySemaphoreSlim _semaphoreGpio;
+        private HashSet<PinObject> _pinObjects;
 
         public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
-                                         GpioController gpioController,
-                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] BinarySemaphoreSlim semaphoreGpio)
+                                         [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
+                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] BinarySemaphoreSlim semaphoreGpio,
+                                         HashSet<PinObject> pinObjects)
         {
             _logger = logger;
             _gpioController = gpioController;
             _semaphoreGpio = semaphoreGpio;
+            _pinObjects = pinObjects;
         }
+
+        // [Route("/ws")]
+        // public async Task Get()
+        // {
+        //     if (HttpContext.WebSockets.IsWebSocketRequest)
+        //     {
+        //         using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+        //         await WebSocketUtils.Echo(webSocket);
+        //     }
+        //     else
+        //     {
+        //         HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+        //     }
+        // }
 
 
         [HttpPut("SetPinsHigh")]
@@ -39,55 +56,36 @@ namespace raspapi.Controllers
                 
                 await _semaphoreGpio.WaitAsync();
 
-                var pins = pinObjs.DistinctBy(s => s.PinNumber);
-                var pinsStatus = _gpioController.GpioPinWriteHighValue([.. pins]);
-                var pinsStatusArray = _gpioController.GetPinsStatusArray(pinsStatus);
-
-                return Ok(pinsStatusArray);
-
-
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical("{Message}", e.Message);
-                return BadRequest(e.Message);
-            }
-            finally
-            {
-                _semaphoreGpio.Release();
-            }
-        }
-
-        [HttpPut("TogglePins")]
-        public async Task<IActionResult?> TogglePins(PinObject[] pinNumbers)
-        {
-            try
-            {
-                ArgumentNullException.ThrowIfNull(_semaphoreGpio);
-                ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_logger);
-
-                await _semaphoreGpio.WaitAsync();
-
-                var pins = pinNumbers.DistinctBy(s => s);
-                var pinsStatusArray = new List<PinObject>();
-
-                for (int i = 0; i < 2; i++)
+                var pinObjects = pinObjs.DistinctBy(s => s.PinNumber);
+                _pinObjects.Clear();
+                //var pinsStatus = _gpioController.GpioPinWriteHighValue([.. pins]);
+                HashSet<PinObject> pinsStatus = [];
+                
+                foreach (var pinObject in pinObjects)
                 {
-                    var pinsStatus = _gpioController.GpioPinWriteHighValue([.. pins]);
-                    pinsStatusArray = _gpioController.GetPinsStatusArray(pinsStatus);
-                    await Task.Delay(500);
+                    if (!_gpioController.IsPinOpen(pinObject.PinNumber))
+                    {
+                        var gpioPin = _gpioController!.OpenPin(pinObject.PinNumber, PinMode.Output).PinNumber;
+                        _gpioController.Write(gpioPin, PinValue.High);
+                        var value = _gpioController.Read(pinObject.PinNumber);
+                        pinsStatus.Add(new PinObject { PinNumber = pinObject.PinNumber, PinValue = (bool)value });
+                    }
+                    else
+                    {
+                        _gpioController.Write(pinObject.PinNumber, PinValue.High);
+                        var value =_gpioController.Read(pinObject.PinNumber);
+                        pinsStatus.Add(new PinObject { PinNumber = pinObject.PinNumber, PinValue = (bool)value });
 
-                    pinsStatus = _gpioController.GpioPinWriteLowValue([.. pins]);
-                    pinsStatusArray = _gpioController.GetPinsStatusArray(pinsStatus);
-                    await Task.Delay(500);
-
-                    
-
-                    
+                    }                   
                 }
+                
+                foreach (var pinStatus in pinsStatus)
+                {
+                    _pinObjects.Add(pinStatus);
+                }
+                
+                return Ok(_pinObjects);
 
-                return Ok(pinsStatusArray);
 
             }
             catch (Exception e)
@@ -112,42 +110,34 @@ namespace raspapi.Controllers
 
                 await _semaphoreGpio.WaitAsync();
 
-                var pins = pinObjs.DistinctBy(s => s.PinNumber);
-                var pinsStatus = _gpioController.GpioPinWriteLowValue([.. pins]);
-                var pinsStatusArray = _gpioController.GetPinsStatusArray(pinsStatus);
+                var pinObjects = pinObjs.DistinctBy(s => s.PinNumber);
+                //var pinsStatus = _gpioController.GpioPinWriteHighValue([.. pins]);
+                HashSet<PinObject> pinsStatus = [];
+                _pinObjects.Clear();
+                foreach (var pinObject in pinObjects)
+                {
+                    if (!_gpioController.IsPinOpen(pinObject.PinNumber))
+                    {
+                        var gpioPin = _gpioController!.OpenPin(pinObject.PinNumber, PinMode.Output).PinNumber;
+                        _gpioController.Write(gpioPin, PinValue.Low);
+                        var value = _gpioController.Read(pinObject.PinNumber);
+                        pinsStatus.Add(new PinObject { PinNumber = pinObject.PinNumber, PinValue = (bool)value });
+                    }
+                    else
+                    {
+                        _gpioController.Write(pinObject.PinNumber, PinValue.Low);
+                        var value = _gpioController.Read(pinObject.PinNumber);
+                        pinsStatus.Add(new PinObject { PinNumber = pinObject.PinNumber, PinValue = (bool)value });
 
-                return Ok(pinsStatusArray);
+                    }
+                }
+                foreach (var pinStatus in pinsStatus)
+                {
+                    _pinObjects.Add(pinStatus);
+                }
 
+                return Ok(_pinObjects);
 
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical("{Message}", e.Message);
-                return BadRequest(e.Message);
-            }
-            finally
-            {
-                _semaphoreGpio.Release();
-            }
-        }
-
-        
-        [HttpGet("GetPinsStatus")]
-        public async Task<IActionResult?> GetPinsStatus(PinObject[] pinObjs)
-        {
-            try
-            {
-                ArgumentNullException.ThrowIfNull(_semaphoreGpio);
-                ArgumentNullException.ThrowIfNull(_gpioController);
-                ArgumentNullException.ThrowIfNull(_logger);
-               
-                await _semaphoreGpio.WaitAsync();
-
-                var pins = pinObjs.DistinctBy(s => s.PinNumber);               
-                var pinsStatus = _gpioController.GpioGetPinValue([.. pins]);
-                var pinsStatusArray = _gpioController.GetPinsStatusArray(pinsStatus);
-
-                return Ok(pinsStatusArray);
 
             }
             catch (Exception e)
@@ -160,5 +150,6 @@ namespace raspapi.Controllers
                 _semaphoreGpio.Release();
             }
         }
+
     }  
 }

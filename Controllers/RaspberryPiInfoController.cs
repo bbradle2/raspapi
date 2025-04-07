@@ -5,7 +5,7 @@ namespace raspapi.Controllers
     using Microsoft.Extensions.Logging;
     using Microsoft.AspNetCore.Routing;
     using raspapi.Utils;
-    using raspapi.DataObjects;
+    using raspapi.Models;
 
     [ApiController]
     [Route("[controller]")]
