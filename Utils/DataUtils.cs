@@ -15,33 +15,30 @@ namespace raspapi.Utils
         private static readonly SemaphoreSlim _semTemperatureInfo = new(1, 1);
         private static readonly SemaphoreSlim _semCpuInfo = new(1, 1);
 
-        public static List<PinObject> JsonArrayToPinObjectArray(JsonArray pinNumbers)
+        public static List<GpioObject> JsonArrayToGpioObjectArray(JsonArray gpioObjects)
         {
-            List<PinObject> pins = [];
+            List<GpioObject> gpioList = [];
 
-            foreach (var pin in pinNumbers)
+            foreach (var gpioObject in gpioObjects)
             {
-                var pinNumber = pin![0]!.GetValue<int>();
-                var pinValue = pin![1]!.GetValue<bool>();
-                var pinObject = new PinObject { PinNumber = pinNumber, PinValue = pinValue };
-                pins.Add(pinObject);
+                var gpioNumber = gpioObject![0]!.GetValue<int>();
+                var gpioValue = gpioObject![1]!.GetValue<bool>();
+                gpioList.Add(new GpioObject { GpioNumber = gpioNumber, GpioValue = gpioValue });
 
             }
 
-            return pins;
+            return gpioList;
         }
         public static int[] JsonArrayToIntArray(JsonArray pinNumbers)
         {
-            List<int> pins = [];
+            List<int> gpios = [];
 
-            foreach (var pin in pinNumbers)
+            foreach (var gpio in pinNumbers)
             {
-                var pinValue = pin!.GetValue<int>();
-                pins.Add(pinValue);
+                var pinValue = gpio!.GetValue<int>();
+                gpios.Add(pinValue);
             }
-
-            var p = pins.DistinctBy(s => s);
-            return [.. p];
+            return [.. gpios.DistinctBy(s => s)];
         }
         
         public static async Task<MemoryInfoObject> PopulateMemoryInfoAsync(string ProductName, string Description, string Delimeter = ":")

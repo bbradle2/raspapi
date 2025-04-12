@@ -80,15 +80,21 @@ runtest()
 {
     verb=$1
     url=$2
-    pins=$3
+    
     printf "${GREEN}Calling $verb $url\n"
     #jsondata='[{"pinNumber":23},{"pinNumber":24},{"pinNumber":25}]'
 
     #pins='[23,24]'
     #pins='[]'
     
-    
-    resp=$(curl -s -X  $verb $url -H 'Content-Type: application/json; charset=UTF-8' -H "AUTHORIZED_USER: $programuser" -d $pins )
+    if [[ "$verb" == "GET" ]];
+    then
+        resp=$(curl -s -X  $verb $url -H 'Content-Type: application/json; charset=UTF-8' -H "AUTHORIZED_USER: $programuser" )
+    else
+        resp=$(curl -s -X  $verb $url -H 'Content-Type: application/json; charset=UTF-8' -H "AUTHORIZED_USER: $programuser" -d $gpioObjects )
+    fi
+
+
     if [[ "$resp" == "" ]]; 
     then
         printf ''${RED}'Status: Fail\n'
@@ -123,6 +129,8 @@ runtest()
 
     fi
 
+    printf ''${GREEN}'Calling Web Socket Method GetGpiosStatus:\n'
+    ./web.sh
     printf '\n\n'
 
 }
@@ -150,32 +158,20 @@ printf '#########\n'
 printf '\n'
 
 #getheader "http://$host:$port"
-
+START=$(date +%s%N | cut -b1-13)
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
-pinObjects='[{"pinNumber":23,"pinValue":null},{"pinNumber":24,"pinValue":null}]'
+gpioObjects='[{"gpioNumber":23,"gpioValue":null}]'
+#runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $gpioObjects
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsHigh" $gpioObjects
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $gpioObjects
+END=$(date +%s%N | cut -b1-13)
+echo Execution time $((END-START)) milli seconds.
 
-# runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus"  $pinObjects
-# sleep 1
-#runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $pinObjects
-#sleep 1
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $pinObjects
-#sleep 1
-#runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
-#sleep 1
-#runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $pinObjects
-#runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsHigh" $pinObjects
-#sleep 1
-#sleep 1
-#runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
-# sleep 1
-#runtest PUT "http://$host:$port/RaspberryPiGpio/TogglePins" $pinObjects
-#sleep 1
-#runtest GET "http://$host:$port/RaspberryPiGpio/GetPinsStatus" $pinObjects
-#sleep 1
+
 
 
 #This call will test semaphore code. should not be able to set any gpios without semaphore release. 
