@@ -130,6 +130,7 @@ runtest()
     fi
 
     printf ''${GREEN}'Calling Web Socket Method GetGpiosStatus:\n'
+    
     ./web.sh
     printf '\n\n'
 
@@ -146,6 +147,7 @@ startservice()
         printf "${GREEN}Waiting for Service to build and start\n\n"
         sleep 20
         printf "${GREEN}\nService Started\n\n"
+        cd scripts
     fi
 }
 
@@ -166,27 +168,10 @@ START=$(date +%s%N | cut -b1-13)
 
 gpioObjects='[{"gpioNumber":23,"gpioValue":null}]'
 #runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $gpioObjects
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsHigh" $gpioObjects
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $gpioObjects
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh" $gpioObjects
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow" $gpioObjects
 END=$(date +%s%N | cut -b1-13)
 echo Execution time $((END-START)) milli seconds.
-
-
-
-
-#This call will test semaphore code. should not be able to set any gpios without semaphore release. 
-#should blink 2 times and take around 8 seconds.
-#START=$(date "+%s")
-#runtest PUT "http://$host:$port/RaspberryPiGpio/BlinkLeds" &
-#END=$(date "+%s")
-#echo Blinking led 2 times took $((END-START)) seconds.
-
-#runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOn"
-#runtest PUT "http://$host:$port/RaspberryPiGpio/SetLedOff"
-
-
-#runtest GET "http://$host:$port/RaspberryPiGpio/GetLedStatus"
-#sleep 1
 
 cleanup
 

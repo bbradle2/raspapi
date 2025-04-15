@@ -21,7 +21,7 @@ namespace raspapi
     class Program
     {
         
-        public static ILogger<Program>? logger;
+        private static ILogger<Program>? logger;
 
         static void Main(string[] args)
         {
@@ -67,22 +67,23 @@ namespace raspapi
             }
            
             app.MapControllers();
+
             _ = app.Use(async (context, next) =>
             {
 
-                if (context.Request.Path == "/GetGpiosStatus")
+                if (context.Request.Path == "/GetGpios")
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
                         using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
 
 
-                        await WebSocketGpioStatus.GetGpiosStatus(webSocket,
-                                                               gpioController!,
-                                                               gpioObjectList!,
-                                                               gpioObjectsWaitEventHandler!,
-                                                               appShutdownWaitEventHandler!
-                                                               );
+                        await WebSocketGpio.GetGpios(webSocket,
+                                                    gpioController!,
+                                                    gpioObjectList!,
+                                                    gpioObjectsWaitEventHandler!,
+                                                    appShutdownWaitEventHandler!
+                                                    );
                        
                     }
                     else
@@ -97,7 +98,11 @@ namespace raspapi
 
             });
             
-            RunCommandLineTask(app, logger, gpioController!, gpioObjectList!, gpioObjectsWaitEventHandler!);
+            RunCommandLineTask(app,
+                              logger,
+                              gpioController!,
+                              gpioObjectList!,
+                              gpioObjectsWaitEventHandler!);
 
             _ = app.Lifetime.ApplicationStopping.Register(() =>
             {
@@ -124,12 +129,11 @@ namespace raspapi
 
                     foreach (var gpioObject in gpioObjectList!.DistinctBy(s => s.GpioNumber))
                     {
-                        SendLogMessage($"Checking Gpio {gpioObject.GpioNumber}");
+                        //SendLogMessage($"Checking Gpio {gpioObject.GpioNumber}");
                         if (gpioController!.IsPinOpen(gpioObject.GpioNumber))
                         {
-                            SendLogMessage($"Gpio {gpioObject.GpioNumber} Open");
-                            SendLogMessage($"Turning Off and Closing Gpio {gpioObject.GpioNumber}");
-                            //gpioController.Write(gpioObject.GpioNumber, PinValue.Low);
+                            //SendLogMessage($"Gpio {gpioObject.GpioNumber} Open");
+                            SendLogMessage($"Closing Gpio {gpioObject.GpioNumber}");
                             gpioController.ClosePin(gpioObject.GpioNumber);
                         }
                         else
@@ -209,7 +213,7 @@ namespace raspapi
                     {
                         foreach (var gpioObject in gpioObjectList!.DistinctBy(s => s.GpioNumber))
                         {
-                            SendLogMessage($"Checking Gpio {gpioObject.GpioNumber}");
+                            //SendLogMessage($"Checking Gpio {gpioObject.GpioNumber}");
                             if (gpioController!.IsPinOpen(gpioObject.GpioNumber))
                             {
                                 SendLogMessage($"Gpio {gpioObject.GpioNumber} Open");

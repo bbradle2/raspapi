@@ -25,7 +25,7 @@ namespace raspapi.Controllers
                                          [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                          [FromKeyedServices(MiscConstants.gpioSemaphoreName)] BinarySemaphoreSlim semaphoreGpio,
                                          [FromKeyedServices(MiscConstants.gpioObjectsName)] List<GpioObject> gpioObjects,
-                                          [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                         [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
                                          IConfiguration configuration)
         {
             _logger = logger;
@@ -37,7 +37,7 @@ namespace raspapi.Controllers
         }
 
 
-        [HttpPut("SetPinsHigh")]
+        [HttpPut("SetGpiosHigh")]
         public async Task<IActionResult?> SetGpiosHigh(List<GpioObject> gpioObjs)
         {
 
@@ -61,15 +61,12 @@ namespace raspapi.Controllers
                             var gpioPin = _gpioController!.OpenPin(gpioObject.GpioNumber, PinMode.Output).PinNumber;
                             _gpioController.Write(gpioPin, PinValue.High);
                             gpioValue = (bool)_gpioController.Read(gpioObject.GpioNumber);
-
                         }
                         else
                         {
                             _gpioController.Write(gpioObject.GpioNumber, PinValue.High);
                             gpioValue = (bool)_gpioController.Read(gpioObject.GpioNumber);
-
                         }
-
                     }
 
                     gpioObjects.Add(new GpioObject { GpioNumber = gpioObject.GpioNumber, GpioValue = gpioValue });
@@ -81,7 +78,7 @@ namespace raspapi.Controllers
                 {
                     _gpioObjects.Add(i);
                 }
-
+                
                 return Ok(_gpioObjects);
             }
             catch (Exception e)
@@ -96,8 +93,8 @@ namespace raspapi.Controllers
             }
         }
 
-        [HttpPut("SetPinsLow")]
-        public async Task<IActionResult?> SetPinsLow(List<GpioObject> gpioObjs)
+        [HttpPut("SetGpiosLow")]
+        public async Task<IActionResult?> SetGpiosLow(List<GpioObject> gpioObjs)
         {
             try
             {
@@ -127,7 +124,6 @@ namespace raspapi.Controllers
                             gpioValue = (bool)_gpioController.Read(gpioObject.GpioNumber);
 
                         }
-
                     }
 
                     gpioObjects.Add(new GpioObject { GpioNumber = gpioObject.GpioNumber, GpioValue = gpioValue });
@@ -135,6 +131,7 @@ namespace raspapi.Controllers
                 }
 
                 _gpioObjects.Clear();
+
                 foreach (var i in gpioObjects)
                 {
                     _gpioObjects.Add(i);

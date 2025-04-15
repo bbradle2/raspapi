@@ -1,6 +1,6 @@
 #!/bin/bash
 
-websocket_url="ws://localhost:5000/GetGpiosStatus"
+websocket_url="ws://localhost:5000/GetGpios"
 
 # Function to send a message and receive response
 send_and_receive() 

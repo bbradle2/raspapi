@@ -7,9 +7,9 @@ namespace raspapi.Utils
     using System.Text.Json;
     using raspapi.Models;
 
-    public static class WebSocketGpioStatus
+    public static class WebSocketGpio
     {
-        public static async Task GetGpiosStatus(WebSocket webSocket,
+        public static async Task GetGpios(WebSocket webSocket,
                                               GpioController gpioController,
                                               List<GpioObject> pObjects,
                                               GpioObjectsWaitEventHandler gpioWait,
@@ -55,18 +55,20 @@ namespace raspapi.Utils
                             receiveResult.EndOfMessage,
                             CancellationToken.None);
 
-                        if (webSocket.State == WebSocketState.Aborted || webSocket.State == WebSocketState.Closed)
+                        if (webSocket.State == WebSocketState.Aborted || webSocket.State == WebSocketState.CloseSent || webSocket.State == WebSocketState.CloseReceived )
                         {
+                            
                             return;
                         }
 
                         receiveResult = await webSocket.ReceiveAsync(
                             new ArraySegment<byte>(buffer), CancellationToken.None);
+
                     }
                     catch (Exception)
                     {
                         Console.WriteLine("Client Aborted Connection");
-                        break;
+                        return;
                     }
                 }
                               
