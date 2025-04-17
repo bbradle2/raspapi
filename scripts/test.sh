@@ -168,7 +168,7 @@ START=$(date +%s%N | cut -b1-13)
 
 gpioObjects='[{"gpioNumber":23,"gpioValue":null}]'
 #runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $gpioObjects
-runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh" $gpioObjects
+#runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh" $gpioObjects
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow" $gpioObjects
 END=$(date +%s%N | cut -b1-13)
 echo Execution time $((END-START)) milli seconds.

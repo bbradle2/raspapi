@@ -134,12 +134,15 @@ namespace raspapi
                         {
                             //SendLogMessage($"Gpio {gpioObject.GpioNumber} Open");
                             SendLogMessage($"Closing Gpio {gpioObject.GpioNumber}");
+                            gpioController.Write(gpioObject.GpioNumber, PinValue.Low);
                             gpioController.ClosePin(gpioObject.GpioNumber);
                         }
                         else
                         {
                             SendLogMessage($"Gpio {gpioObject.GpioNumber} not Open");
                         }
+
+                       
                     }
                 }
                 catch (Exception ex)
@@ -148,6 +151,7 @@ namespace raspapi
                 }
                 finally
                 {
+                    gpioController?.Dispose();
                     gpioSemaphore?.Release();
                 }
             });
@@ -156,7 +160,7 @@ namespace raspapi
         }
 
         /*For debugging in development*/
-        private static void RunCommandLineTask(WebApplication app, ILogger<Program> _logger, GpioController gpioController, List<GpioObject> gpioObjectList, GpioObjectsWaitEventHandler gpioEvent)
+        private static void RunCommandLineTask(WebApplication app, ILogger<Program> _logger, GpioController gpioController, List<GpioObject> gpioObjectList, GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler)
         {
             _ = Task.Factory.StartNew(() =>
             {
@@ -228,7 +232,7 @@ namespace raspapi
                     }
                     else if (command!.Equals("QUIT".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        gpioEvent.Set();
+                        gpioObjectsWaitEventHandler.Set();
                         app.StopAsync();
                         
                     }

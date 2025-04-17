@@ -12,7 +12,7 @@ namespace raspapi.Utils
         public static async Task GetGpios(WebSocket webSocket,
                                               GpioController gpioController,
                                               List<GpioObject> pObjects,
-                                              GpioObjectsWaitEventHandler gpioWait,
+                                              GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
                                               AppShutdownWaitEventHandler appShutdownWait
                                               )
         {
@@ -71,8 +71,8 @@ namespace raspapi.Utils
                         return;
                     }
                 }
-                              
-                gpioWait.WaitOne(1000);
+
+                gpioObjectsWaitEventHandler.WaitOne(1000);
 
             }
         }
