@@ -2,7 +2,7 @@ import { randomString, randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2
 import ws from 'k6/ws';
 import { check, sleep } from 'k6';
 
-const sessionDuration = randomIntBetween(3000, 6000); // user session between 3s and 6s
+const sessionDuration = randomIntBetween(1000, 2000); // user session between 3s and 6s
 
 export const options = {
   vus: 1,
@@ -40,20 +40,23 @@ export default function () {
     });
 
     socket.on('message', function (message) {
-      //console.log(`VU ${__VU} received message: ${message}`);
-      const data = JSON.parse(message);
-      console.log(`VU ${__VU} received message: ${data}`);
+      
+      const gpios = JSON.parse(message);
+      for(var i = 0; i < gpios.length; i++)
+        console.log(`VU ${__VU} received message: ${gpios[i].GpioNumber}:${gpios[i].GpioValue}`);
+
     });
 
     socket.setTimeout(function () {
       console.log(`VU ${__VU}: ${sessionDuration}ms passed, leaving the website`);
       socket.send(JSON.stringify({ msg: 'Goodbye!', user: user }));
+      socket.close();
     }, sessionDuration);
 
-    socket.setTimeout(function () {
-      console.log(`Closing the socket forcefully 3s after graceful LEAVE`);
-      socket.close();
-    }, sessionDuration + 3000);
+    // socket.setTimeout(function () {
+    //   console.log(`Closing the socket forcefully 3s after graceful LEAVE`);
+    //   socket.close();
+    // }, sessionDuration + 3000);
   });
 
   check(res, { 'Connected successfully': (r) => r && r.status === 101 });

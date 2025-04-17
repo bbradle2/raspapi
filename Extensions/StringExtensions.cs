@@ -1,4 +1,4 @@
-namespace raspapi.StringExtensions
+namespace raspapi.Extensions
 {
     
     using System.Diagnostics;

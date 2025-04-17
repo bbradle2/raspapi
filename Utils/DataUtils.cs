@@ -3,9 +3,8 @@ namespace raspapi.Utils
     using System.Text;
     using System.Text.Json;
     using System.Text.Json.Nodes;
-    using Microsoft.AspNetCore.Http;
     using raspapi.Models;
-    using raspapi.StringExtensions;
+    using raspapi.Extensions;
 
     public static class DataUtils
     {

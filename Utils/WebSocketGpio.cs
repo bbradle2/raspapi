@@ -13,7 +13,7 @@ namespace raspapi.Utils
                                               GpioController gpioController,
                                               List<GpioObject> pObjects,
                                               GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                              AppShutdownWaitEventHandler appShutdownWait
+                                              AppShutdownWaitEventHandler appShutdownWaitEventHandler
                                               )
         {
 
@@ -24,7 +24,7 @@ namespace raspapi.Utils
             while (!receiveResult.CloseStatus.HasValue)
             {
 
-                if (appShutdownWait.WaitOne(100))
+                if (appShutdownWaitEventHandler.WaitOne(100))
                 {
 
                     if (webSocket == null || webSocket!.State == WebSocketState.Closed || webSocket!.State == WebSocketState.Aborted)

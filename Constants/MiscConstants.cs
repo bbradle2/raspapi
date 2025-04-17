@@ -1,4 +1,4 @@
-namespace raspapi.Constants.RaspberryPIConstants
+namespace raspapi.Constants
 {
 
     public static class MiscConstants

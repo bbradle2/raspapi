@@ -8,38 +8,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Nextended.Web.Extensions
+namespace raspapi.Extensions
 {
     public static class ControllerExtensions
     {
-        /// <summary>
-        /// Serves data as a asynchronous Stream to the client after setting the required Headers
-        /// </summary>
-        /// <param name="controller">The Controller used to serve the data</param>
-        /// <param name="dataContent">The Data in the body</param>
-        /// <param name="mimeType">The MIME-Type of the downloaded Data</param>
-        /// <param name="fileName">The desired Filename</param>
-        /// <param name="inlineFile">Should the browser try to display the file, rather than use a dialog</param>
-        /// <param name="httpStatusCode">The Http-Statuscode</param>
-        /// <param name="additionalHeaders">Additional headers that should be set</param>
-        /// <returns></returns>
         public static async Task DownloadDataAsync(this ControllerBase controller, Stream dataContent, string mimeType, string fileName, bool inlineFile, int httpStatusCode, params (string key, StringValues value)[] additionalHeaders)
         {
             SetFileDownloadHeaders(controller, mimeType, fileName, inlineFile, httpStatusCode, additionalHeaders);
             await DownloadDataAsync(controller, dataContent);
         }
 
-        /// <summary>
-        /// Serves data as a asynchronous Stream to the client after setting the required Headers
-        /// </summary>
-        /// <param name="controller">The Controller used to serve the data</param>
-        /// <param name="writeResponseDataAction">An async Function that can be used to write complex data directly to the output</param>
-        /// <param name="mimeType">The MIME-Type of the downloaded Data</param>
-        /// <param name="fileName">The desired Filename</param>
-        /// <param name="inlineFile">Should the browser try to display the file, rather than use a dialog</param>
-        /// <param name="httpStatusCode">The Http-Statuscode</param>
-        /// <param name="additionalHeaders">Additional headers that should be set</param>
-        /// <returns></returns>
         public static async Task DownloadDataAsync(this ControllerBase controller, Func<Stream, Task> writeResponseDataAction, string mimeType, string fileName, bool inlineFile, int httpStatusCode, params (string key, StringValues value)[] additionalHeaders)
         {
             SetFileDownloadHeaders(controller, mimeType, fileName, inlineFile, httpStatusCode, additionalHeaders);

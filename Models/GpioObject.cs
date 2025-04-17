@@ -1,5 +1,3 @@
-using Iot.Device.Ili934x;
-
 namespace raspapi.Models
 {
     public class GpioObject

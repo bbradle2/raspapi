@@ -3,7 +3,7 @@ namespace raspapi.Controllers
     using System.Device.Gpio;
      using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
-    using raspapi.Constants.RaspberryPIConstants;
+    using raspapi.Constants;
     using raspapi.Utils;
     using System.Linq;
     using raspapi.Models;

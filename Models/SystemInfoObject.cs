@@ -6,15 +6,6 @@ namespace raspapi.Models
 
         public SystemObject[]? SystemObjects { get; set; }
         
-        // public class Capabilities
-        // {
-        //     public string? Smp { get; set; }
-        //     public bool Cp15Barrier { get; set; }
-        //     public bool Setend { get; set; }
-        //     public bool Swp { get; set; }
-        //     public bool TaggedAddrDisabled { get; set; }
-        // }
-
         public class SystemObject
         {
             public string? Id { get; set; }
@@ -24,7 +15,6 @@ namespace raspapi.Models
             public string? Product { get; set; }
             public string? Serial { get; set; }
             public int Width { get; set; }
-           //public Capabilities? Capabilities { get; set; }
         }
 
     }

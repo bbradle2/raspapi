@@ -2,7 +2,7 @@
 #assign global variables
 port=5000
 programuser=$USER
-host="raspberrypi51"
+host="localhost"
 process_id=$!
 startservice=$1
 
@@ -129,9 +129,9 @@ runtest()
 
     fi
 
-    printf ''${GREEN}'Calling Web Socket Method GetGpiosStatus:\n'
+    #printf ''${GREEN}'Calling Web Socket Method GetGpiosStatus:\n'
     
-    ./web.sh
+    #./web.sh
     printf '\n\n'
 
 }
@@ -161,14 +161,13 @@ printf '\n'
 
 #getheader "http://$host:$port"
 START=$(date +%s%N | cut -b1-13)
-# runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
+runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
 gpioObjects='[{"gpioNumber":23,"gpioValue":null}]'
-#runtest PUT "http://$host:$port/RaspberryPiGpio/SetPinsLow" $gpioObjects
-#runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh" $gpioObjects
+runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh" $gpioObjects
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow" $gpioObjects
 END=$(date +%s%N | cut -b1-13)
 echo Execution time $((END-START)) milli seconds.

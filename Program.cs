@@ -1,18 +1,9 @@
 ﻿using System.Device.Gpio;
-using raspapi.Constants.RaspberryPIConstants;
+using raspapi.Constants;
 using System.Net.NetworkInformation;
-using Scalar.AspNetCore;
-using raspapi.Intercepts;
 using raspapi.Utils;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Http.Metadata;
-using System.Text;
-using System.Text.Json.Nodes;
 using raspapi.Models;
 using System.Text.Json;
-using Iot.Device.Usb;
-using System.IO.Pipelines;
 
 
 namespace raspapi
