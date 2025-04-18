@@ -20,10 +20,12 @@
         "GpioValue": null
     },
     {
+        "_comment1": "This gpio requires root access.",
         "GpioNumber": 7,
         "GpioValue": null
     },
     {
+        "_comment1": "This gpio requires root access.",
         "GpioNumber": 8,
         "GpioValue": null
     },

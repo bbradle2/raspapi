@@ -10,11 +10,11 @@ namespace raspapi.Utils
     public static class WebSocketGpio
     {
         public static async Task GetGpios(WebSocket webSocket,
-                                              GpioController gpioController,
-                                              List<GpioObject> pObjects,
-                                              GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                              AppShutdownWaitEventHandler appShutdownWaitEventHandler
-                                              )
+                                         GpioController gpioController,
+                                         List<GpioObject> pObjects,
+                                         GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                         AppShutdownWaitEventHandler appShutdownWaitEventHandler
+                                         )
         {
 
             var buffer = new byte[1024 * 4];

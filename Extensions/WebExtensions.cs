@@ -1,9 +1,5 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Mime;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -65,9 +61,9 @@ namespace raspapi.Extensions
 
             if (additionalHeaders != null && additionalHeaders.Length > 0)
             {
-                foreach (var additionalHeader in additionalHeaders)
+                foreach (var (key, value) in additionalHeaders)
                 {
-                    controller.Response.Headers.Append(additionalHeader.key, additionalHeader.value);
+                    controller.Response.Headers.Append(key, value);
                 }
             }
         }

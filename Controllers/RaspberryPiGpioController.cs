@@ -1,14 +1,13 @@
 namespace raspapi.Controllers
 {
     using System.Device.Gpio;
-     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
     using raspapi.Constants;
     using raspapi.Utils;
     using System.Linq;
     using raspapi.Models;
-    using System.Net.WebSockets;
-
+  
     [ApiController]
     [Route("[controller]")]
     public class RaspberryPiGpioController : ControllerBase

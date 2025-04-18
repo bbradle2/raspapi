@@ -12,7 +12,7 @@ namespace raspapi
     class Program
     {
         
-        private static ILogger<Program>? logger;
+        private static ILogger<Program>? _logger;
 
         static void Main(string[] args)
         {
@@ -37,7 +37,7 @@ namespace raspapi
             app.UseRouting();          
             app.UseWebSockets();
 
-            logger = app.Services.GetRequiredService<ILogger<Program>>();
+            _logger = app.Services.GetRequiredService<ILogger<Program>>();
 
             var gpioController = app.Services.GetKeyedService<GpioController>(MiscConstants.gpioControllerName);
             var gpioSemaphore = app.Services.GetKeyedService<BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
@@ -90,7 +90,6 @@ namespace raspapi
             });
             
             RunCommandLineTask(app,
-                              logger,
                               gpioController!,
                               gpioObjectList!,
                               gpioObjectsWaitEventHandler!);
@@ -110,7 +109,7 @@ namespace raspapi
                 try
                 {
                     // Wait on all calls to complete before shut down.
-                    gpioSemaphore?.WaitAsync().GetAwaiter();
+                    gpioSemaphore!.WaitAsync().GetAwaiter();
                     SendLogMessage("Checking for Open Gpio's....");
 
                     if (gpioObjectList == null)
@@ -142,8 +141,8 @@ namespace raspapi
                 }
                 finally
                 {
-                    gpioController?.Dispose();
-                    gpioSemaphore?.Release();
+                    gpioController!.Dispose();
+                    gpioSemaphore!.Release();
                 }
             });
 
@@ -151,18 +150,20 @@ namespace raspapi
         }
 
         /*For debugging in development*/
-        private static void RunCommandLineTask(WebApplication app, ILogger<Program> _logger, GpioController gpioController, List<GpioObject> gpioObjectList, GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler)
+        private static void RunCommandLineTask(WebApplication app, GpioController gpioController, List<GpioObject> gpioObjectList, GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler)
         {
             _ = Task.Factory.StartNew(() =>
             {
-                while (true)
+                bool runTask = true;
+                
+                while (runTask)
                 {
                     var command = Console.ReadLine()!.Trim();
 
                     if (command!.Equals("INFO".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        _logger.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}", app.Environment.EnvironmentName);
-                        _logger.LogInformation("APPICATION_NAME:{ApplicationName}", app.Environment.ApplicationName);
+                        _logger!.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}", app.Environment.EnvironmentName);
+                        _logger!.LogInformation("APPICATION_NAME:{ApplicationName}", app.Environment.ApplicationName);
                         // _logger.LogInformation("WEB_ROOT_PATH:{WebRootPath}", app.Environment.WebRootPath);
                         var urls = app.Urls;
 
@@ -171,7 +172,7 @@ namespace raspapi
                                         .GetServices<EndpointDataSource>()
                                         .SelectMany(x => x!.Endpoints);
 
-                        _logger.LogInformation($"ENDPOINTS:");
+                        _logger!.LogInformation($"ENDPOINTS:");
 
                         foreach (var endpoint in endpoints)
                         {
@@ -182,9 +183,9 @@ namespace raspapi
 
 
                                 if (routepatternrawtext!.StartsWith('/'))
-                                    _logger.LogInformation("ENDPOINT:{url}{RawText}", url, routepatternrawtext);
+                                    _logger!.LogInformation("ENDPOINT:{url}{RawText}", url, routepatternrawtext);
                                 else
-                                    _logger.LogInformation("ENDPOINT:{url}/{RawText}", url, routepatternrawtext);
+                                    _logger!.LogInformation("ENDPOINT:{url}/{RawText}", url, routepatternrawtext);
 
                             }
 
@@ -200,7 +201,7 @@ namespace raspapi
                                               where connection.LocalEndPoint.Port == new Uri(urls.FirstOrDefault()!).Port
                                               select connection;
 
-                        _logger.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
+                        _logger!.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
 
                     }
 
@@ -224,12 +225,13 @@ namespace raspapi
                     else if (command!.Equals("QUIT".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
                         gpioObjectsWaitEventHandler.Set();
+                        runTask = false;
                         app.StopAsync();
-                        
+
                     }
                     else
                     {
-                        _logger.LogWarning("Invalid command. Valid commands are quit or info");
+                        _logger!.LogWarning("Invalid command. Valid commands are quit,info or gpio");
                     }
                 }
             });
@@ -237,12 +239,12 @@ namespace raspapi
 
         private static void SendLogMessage(string message)
         {
-            logger?.LogInformation("{message}", message);
+            _logger!.LogInformation("{message}", message);
         }
 
         private static void SendLogErrorMessage(string message)
         {
-            logger?.LogError("{message}", message);
+            _logger!.LogError("{message}", message);
         }
 
 
