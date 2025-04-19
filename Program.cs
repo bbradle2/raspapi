@@ -13,15 +13,24 @@ namespace raspapi
     {
         
         private static ILogger<Program>? _logger;
+        public static void OnSigInt(object? sender, ConsoleCancelEventArgs e)
+        {
+            _logger!.LogInformation("SIGINT Received...");
+        }
+
+        public static void OnSigTerm(object? sender, EventArgs e)
+        {
+            _logger!.LogInformation("SIGTERM Received...");
+        }
+        
 
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.ProcessExit += OnSigTerm;
             Console.CancelKeyPress += OnSigInt;
-                      
+
             var builder = WebApplication.CreateBuilder(args);
-           
-            builder.Services.AddOpenApi();
+
             builder.Logging.AddConsole();
 
             builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
@@ -33,8 +42,8 @@ namespace raspapi
             builder.Services.AddControllers();
 
             var app = builder.Build();
-           
-            app.UseRouting();          
+
+            app.UseRouting();
             app.UseWebSockets();
 
             _logger = app.Services.GetRequiredService<ILogger<Program>>();
@@ -46,7 +55,7 @@ namespace raspapi
             var appShutdownWaitEventHandler = app.Services.GetKeyedService<AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
 
             var gpioObjectConfig = File.ReadAllText("raspberrypi05_PinMapping.json");
-            var gpioConfigList = JsonSerializer.Deserialize<List<GpioObject>>(gpioObjectConfig);          
+            var gpioConfigList = JsonSerializer.Deserialize<List<GpioObject>>(gpioObjectConfig);
 
             foreach (var i in gpioConfigList!)
             {
@@ -56,7 +65,7 @@ namespace raspapi
 
                 gpioObjectList!.Add(gpioObject);
             }
-           
+
             app.MapControllers();
 
             _ = app.Use(async (context, next) =>
@@ -75,7 +84,7 @@ namespace raspapi
                                                     gpioObjectsWaitEventHandler!,
                                                     appShutdownWaitEventHandler!
                                                     );
-                       
+
                     }
                     else
                     {
@@ -88,29 +97,29 @@ namespace raspapi
                 }
 
             });
-            
-            RunCommandLineTask(app,
+
+            CommandLineTask.RunCommandLineTask(app,
                               gpioController!,
                               gpioObjectList!,
-                              gpioObjectsWaitEventHandler!);
+                              gpioObjectsWaitEventHandler!,
+                              _logger);
 
             _ = app.Lifetime.ApplicationStopping.Register(() =>
             {
-                SendLogMessage("Shutting down Gpio Wait Event Handler.");
-                SendLogMessage("Please wait.");
+                _logger!.LogInformation("Shutting down Gpio Wait Event Handler.");
+                _logger!.LogInformation("Please wait.");
                 gpioObjectsWaitEventHandler!.Set();
                 appShutdownWaitEventHandler!.Set();
-                SendLogMessage("Gpio Wait Event Handler shut down complete");
+                _logger!.LogInformation("Gpio Wait Event Handler shut down complete");
             });
 
-            
+
             _ = app.Lifetime.ApplicationStopped.Register(() =>
             {
                 try
                 {
-                    // Wait on all calls to complete before shut down.
                     gpioSemaphore!.WaitAsync().GetAwaiter();
-                    SendLogMessage("Checking for Open Gpio's....");
+                    _logger!.LogInformation("Checking for Open Gpio's....");
 
                     if (gpioObjectList == null)
                     {
@@ -123,21 +132,21 @@ namespace raspapi
                         if (gpioController!.IsPinOpen(gpioObject.GpioNumber))
                         {
                             //SendLogMessage($"Gpio {gpioObject.GpioNumber} Open");
-                            SendLogMessage($"Closing Gpio {gpioObject.GpioNumber}");
+                            _logger!.LogInformation("Closing Gpio {gpioObject.GpioNumber}", gpioObject.GpioNumber);
                             gpioController.Write(gpioObject.GpioNumber, PinValue.Low);
                             gpioController.ClosePin(gpioObject.GpioNumber);
                         }
                         else
                         {
-                            SendLogMessage($"Gpio {gpioObject.GpioNumber} not Open");
+                            _logger!.LogInformation("Gpio {gpioObject.GpioNumber} not Open", gpioObject.GpioNumber);
                         }
 
-                       
+
                     }
                 }
                 catch (Exception ex)
                 {
-                    SendLogErrorMessage($"Exception:  {ex.Message}");
+                    _logger!.LogError("Exception:{Message}", ex.Message);
                 }
                 finally
                 {
@@ -148,115 +157,7 @@ namespace raspapi
 
             app.Run();
         }
-
-        /*For debugging in development*/
-        private static void RunCommandLineTask(WebApplication app, GpioController gpioController, List<GpioObject> gpioObjectList, GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler)
-        {
-            _ = Task.Factory.StartNew(() =>
-            {
-                bool runTask = true;
-                
-                while (runTask)
-                {
-                    var command = Console.ReadLine()!.Trim();
-
-                    if (command!.Equals("INFO".Trim(), StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        _logger!.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}", app.Environment.EnvironmentName);
-                        _logger!.LogInformation("APPICATION_NAME:{ApplicationName}", app.Environment.ApplicationName);
-                        // _logger.LogInformation("WEB_ROOT_PATH:{WebRootPath}", app.Environment.WebRootPath);
-                        var urls = app.Urls;
-
-                        var endpoints = app
-                                        .Services
-                                        .GetServices<EndpointDataSource>()
-                                        .SelectMany(x => x!.Endpoints);
-
-                        _logger!.LogInformation($"ENDPOINTS:");
-
-                        foreach (var endpoint in endpoints)
-                        {
-                            if (endpoint is RouteEndpoint routeEndpoint)
-                            {
-                                var url = urls.FirstOrDefault();
-                                var routepatternrawtext = routeEndpoint.RoutePattern.RawText;
-
-
-                                if (routepatternrawtext!.StartsWith('/'))
-                                    _logger!.LogInformation("ENDPOINT:{url}{RawText}", url, routepatternrawtext);
-                                else
-                                    _logger!.LogInformation("ENDPOINT:{url}/{RawText}", url, routepatternrawtext);
-
-                            }
-
-                            var routeNameMetadata = endpoint.Metadata.OfType<RouteNameMetadata>().FirstOrDefault();
-                            var routName = routeNameMetadata?.RouteName;
-
-                            var httpMethodsMetadata = endpoint.Metadata.OfType<HttpMethodMetadata>().FirstOrDefault();
-                            var httpMethods = httpMethodsMetadata?.HttpMethods;
-                        }
-
-                        var properties = IPGlobalProperties.GetIPGlobalProperties();
-                        var httpConnections = from connection in properties.GetActiveTcpConnections()
-                                              where connection.LocalEndPoint.Port == new Uri(urls.FirstOrDefault()!).Port
-                                              select connection;
-
-                        _logger!.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
-
-                    }
-
-                    else if (command!.Equals("GPIO".Trim(), StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        foreach (var gpioObject in gpioObjectList!.DistinctBy(s => s.GpioNumber))
-                        {
-                            //SendLogMessage($"Checking Gpio {gpioObject.GpioNumber}");
-                            if (gpioController!.IsPinOpen(gpioObject.GpioNumber))
-                            {
-                                SendLogMessage($"Gpio {gpioObject.GpioNumber} Open");
-
-                            }
-                            else
-                            {
-                                SendLogMessage($"Gpio {gpioObject.GpioNumber} not Open");
-                            }
-                        }
-                        Console.ForegroundColor = ConsoleColor.White;
-                    }
-                    else if (command!.Equals("QUIT".Trim(), StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        gpioObjectsWaitEventHandler.Set();
-                        runTask = false;
-                        app.StopAsync();
-
-                    }
-                    else
-                    {
-                        _logger!.LogWarning("Invalid command. Valid commands are quit,info or gpio");
-                    }
-                }
-            });
-        }
-
-        private static void SendLogMessage(string message)
-        {
-            _logger!.LogInformation("{message}", message);
-        }
-
-        private static void SendLogErrorMessage(string message)
-        {
-            _logger!.LogError("{message}", message);
-        }
-
-
-        private static void OnSigInt(object? sender, ConsoleCancelEventArgs e)
-        {
-            SendLogMessage("SIGINT Received...");
-        }
-       
-        private static void OnSigTerm(object? sender, EventArgs e)
-        {
-            SendLogMessage("SIGTERM Received...");
-        }
-
+     
+        
     }
 }

@@ -5,14 +5,34 @@ export const options = {
 };
 
 export default function () {
-  const response = http.get('http://localhost:5000/RaspberryPiInfo/GetCPUInfo');
-  console.log(`VU ${__VU}: leaving the website`);
-  const result = JSON.stringify(response.body);
+ 
 
-  const cpuInfoObject = JSON.parse(response.body);
+  const payload = JSON.stringify(
+    [
+      {
+       gpioNumber: 23,
+       gpioValue: null,
+      }
+    ]
+  );
 
-  console.log(`VU ${__VU}: ${cpuInfoObject.productName}`);
-  console.log(`VU ${__VU}: ${cpuInfoObject.description}`);
-  console.log(`VU ${__VU}: ${cpuInfoObject.cpuObjects[1].id}`);
-  console.log(`VU ${__VU}: ${cpuInfoObject.cpuObjects[1].businfo}`);
+  const params = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+  //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosLow');
+  //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosHigh', payload, params);
+  const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosLow', payload, params);   
+
+  //console.log(response.body);
+  //const result = JSON.stringify(response.body, payload, params);
+
+
+  // const cpuInfoObject = JSON.parse(response.body);
+
+  // console.log(`VU ${__VU}: ${cpuInfoObject.productName}`);
+  // console.log(`VU ${__VU}: ${cpuInfoObject.description}`);
+  // console.log(`VU ${__VU}: ${cpuInfoObject.cpuObjects[1].id}`);
+  // console.log(`VU ${__VU}: ${cpuInfoObject.cpuObjects[1].businfo}`);
 }
