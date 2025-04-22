@@ -161,7 +161,7 @@ printf '\n'
 
 #getheader "http://$host:$port"
 START=$(date +%s%N | cut -b1-13)
-runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
+# runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"

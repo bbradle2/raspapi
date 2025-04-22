@@ -6,7 +6,7 @@ export const options = {
 
 export default function () {
  
-
+ 
   const payload = JSON.stringify(
     [
       {
@@ -15,18 +15,23 @@ export default function () {
       }
     ]
   );
+  
 
   const params = {
     headers: {
       'Content-Type': 'application/json',
     },
   };
+  
   //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosLow');
   //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosHigh', payload, params);
   const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosLow', payload, params);   
-
-  //console.log(response.body);
+  
+  
   //const result = JSON.stringify(response.body, payload, params);
+  const gpios = JSON.parse(response.body);
+      for(var i = 0; i < gpios.length; i++)
+        console.log(`VU ${__VU} received message: ${gpios[i].gpioNumber}:${gpios[i].gpioValue}`);
 
 
   // const cpuInfoObject = JSON.parse(response.body);

@@ -42,7 +42,6 @@ namespace raspapi
             builder.Services.AddControllers();
 
             var app = builder.Build();
-
             app.UseRouting();
             app.UseWebSockets();
 

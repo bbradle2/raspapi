@@ -83,7 +83,7 @@ namespace raspapi.Controllers
             catch (Exception e)
             {
                 _logger.LogCritical("{Message}", e.Message);
-                return BadRequest(e.Message);
+                return BadRequest("Something went wrong.");
             }
             finally
             {
@@ -141,7 +141,7 @@ namespace raspapi.Controllers
             catch (Exception e)
             {
                 _logger.LogCritical("{Message}", e.Message);
-                return BadRequest(e.Message);
+                return BadRequest("Something went wrong.");
             }
             finally
             {
