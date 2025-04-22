@@ -4,6 +4,7 @@ using System.Net.NetworkInformation;
 using raspapi.Utils;
 using raspapi.Models;
 using System.Text.Json;
+using raspapi.Intercepts;
 
 
 namespace raspapi
@@ -42,6 +43,7 @@ namespace raspapi
             builder.Services.AddControllers();
 
             var app = builder.Build();
+            app.UseMiddleware<ApiIntercept>();
             app.UseRouting();
             app.UseWebSockets();
 

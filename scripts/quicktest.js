@@ -20,8 +20,9 @@ export default function () {
   const params = {
     headers: {
       'Content-Type': 'application/json',
-    },
-  };
+      'AUTHORIZED_USER': 'bbrad'
+      },
+    };
   
   //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosLow');
   //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosHigh', payload, params);

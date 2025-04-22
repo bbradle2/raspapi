@@ -11,7 +11,14 @@ export const options = {
 
 export default function () {
   const url = `ws://localhost:5000/GetGpios`;
-  const params = { tags: { my_tag: 'my ws session' } };
+  const params = { tags: { 
+                     my_tag: 'my ws session'
+                   },
+                   headers: {
+                    'Content-Type':'application/json',
+                    'AUTHORIZED_USER': 'bbrad' 
+                   } 
+                 };
   const user = `user_${__VU}`;
 
   const res = ws.connect(url, params, function (socket) {
