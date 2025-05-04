@@ -10,8 +10,12 @@ export default function () {
   const payload = JSON.stringify(
     [
       {
+       gpioNumber: 24,
+       gpioValue: null
+      },
+      {
        gpioNumber: 23,
-       gpioValue: null,
+       gpioValue: null
       }
     ]
   );
@@ -25,14 +29,14 @@ export default function () {
     };
   
 
-  //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosHigh', payload, params);
-  const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosLow', payload, params);   
+  const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosHigh', payload, params);
+  //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosLow', payload, params);   
   
   
   //const result = JSON.stringify(response.body, payload, params);
   const gpios = JSON.parse(response.body);
       for(var i = 0; i < gpios.length; i++)
-        console.log(`VU ${__VU} received message: ${gpios[i].gpioNumber}:${gpios[i].gpioValue}`);
+        console.log(`VU ${__VU} received message: ${gpios[i].GpioNumber}:${gpios[i].GpioValue}`);
 
 
   // const cpuInfoObject = JSON.parse(response.body);

@@ -6,7 +6,7 @@ namespace raspapi.Constants
         public const string gpioSemaphoreName = "gpioSemaphore";
         public const string gpioControllerName = "gpioControllerName";
 
-        public const string gpioObjectsName = "gpioControllerName";
+        public const string gpioObjectsName = "gpioObjectsName";
 
         public const string gpioObjectsWaitEventName = "gpioObjectsWaitEventName";
         public const string appShutdownWaitEventName = "appShutdownWaitEventName";

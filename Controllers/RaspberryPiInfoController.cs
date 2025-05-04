@@ -30,6 +30,47 @@ namespace raspapi.Controllers
             }
         }
 
+        [HttpGet("GetEndPoints")]
+        public async Task<IActionResult?> GetEndPoints()
+        {
+            try
+            {
+                List<object> endpoints = [];
+
+                foreach (var endpoint in HttpContext.RequestServices.GetServices<EndpointDataSource>().SelectMany(x => x!.Endpoints))
+                {
+                    if (endpoint is RouteEndpoint routeEndpoint)
+                    {
+                        var routepatternrawtext = routeEndpoint.RoutePattern.RawText;
+
+                        foreach (dynamic metadata in routeEndpoint.Metadata)
+                        {
+                            if (metadata.ToString()!.Contains("HttpMethods:"))
+                            {
+                                var end = new HttpEndPoint
+                                {
+                                    HttpCallEndPoint = routepatternrawtext!,
+                                    HttpMethod = metadata.HttpMethods[0]
+                                };
+
+                                if(!end.HttpCallEndPoint.Contains("GetEndPoints"))
+                                    endpoints.Add(end);
+                            }
+                        }
+                        
+                    }
+                }
+
+                return Ok(await Task.FromResult(endpoints));
+                
+            }
+            catch (Exception e)
+            {
+                _logger!.LogCritical("{Message}", e.Message);
+                return BadRequest(e.Message);
+            }
+        }
+
         [HttpGet("GetSystemInfo")]
         public async Task<IActionResult?> GetSystemInfo()
         {

@@ -159,14 +159,14 @@ printf 'Run Tests\n'
 printf '#########\n'
 printf '\n'
 
-#getheader "http://$host:$port"
+getheader "http://$host:$port"
 START=$(date +%s%N | cut -b1-13)
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
-gpioObjects='[{"gpioNumber":23,"gpioValue":null}]'
+gpioObjects='[{"gpioNumber":23,"gpioValue":null},{"gpioNumber":24,"gpioValue":null},{"gpioNumber":25,"gpioValue":null}]'
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh" $gpioObjects
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow" $gpioObjects
 END=$(date +%s%N | cut -b1-13)

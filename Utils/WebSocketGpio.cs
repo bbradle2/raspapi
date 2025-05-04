@@ -10,8 +10,7 @@ namespace raspapi.Utils
     public static class WebSocketGpio
     {
         public static async Task GetGpios(WebSocket webSocket,
-                                         GpioController gpioController,
-                                         List<GpioObject> pObjects,
+                                         List<GpioObject> gpioObjects,
                                          GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
                                          AppShutdownWaitEventHandler appShutdownWaitEventHandler
                                          )
@@ -44,7 +43,7 @@ namespace raspapi.Utils
 
                 }
 
-                var sendBuffer = JsonSerializer.Serialize(pObjects);
+                var sendBuffer = JsonSerializer.Serialize(gpioObjects);
                 sendBuffer = sendBuffer.Replace("\0", string.Empty);
 
                 if (webSocket != null)
@@ -82,7 +81,7 @@ namespace raspapi.Utils
                     }
                 }
 
-                gpioObjectsWaitEventHandler.WaitOne(1000);
+                gpioObjectsWaitEventHandler.WaitOne(10);
 
             }
 

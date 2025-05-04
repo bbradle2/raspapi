@@ -80,7 +80,6 @@ namespace raspapi
 
 
                         await WebSocketGpio.GetGpios(webSocket,
-                                                    gpioController!,
                                                     gpioObjectList!,
                                                     gpioObjectsWaitEventHandler!,
                                                     appShutdownWaitEventHandler!
