@@ -7,7 +7,7 @@ public class CommandLineTask
 {
     public static void RunCommandLineTask(WebApplication app, GpioController gpioController, List<GpioObject> gpioObjectList, GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler, ILogger logger)
     {
-        _ = Task.Factory.StartNew(() =>
+        _ = Task.Factory.StartNew(async () =>
         {
             bool runTask = true;
 
@@ -64,15 +64,18 @@ public class CommandLineTask
                 {
                     foreach (var gpioObject in gpioObjectList!.DistinctBy(s => s.GpioNumber))
                     {
-                        //SendLogMessage($"Checking Gpio {gpioObject.GpioNumber}");
-                        if (gpioController!.IsPinOpen(gpioObject.GpioNumber))
-                        {
-                            logger.LogInformation("Gpio {GpioNumber} Open", gpioObject.GpioNumber);
 
-                        }
-                        else
+                        if (gpioController != null)
                         {
-                            logger.LogInformation("Gpio {GpioNumber} not Open", gpioObject.GpioNumber);
+                            if (gpioController!.IsPinOpen(gpioObject.GpioNumber))
+                            {
+                                logger.LogInformation("Gpio {GpioNumber} Open", gpioObject.GpioNumber);
+
+                            }
+                            else
+                            {
+                                logger.LogInformation("Gpio {GpioNumber} not Open", gpioObject.GpioNumber);
+                            }
                         }
                     }
                     Console.ForegroundColor = ConsoleColor.White;
@@ -81,7 +84,7 @@ public class CommandLineTask
                 {
                     gpioObjectsWaitEventHandler.Set();
                     runTask = false;
-                    app.StopAsync();
+                    await app.StopAsync();
 
                 }
                 else

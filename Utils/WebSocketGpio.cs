@@ -19,9 +19,8 @@ namespace raspapi.Utils
             var buffer = new byte[1024 * 4];
             var receiveResult = await webSocket.ReceiveAsync(
                 new ArraySegment<byte>(buffer), CancellationToken.None);
-            
 
-            while (!receiveResult.CloseStatus.HasValue)
+            while (webSocket!.State == WebSocketState.Open)
             {
 
                 if (appShutdownWaitEventHandler.WaitOne(100))
