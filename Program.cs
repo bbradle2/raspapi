@@ -55,18 +55,6 @@ namespace raspapi
             var gpioObjectsWaitEventHandler = app.Services.GetKeyedService<GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
             var appShutdownWaitEventHandler = app.Services.GetKeyedService<AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
 
-            var gpioObjectConfig = File.ReadAllText("raspberrypi05_PinMapping.json");
-            var gpioConfigList = JsonSerializer.Deserialize<List<GpioObject>>(gpioObjectConfig);
-
-            foreach (var i in gpioConfigList!)
-            {
-                GpioObject gpioObject = i;
-                gpioObject.GpioNumber = i.GpioNumber;
-                gpioObject.GpioValue = null;
-
-                gpioObjectList!.Add(gpioObject);
-            }
-
             app.MapControllers();
 
             _ = app.Use(async (context, next) =>
@@ -128,10 +116,8 @@ namespace raspapi
 
                     foreach (var gpioObject in gpioObjectList!.DistinctBy(s => s.GpioNumber))
                     {
-                        //SendLogMessage($"Checking Gpio {gpioObject.GpioNumber}");
                         if (gpioController!.IsPinOpen(gpioObject.GpioNumber))
                         {
-                            //SendLogMessage($"Gpio {gpioObject.GpioNumber} Open");
                             _logger!.LogInformation("Closing Gpio {gpioObject.GpioNumber}", gpioObject.GpioNumber);
                             gpioController.Write(gpioObject.GpioNumber, PinValue.Low);
                             gpioController.ClosePin(gpioObject.GpioNumber);
@@ -157,7 +143,5 @@ namespace raspapi
 
             app.Run();
         }
-     
-        
     }
 }

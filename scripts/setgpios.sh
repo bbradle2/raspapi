@@ -166,7 +166,7 @@ START=$(date +%s%N | cut -b1-13)
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
-gpioObjects='[{"gpioNumber":23,"gpioValue":null},{"gpioNumber":24,"gpioValue":null},{"gpioNumber":25,"gpioValue":null}]'
+gpioObjects='[{"gpioNumber":23,"gpioValue":null},{"gpioNumber":24,"gpioValue":null},{"gpioNumber":25,"gpioValue":null},{"gpioNumber":26,"gpioValue":null}]'
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh" $gpioObjects
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow" $gpioObjects
 END=$(date +%s%N | cut -b1-13)

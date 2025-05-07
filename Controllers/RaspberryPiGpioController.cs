@@ -16,7 +16,6 @@ namespace raspapi.Controllers
         private readonly GpioController _gpioController;
         private readonly BinarySemaphoreSlim _semaphoreGpio;
         private List<GpioObject> _gpioObjects;
-
         private GpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
         private readonly IConfiguration _configuration;
 
@@ -50,7 +49,7 @@ namespace raspapi.Controllers
 
                 List<GpioObject> gpioObjects = [];
 
-                foreach (var gpioObject in _gpioObjects)
+                foreach (var gpioObject in gpioObjs)
                 {
                     bool gpioValue = false;
                     if (gpioObjs.Where(s => (s.GpioValue == null || s.GpioValue == false) && s.GpioNumber == gpioObject.GpioNumber).Count() == 1)
@@ -105,7 +104,7 @@ namespace raspapi.Controllers
 
                 List<GpioObject> gpioObjects = [];
 
-                foreach (var gpioObject in _gpioObjects)
+                foreach (var gpioObject in gpioObjs)
                 {
                     bool gpioValue = false;
                     if (gpioObjs.Where(s => (s.GpioValue == null || s.GpioValue == true) && s.GpioNumber == gpioObject.GpioNumber).Count() == 1)

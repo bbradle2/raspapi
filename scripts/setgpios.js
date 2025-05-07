@@ -10,11 +10,19 @@ export default function () {
   const payload = JSON.stringify(
     [
       {
+       gpioNumber: 23,
+       gpioValue: null
+      },
+      {
        gpioNumber: 24,
        gpioValue: null
       },
       {
-       gpioNumber: 23,
+       gpioNumber: 25,
+       gpioValue: null
+      },
+      {
+       gpioNumber: 26,
        gpioValue: null
       }
     ]
