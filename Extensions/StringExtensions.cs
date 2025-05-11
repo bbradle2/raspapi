@@ -1,12 +1,10 @@
+using System.Diagnostics;
+
 namespace raspapi.Extensions
 {
-    
-    using System.Diagnostics;
-  
-
     public static class StringExtensions
     {
-        
+
         public static async Task<string> ExecuteBashScriptAsync(this string cmd)
         {
             var escapedArgs = cmd.Replace("\"", "\\\"");

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components.Forms;
 
-
 namespace raspapi.Extensions
 {
     public static class BrowserFileExtensions

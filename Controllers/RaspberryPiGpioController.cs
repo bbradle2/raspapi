@@ -1,13 +1,11 @@
+using System.Device.Gpio;
+using Microsoft.AspNetCore.Mvc;
+using raspapi.Constants;
+using raspapi.Utils;
+using raspapi.Models;
+
 namespace raspapi.Controllers
 {
-    using System.Device.Gpio;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Logging;
-    using raspapi.Constants;
-    using raspapi.Utils;
-    using System.Linq;
-    using raspapi.Models;
-  
     [ApiController]
     [Route("[controller]")]
     public class RaspberryPiGpioController : ControllerBase
@@ -38,7 +36,6 @@ namespace raspapi.Controllers
         [HttpPut("SetGpiosHigh")]
         public async Task<IActionResult?> SetGpiosHigh(List<GpioObject> gpioObjs)
         {
-
             try
             {
                 ArgumentNullException.ThrowIfNull(_semaphoreGpio);
@@ -76,7 +73,7 @@ namespace raspapi.Controllers
                 {
                     _gpioObjects.Add(i);
                 }
-                
+
                 return Ok(_gpioObjects);
             }
             catch (Exception e)
@@ -148,5 +145,5 @@ namespace raspapi.Controllers
                 _gpioObjectsWaitEventHandler.Set();
             }
         }
-    }  
+    }
 }

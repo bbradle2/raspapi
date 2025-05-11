@@ -1,11 +1,9 @@
+using Microsoft.AspNetCore.Mvc;
+using raspapi.Utils;
+using raspapi.Models;
+
 namespace raspapi.Controllers
 {
-
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.AspNetCore.Routing;
-    using raspapi.Utils;
-    using raspapi.Models;
 
     [ApiController]
     [Route("[controller]")]
@@ -23,8 +21,8 @@ namespace raspapi.Controllers
                 _systemInfoObject = DataUtils.PopulateSystemInfoAsync("No Description", "systeminfo").GetAwaiter().GetResult();
                 _product = _systemInfoObject.SystemObjects?[0]?.Product;
                 _systemInfoObject.ProductName = _product!;
-            } 
-            catch 
+            }
+            catch
             {
                 throw;
             }
@@ -53,16 +51,16 @@ namespace raspapi.Controllers
                                     HttpMethod = metadata.HttpMethods[0]
                                 };
 
-                                if(!end.HttpCallEndPoint.Contains("GetEndPoints"))
+                                if (!end.HttpCallEndPoint.Contains("GetEndPoints"))
                                     endpoints.Add(end);
                             }
                         }
-                        
+
                     }
                 }
 
                 return Ok(await Task.FromResult(endpoints));
-                
+
             }
             catch (Exception e)
             {

@@ -1,8 +1,7 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace raspapi.Intercepts
 {
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Logging;
     public class ApiIntercept(RequestDelegate next, ILogger<ApiIntercept> logger)
     {
 

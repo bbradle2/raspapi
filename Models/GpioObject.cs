@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+
 namespace raspapi.Models
 {
     public class GpioObject

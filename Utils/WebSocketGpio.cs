@@ -1,12 +1,10 @@
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using raspapi.Models;
 
 namespace raspapi.Utils
 {
-    using System.Device.Gpio;
-    using System.Net.WebSockets;
-    using System.Text;
-    using System.Text.Json;
-    using raspapi.Models;
-
     public static class WebSocketGpio
     {
         public static async Task GetGpios(WebSocket webSocket,

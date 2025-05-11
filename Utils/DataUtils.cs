@@ -1,11 +1,11 @@
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using raspapi.Models;
+using raspapi.Extensions;
+
 namespace raspapi.Utils
 {
-    using System.Text;
-    using System.Text.Json;
-    using System.Text.Json.Nodes;
-    using raspapi.Models;
-    using raspapi.Extensions;
-
     public static class DataUtils
     {
         private readonly static JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
@@ -39,7 +39,7 @@ namespace raspapi.Utils
             }
             return [.. gpios.DistinctBy(s => s)];
         }
-        
+
         public static async Task<MemoryInfoObject> PopulateMemoryInfoAsync(string ProductName, string Description, string Delimeter = ":")
         {
             try
@@ -100,8 +100,8 @@ namespace raspapi.Utils
                 _semMemInfo.Release();
             }
         }
-        
-        public static async Task<SystemInfoObject> PopulateSystemInfoAsync(string ProductName,string Description)
+
+        public static async Task<SystemInfoObject> PopulateSystemInfoAsync(string ProductName, string Description)
         {
             try
             {
@@ -126,18 +126,18 @@ namespace raspapi.Utils
                 };
 
                 return systemInfoObject;
-            } 
-            catch 
+            }
+            catch
             {
                 throw;
-            } 
-            finally 
+            }
+            finally
             {
                 _semSysInfo.Release();
             }
         }
 
-        public static async Task<TemperatureInfoObject> PopulateGetTemperatureInfoAsync(string ProductName,string Description,string Delimeter = "=")
+        public static async Task<TemperatureInfoObject> PopulateGetTemperatureInfoAsync(string ProductName, string Description, string Delimeter = "=")
         {
             try
             {
@@ -159,18 +159,18 @@ namespace raspapi.Utils
                 };
 
                 return temperatureInfoObject;
-            } 
-            catch 
+            }
+            catch
             {
                 throw;
             }
-            finally 
+            finally
             {
                 _semTemperatureInfo.Release();
             }
         }
 
-        public static async Task<CPUInfoObject> PopulateCpuInfoAsync(string ProductName,string Description)
+        public static async Task<CPUInfoObject> PopulateCpuInfoAsync(string ProductName, string Description)
         {
             try
             {
@@ -195,12 +195,12 @@ namespace raspapi.Utils
                 };
 
                 return cpuInfoObject;
-            } 
-            catch 
+            }
+            catch
             {
                 throw;
             }
-            finally 
+            finally
             {
                 _semCpuInfo.Release();
             }

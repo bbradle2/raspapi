@@ -1,18 +1,13 @@
 ﻿using System.Device.Gpio;
 using raspapi.Constants;
-using System.Net.NetworkInformation;
 using raspapi.Utils;
 using raspapi.Models;
-using System.Text.Json;
 using raspapi.Intercepts;
-
 
 namespace raspapi
 {
-    
     class Program
     {
-        
         private static ILogger<Program>? _logger;
         public static void OnSigInt(object? sender, ConsoleCancelEventArgs e)
         {
@@ -24,7 +19,6 @@ namespace raspapi
             _logger!.LogInformation("SIGTERM Received...");
         }
         
-
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.ProcessExit += OnSigTerm;
@@ -59,7 +53,6 @@ namespace raspapi
 
             _ = app.Use(async (context, next) =>
             {
-
                 if (context.Request.Path == "/GetGpios")
                 {
                     if (context.WebSockets.IsWebSocketRequest)
@@ -83,14 +76,15 @@ namespace raspapi
                 {
                     await next(context);
                 }
-
             });
 
-            CommandLineTask.RunCommandLineTask(app,
-                              gpioController!,
-                              gpioObjectList!,
-                              gpioObjectsWaitEventHandler!,
-                              _logger);
+            CommandLineTask.RunCommandLineTask(
+                                               app,
+                                               gpioController!,
+                                               gpioObjectList!,
+                                               gpioObjectsWaitEventHandler!,
+                                               _logger
+                                              );
 
             _ = app.Lifetime.ApplicationStopping.Register(() =>
             {
