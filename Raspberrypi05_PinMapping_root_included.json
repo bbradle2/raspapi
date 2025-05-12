@@ -100,5 +100,9 @@
     {
         "GpioNumber": 26,
         "GpioValue": null
+    },
+    {
+        "GpioNumber": 27,
+        "GpioValue": null
     }
 ]
