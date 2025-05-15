@@ -36,7 +36,7 @@ export default function () {
   const params = {
     headers: {
       'Content-Type': 'application/json',
-      'AUTHORIZED_USER': 'bbrad'
+      'AUTHORIZED_USER': __ENV.USER
       },
     };
   
