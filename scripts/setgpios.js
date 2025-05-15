@@ -24,7 +24,11 @@ export default function () {
       {
        gpioNumber: 26,
        gpioValue: null
-      }
+      },
+      {
+        gpioNumber: 27,
+        gpioValue: null
+       }
     ]
   );
   

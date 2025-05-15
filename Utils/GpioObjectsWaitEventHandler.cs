@@ -1,6 +1,9 @@
+using raspapi.Interfaces;
+
 namespace raspapi.Utils
 {
-    public class GpioObjectsWaitEventHandler
+
+    public class GpioObjectsWaitEventHandler : IGpioObjectsWaitEventHandler
     {
         private readonly EventWaitHandle _eventHandle;
 
@@ -10,17 +13,18 @@ namespace raspapi.Utils
         }
         public bool WaitOne(int millSeconds)
         {
-           return _eventHandle.WaitOne(millSeconds);
+            return _eventHandle.WaitOne(millSeconds);
         }
         public bool Set()
         {
             return _eventHandle.Set();
         }
-        
 
 
 
-       
+
+
+
 
     }
 }

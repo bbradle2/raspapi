@@ -1,6 +1,9 @@
+using raspapi.Interfaces;
+
 namespace raspapi.Utils
 {
-    public class BinarySemaphoreSlim
+
+    public class BinarySemaphoreSlim : IBinarySemaphoreSlim
     {
         private readonly SemaphoreSlim _semaphore;
         private readonly int IntialCount = 1;

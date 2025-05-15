@@ -3,6 +3,7 @@ using raspapi.Constants;
 using raspapi.Utils;
 using raspapi.Models;
 using raspapi.Intercepts;
+using raspapi.Interfaces;
 
 namespace raspapi
 {
@@ -29,10 +30,10 @@ namespace raspapi
             builder.Logging.AddConsole();
 
             builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
-            builder.Services.AddKeyedSingleton<BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
-            builder.Services.AddKeyedSingleton<List<GpioObject>>(MiscConstants.gpioObjectsName);
-            builder.Services.AddKeyedSingleton<GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
-            builder.Services.AddKeyedSingleton<AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
+            builder.Services.AddKeyedSingleton<IBinarySemaphoreSlim,BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
+            builder.Services.AddKeyedSingleton<IList<GpioObject>, List<GpioObject>>(MiscConstants.gpioObjectsName);
+            builder.Services.AddKeyedSingleton<IGpioObjectsWaitEventHandler,GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
+            builder.Services.AddKeyedSingleton<IAppShutdownWaitEventHandler,AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
 
             builder.Services.AddControllers();
 
@@ -44,10 +45,10 @@ namespace raspapi
             _logger = app.Services.GetRequiredService<ILogger<Program>>();
 
             var gpioController = app.Services.GetKeyedService<GpioController>(MiscConstants.gpioControllerName);
-            var gpioSemaphore = app.Services.GetKeyedService<BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
-            var gpioObjectList = app.Services.GetKeyedService<List<GpioObject>>(MiscConstants.gpioObjectsName);
-            var gpioObjectsWaitEventHandler = app.Services.GetKeyedService<GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
-            var appShutdownWaitEventHandler = app.Services.GetKeyedService<AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
+            var gpioSemaphore = app.Services.GetKeyedService<IBinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
+            var gpioObjectList = app.Services.GetKeyedService<IList<GpioObject>>(MiscConstants.gpioObjectsName);
+            var gpioObjectsWaitEventHandler = app.Services.GetKeyedService<IGpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
+            var appShutdownWaitEventHandler = app.Services.GetKeyedService<IAppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
 
             app.MapControllers();
 

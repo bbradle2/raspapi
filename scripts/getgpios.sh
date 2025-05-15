@@ -5,16 +5,16 @@ websocket_url="ws://localhost:5000/GetGpios"
 # Function to send a message and receive response
 send_and_receive() 
 {
-    request=$(wscat -c "$websocket_url" -w 1 -x  '[]' --header 'AUTHORIZED_USER':'bbrad')
+    response=$(wscat -c "$websocket_url" -w 1 -x  '[]' --header 'AUTHORIZED_USER':'bbrad')
   
 
-    response=$(echo "$request" | grep -v "Connected (press CTRL+C to quit)" | sed 's/> //')
+    returnVal=$(echo "$response" | grep -v "Connected (press CTRL+C to quit)" | sed 's/> //')
 
-    # Handle empty responses
-    if [[ -z "$response" ]]; then
-        echo "No response received."
+    # Handle empty returnVal
+    if [[ -z "$returnVal" ]]; then
+        echo "No returnVal received."
     else
-         printf '%s' $response | jq .
+         printf '%s' $returnVal | jq .
     fi
 
 }

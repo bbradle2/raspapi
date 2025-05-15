@@ -1,3 +1,4 @@
+using raspapi.Interfaces;
 using raspapi.Models;
 using System.Device.Gpio;
 using System.Net.NetworkInformation;
@@ -6,7 +7,7 @@ namespace raspapi.Utils
 {
     public class CommandLineTask
     {
-        public static void RunCommandLineTask(WebApplication app, GpioController gpioController, List<GpioObject> gpioObjectList, GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler, ILogger logger)
+        public static void RunCommandLineTask(WebApplication app, GpioController gpioController, IList<GpioObject> gpioObjectList, IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler, ILogger logger)
         {
             _ = Task.Factory.StartNew(async () =>
             {
@@ -27,8 +28,6 @@ namespace raspapi.Utils
                                         .Services
                                         .GetServices<EndpointDataSource>()
                                         .SelectMany(x => x!.Endpoints);
-
-                        logger!.LogInformation($"ENDPOINTS:");
 
                         foreach (var endpoint in endpoints)
                         {

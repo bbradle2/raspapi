@@ -14,16 +14,17 @@ namespace raspapi.Intercepts
 
             if (context.Request.Headers["AUTHORIZED_USER"] == Environment.UserName)
             {
+                logger.LogInformation("Authorized User {Environment.UserName}", Environment.UserName);
                 await next(context);
-            }
-            else
-            {
-                context.Response.StatusCode = 401;
-                string unauthorizedUser = context.Request.Headers["AUTHORIZED_USER"]!;
-                logger.LogError("UnauthorizedUser {unauthorizedUser}", unauthorizedUser);
-                await context.Response.WriteAsJsonAsync(new UnauthorizedResult());
                 return;
             }
+ 
+            context.Response.StatusCode = 401;
+            string unauthorizedUser = context.Request.Headers["AUTHORIZED_USER"]!;
+            logger.LogError("Unauthorized User {unauthorizedUser}", unauthorizedUser);
+            await context.Response.WriteAsJsonAsync(new UnauthorizedResult());
+            return;
+ 
         }
     }
 }

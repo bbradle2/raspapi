@@ -2,15 +2,16 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using raspapi.Models;
+using raspapi.Interfaces;
 
 namespace raspapi.Utils
 {
     public static class WebSocketGpio
     {
         public static async Task GetGpios(WebSocket webSocket,
-                                         List<GpioObject> gpioObjects,
-                                         GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                         AppShutdownWaitEventHandler appShutdownWaitEventHandler
+                                         IList<GpioObject> gpioObjects,
+                                         IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                         IAppShutdownWaitEventHandler appShutdownWaitEventHandler
                                          )
         {
 

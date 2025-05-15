@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using raspapi.Constants;
 using raspapi.Utils;
 using raspapi.Models;
+using raspapi.Interfaces;
 
 namespace raspapi.Controllers
 {
@@ -12,16 +13,16 @@ namespace raspapi.Controllers
     {
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
-        private readonly BinarySemaphoreSlim _semaphoreGpio;
-        private List<GpioObject> _gpioObjects;
-        private GpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
+        private readonly IBinarySemaphoreSlim _semaphoreGpio;
+        private IList<GpioObject> _gpioObjects;
+        private IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
         private readonly IConfiguration _configuration;
 
         public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
                                          [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] BinarySemaphoreSlim semaphoreGpio,
-                                         [FromKeyedServices(MiscConstants.gpioObjectsName)] List<GpioObject> gpioObjects,
-                                         [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] GpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlim semaphoreGpio,
+                                         [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
+                                         [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
                                          IConfiguration configuration)
         {
             _logger = logger;
@@ -34,7 +35,7 @@ namespace raspapi.Controllers
 
 
         [HttpPut("SetGpiosHigh")]
-        public async Task<IActionResult?> SetGpiosHigh(List<GpioObject> gpioObjs)
+        public async Task<IActionResult?> SetGpiosHigh(IList<GpioObject> gpioObjs)
         {
             try
             {
@@ -89,7 +90,7 @@ namespace raspapi.Controllers
         }
 
         [HttpPut("SetGpiosLow")]
-        public async Task<IActionResult?> SetGpiosLow(List<GpioObject> gpioObjs)
+        public async Task<IActionResult?> SetGpiosLow(IList<GpioObject> gpioObjs)
         {
             try
             {
