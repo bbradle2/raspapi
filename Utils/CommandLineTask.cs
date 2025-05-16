@@ -1,3 +1,4 @@
+using raspapi.Constants;
 using raspapi.Interfaces;
 using raspapi.Models;
 using System.Device.Gpio;
@@ -7,10 +8,16 @@ namespace raspapi.Utils
 {
     public class CommandLineTask
     {
-        public static void RunCommandLineTask(WebApplication app, GpioController gpioController, IList<GpioObject> gpioObjectList, IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler, ILogger logger)
+        public static void RunCommandLineTask(WebApplication app)
         {
             _ = Task.Factory.StartNew(async () =>
             {
+                var gpioObjects = app.Services.GetKeyedService<IList<GpioObject>>(MiscConstants.gpioObjectsName);
+                var gpioObjectsWaitEventHandler = app.Services.GetKeyedService<IGpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
+                var appShutdownWaitEventHandler = app.Services.GetKeyedService<IAppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
+                var logger = app.Services.GetService<ILogger<CommandLineTask>>();
+                var gpioController = app.Services.GetKeyedService<GpioController>(MiscConstants.gpioControllerName);
+
                 bool runTask = true;
 
                 while (runTask)
@@ -62,37 +69,37 @@ namespace raspapi.Utils
 
                     else if (command!.Equals("GPIO".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        if (gpioObjectList != null && gpioObjectList.Count > 0)
+                        if (gpioObjects != null && gpioObjects.Count > 0)
                         {
-                            foreach (var gpioObject in gpioObjectList!.DistinctBy(s => s.GpioNumber))
+                            foreach (var gpioObject in gpioObjects!.DistinctBy(s => s.GpioNumber))
                             {
 
                                 if (gpioController != null)
                                 {
                                     if (gpioController!.IsPinOpen(gpioObject.GpioNumber))
                                     {
-                                        logger.LogInformation("Gpio {GpioNumber} Open", gpioObject.GpioNumber);
+                                        logger!.LogInformation("Gpio {GpioNumber} Open", gpioObject.GpioNumber);
                                         PinValue pinValue = gpioController.Read(gpioObject.GpioNumber);
-                                        logger.LogInformation("Gpio Value is {pinValue} ", pinValue);
+                                        logger!.LogInformation("Gpio Value is {pinValue} ", pinValue);
 
                                     }
                                     else
                                     {
-                                        logger.LogInformation("Gpio {GpioNumber} not Open", gpioObject.GpioNumber);
+                                        logger!.LogInformation("Gpio {GpioNumber} not Open", gpioObject.GpioNumber);
                                     }
                                 }
                             }
                         }
                         else
                         {
-                            logger.LogInformation("No Gpios are Open");
+                            logger!.LogInformation("No Gpios are Open");
                         }
 
                         Console.ForegroundColor = ConsoleColor.White;
                     }
                     else if (command!.Equals("QUIT".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        gpioObjectsWaitEventHandler.Set();
+                        gpioObjectsWaitEventHandler!.Set();
                         runTask = false;
                         await app.StopAsync();
 

@@ -14,15 +14,19 @@ namespace raspapi.Controllers
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
         private readonly IBinarySemaphoreSlim _semaphoreGpio;
-        private IList<GpioObject> _gpioObjects;
-        private IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
+        private readonly IList<GpioObject> _gpioObjects;
+        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
+        private readonly IAppShutdownWaitEventHandler _appShutdownWaitEventHandler;
         private readonly IConfiguration _configuration;
+        private readonly IWebSocketHandler _webSocketHandler;
 
         public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
                                          [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                          [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlim semaphoreGpio,
                                          [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
                                          [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                         [FromKeyedServices(MiscConstants.appShutdownWaitEventName)] IAppShutdownWaitEventHandler appObjectsWaitEventHandler,
+                                         [FromKeyedServices(MiscConstants.webSocketHandlerName)] IWebSocketHandler webSocketHandler,
                                          IConfiguration configuration)
         {
             _logger = logger;
@@ -30,9 +34,26 @@ namespace raspapi.Controllers
             _semaphoreGpio = semaphoreGpio;
             _gpioObjects = gpioObjects;
             _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
+            _appShutdownWaitEventHandler = appObjectsWaitEventHandler;
             _configuration = configuration;
+            _webSocketHandler = webSocketHandler;
         }
 
+        [Route("/ws")]
+        [HttpGet("GetGpios")]
+        public async Task GetGpios()
+        {
+            if (HttpContext.WebSockets.IsWebSocketRequest)
+            {
+                using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                var requestSerevices = HttpContext.RequestServices;
+                await _webSocketHandler.GetGpios(webSocket, requestSerevices);
+            }
+            else
+            {
+                HttpContext.Response.StatusCode = 400; // Bad request
+            }
+        }
 
         [HttpPut("SetGpiosHigh")]
         public async Task<IActionResult?> SetGpiosHigh(IList<GpioObject> gpioObjs)

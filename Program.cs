@@ -31,61 +31,28 @@ namespace raspapi
 
             builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
             builder.Services.AddKeyedSingleton<IBinarySemaphoreSlim,BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
-            builder.Services.AddKeyedSingleton<IList<GpioObject>, List<GpioObject>>(MiscConstants.gpioObjectsName);
+            builder.Services.AddKeyedSingleton<IList<GpioObject>,List<GpioObject>>(MiscConstants.gpioObjectsName);
             builder.Services.AddKeyedSingleton<IGpioObjectsWaitEventHandler,GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
             builder.Services.AddKeyedSingleton<IAppShutdownWaitEventHandler,AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
+            builder.Services.AddKeyedSingleton<IWebSocketHandler, WebSocketHandler>(MiscConstants.webSocketHandlerName);
 
             builder.Services.AddControllers();
 
             var app = builder.Build();
             app.UseMiddleware<ApiIntercept>();
-            app.UseRouting();
+            app.UseRouting();          
             app.UseWebSockets();
-
-            _logger = app.Services.GetRequiredService<ILogger<Program>>();
-
+             
             var gpioController = app.Services.GetKeyedService<GpioController>(MiscConstants.gpioControllerName);
             var gpioSemaphore = app.Services.GetKeyedService<IBinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
             var gpioObjectList = app.Services.GetKeyedService<IList<GpioObject>>(MiscConstants.gpioObjectsName);
             var gpioObjectsWaitEventHandler = app.Services.GetKeyedService<IGpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
             var appShutdownWaitEventHandler = app.Services.GetKeyedService<IAppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
+            _logger = app.Services.GetRequiredService<ILogger<Program>>();
 
             app.MapControllers();
-
-            _ = app.Use(async (context, next) =>
-            {
-                if (context.Request.Path == "/GetGpios")
-                {
-                    if (context.WebSockets.IsWebSocketRequest)
-                    {
-                        using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-
-
-                        await WebSocketGpio.GetGpios(webSocket,
-                                                    gpioObjectList!,
-                                                    gpioObjectsWaitEventHandler!,
-                                                    appShutdownWaitEventHandler!
-                                                    );
-
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    }
-                }
-                else
-                {
-                    await next(context);
-                }
-            });
-
-            CommandLineTask.RunCommandLineTask(
-                                               app,
-                                               gpioController!,
-                                               gpioObjectList!,
-                                               gpioObjectsWaitEventHandler!,
-                                               _logger
-                                              );
+          
+            CommandLineTask.RunCommandLineTask(app);
 
             _ = app.Lifetime.ApplicationStopping.Register(() =>
             {

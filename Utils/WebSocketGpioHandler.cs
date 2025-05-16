@@ -3,17 +3,21 @@ using System.Text;
 using System.Text.Json;
 using raspapi.Models;
 using raspapi.Interfaces;
+using raspapi.Constants;
+using raspapi.Controllers;
 
 namespace raspapi.Utils
 {
-    public static class WebSocketGpio
+   
+    public class WebSocketHandler : IWebSocketHandler
     {
-        public static async Task GetGpios(WebSocket webSocket,
-                                         IList<GpioObject> gpioObjects,
-                                         IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                         IAppShutdownWaitEventHandler appShutdownWaitEventHandler
-                                         )
+        public async Task GetGpios(WebSocket webSocket, IServiceProvider requestServices)
         {
+
+            var gpioObjects = requestServices.GetKeyedService<IList<GpioObject>>(MiscConstants.gpioObjectsName);
+            var gpioObjectsWaitEventHandler = requestServices.GetKeyedService<IGpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
+            var appShutdownWaitEventHandler = requestServices.GetKeyedService<IAppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
+            var logger = requestServices.GetService<ILogger<WebSocketHandler>>();
 
             var buffer = new byte[1024 * 4];
             var receiveResult = await webSocket.ReceiveAsync(
@@ -22,7 +26,7 @@ namespace raspapi.Utils
             while (webSocket!.State == WebSocketState.Open)
             {
 
-                if (appShutdownWaitEventHandler.WaitOne(100))
+                if (appShutdownWaitEventHandler!.WaitOne(100))
                 {
 
                     if (webSocket == null || webSocket!.State == WebSocketState.Closed || webSocket!.State == WebSocketState.Aborted)
@@ -37,8 +41,6 @@ namespace raspapi.Utils
                                    CancellationToken.None);
                         return;
                     }
-
-
                 }
 
                 var sendBuffer = JsonSerializer.Serialize(gpioObjects);
@@ -56,34 +58,34 @@ namespace raspapi.Utils
 
                         if (webSocket.State == WebSocketState.Aborted || webSocket.State == WebSocketState.CloseSent || webSocket.State == WebSocketState.CloseReceived)
                         {
-                            Console.WriteLine($"WebSocket CloseSent, Aborted or CloseReceived..");
+                            logger!.LogInformation("WebSocket CloseSent, Aborted or CloseReceived..");
                             return;
                         }
 
-                       
+
                         receiveResult = await webSocket.ReceiveAsync(
                             new ArraySegment<byte>(buffer), CancellationToken.None);
-                        
+
                         var s = Encoding.UTF8.GetString(buffer);
 
                         if (s.StartsWith("[]"))
-                            Console.WriteLine($"Received Initalize message {s}");
+                            logger!.LogInformation("Received Initalize message {s}", s);
                         else
-                            Console.WriteLine($"Received message {s}");
+                            logger!.LogInformation("Received message {s}", s);
 
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine("Client Aborted Connection");
+                        logger!.LogInformation("Client Aborted Connection");
                         return;
                     }
                 }
 
-                gpioObjectsWaitEventHandler.WaitOne(10);
+                gpioObjectsWaitEventHandler!.WaitOne(10);
 
             }
 
-            Console.WriteLine($"WebSocket Closed");
+            logger!.LogInformation("WebSocket Closed");
         }
     }
 }
