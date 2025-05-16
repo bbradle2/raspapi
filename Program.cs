@@ -4,6 +4,7 @@ using raspapi.Utils;
 using raspapi.Models;
 using raspapi.Intercepts;
 using raspapi.Interfaces;
+using raspapi.Handlers;
 
 namespace raspapi
 {
@@ -30,7 +31,7 @@ namespace raspapi
             builder.Logging.AddConsole();
 
             builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
-            builder.Services.AddKeyedSingleton<IBinarySemaphoreSlim,BinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
+            builder.Services.AddKeyedSingleton<IBinarySemaphoreSlimHandler, BinarySemaphoreSlimHandler>(MiscConstants.gpioSemaphoreName);
             builder.Services.AddKeyedSingleton<IList<GpioObject>,List<GpioObject>>(MiscConstants.gpioObjectsName);
             builder.Services.AddKeyedSingleton<IGpioObjectsWaitEventHandler,GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
             builder.Services.AddKeyedSingleton<IAppShutdownWaitEventHandler,AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
@@ -44,7 +45,7 @@ namespace raspapi
             app.UseWebSockets();
              
             var gpioController = app.Services.GetKeyedService<GpioController>(MiscConstants.gpioControllerName);
-            var gpioSemaphore = app.Services.GetKeyedService<IBinarySemaphoreSlim>(MiscConstants.gpioSemaphoreName);
+            var gpioSemaphore = app.Services.GetKeyedService<IBinarySemaphoreSlimHandler>(MiscConstants.gpioSemaphoreName);
             var gpioObjectList = app.Services.GetKeyedService<IList<GpioObject>>(MiscConstants.gpioObjectsName);
             var gpioObjectsWaitEventHandler = app.Services.GetKeyedService<IGpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
             var appShutdownWaitEventHandler = app.Services.GetKeyedService<IAppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);

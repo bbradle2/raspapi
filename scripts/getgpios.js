@@ -8,9 +8,11 @@ import { check, sleep } from 'k6';
 //   vus: 1,
 //   iterations: 1,
 // };
+const iterations = 100;
+var currentIterator = 0;
 
 export default function () {
-  const url = `ws://localhost:5000/GetGpios`;
+  const url = `ws://localhost:5000/RaspberryPiGpio/GetGpios`;
   const params = { 
                    headers: {
                     'Content-Type':'application/json',
@@ -26,31 +28,28 @@ export default function () {
       socket.send(JSON.stringify([]));
      
     });
-
-    socket.on('ping', function () {
-      console.log('PING!');
-    });
-
-    socket.on('pong', function () {
-      console.log('PONG!');
-    });
-
+  
     socket.on('close', function () {
       console.log(`disconnected`);
-      
     });
 
     socket.on('message', function (message) {
-      
       const gpios = JSON.parse(message);
       for(var i = 0; i < gpios.length; i++) 
         console.log(`received message: ${gpios[i].GpioNumber}:${gpios[i].GpioValue}`);
-      
-      socket.close();
+
+      if(currentIterator < iterations)
+        socket.send(message);
+
+      if(currentIterator >= iterations)
+        socket.close();
+
+      //sleep(1);
+      currentIterator++;      
     });
    
   });
 
   check(res, { 'Completed successfully': (r) => r && r.status === 101 });
-  //sleep(1);
+  sleep(1);
 }

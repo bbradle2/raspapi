@@ -3,16 +3,17 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using raspapi.Models;
 using raspapi.Extensions;
+using raspapi.Handlers;
 
 namespace raspapi.Utils
 {
     public static class DataUtils
     {
         private readonly static JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
-        private static readonly SemaphoreSlim _semMemInfo = new(1, 1);
-        private static readonly SemaphoreSlim _semSysInfo = new(1, 1);
-        private static readonly SemaphoreSlim _semTemperatureInfo = new(1, 1);
-        private static readonly SemaphoreSlim _semCpuInfo = new(1, 1);
+        private readonly static SemaphoreSlim _semMemInfo = new(1, 1);
+        private readonly static SemaphoreSlim _semSysInfo = new(1, 1);
+        private readonly static SemaphoreSlim _semTemperatureInfo = new(1, 1);
+        private readonly static SemaphoreSlim _semCpuInfo = new(1, 1);
 
         public static List<GpioObject> JsonArrayToGpioObjectArray(JsonArray gpioObjects)
         {

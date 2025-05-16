@@ -1,21 +1,19 @@
 using raspapi.Interfaces;
-namespace raspapi.Utils
+
+namespace raspapi.Handlers
 {
 
-    public class AppShutdownWaitEventHandler : IAppShutdownWaitEventHandler
+    public class GpioObjectsWaitEventHandler : IGpioObjectsWaitEventHandler
     {
         private readonly EventWaitHandle _eventHandle;
 
-        public AppShutdownWaitEventHandler()
+        public GpioObjectsWaitEventHandler()
         {
             _eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
         }
         public bool WaitOne(int millSeconds)
         {
             return _eventHandle.WaitOne(millSeconds);
-
-
-
         }
         public bool Set()
         {

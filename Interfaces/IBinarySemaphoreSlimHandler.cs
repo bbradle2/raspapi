@@ -1,6 +1,6 @@
 namespace raspapi.Interfaces
 {
-    public interface IBinarySemaphoreSlim
+    public interface IBinarySemaphoreSlimHandler
     {
         int Release();
         Task WaitAsync();

@@ -1,15 +1,15 @@
 using raspapi.Interfaces;
 
-namespace raspapi.Utils
+namespace raspapi.Handlers
 {
 
-    public class BinarySemaphoreSlim : IBinarySemaphoreSlim
+    public class BinarySemaphoreSlimHandler : IBinarySemaphoreSlimHandler
     {
         private readonly SemaphoreSlim _semaphore;
         private readonly int IntialCount = 1;
         private readonly int CurrentCount = 1;
 
-        public BinarySemaphoreSlim()
+        public BinarySemaphoreSlimHandler()
         {
             _semaphore = new SemaphoreSlim(IntialCount, CurrentCount);
         }

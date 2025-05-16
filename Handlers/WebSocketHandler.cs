@@ -4,9 +4,8 @@ using System.Text.Json;
 using raspapi.Models;
 using raspapi.Interfaces;
 using raspapi.Constants;
-using raspapi.Controllers;
 
-namespace raspapi.Utils
+namespace raspapi.Handlers
 {
    
     public class WebSocketHandler : IWebSocketHandler
@@ -19,11 +18,14 @@ namespace raspapi.Utils
             var appShutdownWaitEventHandler = requestServices.GetKeyedService<IAppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
             var logger = requestServices.GetService<ILogger<WebSocketHandler>>();
 
-            var buffer = new byte[1024 * 4];
+            var initBuffer = new byte[1024 * 4];
             var receiveResult = await webSocket.ReceiveAsync(
-                new ArraySegment<byte>(buffer), CancellationToken.None);
+                new ArraySegment<byte>(initBuffer), CancellationToken.None);
 
-            while (webSocket!.State == WebSocketState.Open)
+            while (webSocket!.State == WebSocketState.Open &&
+                  receiveResult.EndOfMessage &&
+                  initBuffer[0] == '[' &&
+                  initBuffer[1] == ']')
             {
 
                 if (appShutdownWaitEventHandler!.WaitOne(100))
@@ -63,25 +65,36 @@ namespace raspapi.Utils
                         }
 
 
+                        var recvBuffer = new byte[1024 * 4];
                         receiveResult = await webSocket.ReceiveAsync(
-                            new ArraySegment<byte>(buffer), CancellationToken.None);
+                            new ArraySegment<byte>(recvBuffer), CancellationToken.None);
 
-                        var s = Encoding.UTF8.GetString(buffer);
-
-                        if (s.StartsWith("[]"))
-                            logger!.LogInformation("Received Initalize message {s}", s);
+                        if (recvBuffer[0] == '[' &&
+                            recvBuffer[1] == ']' &&
+                            receiveResult.EndOfMessage)
+                        {
+                            logger!.LogInformation("Received Initalize message []");
+                        }
                         else
-                            logger!.LogInformation("Received message {s}", s);
+                        {
+                            if (receiveResult.EndOfMessage && recvBuffer[0] == '[')
+                            {
+                                // make sure message can de-serialize to an array of gpioObjects
+                                var s = Encoding.UTF8.GetString(recvBuffer).Replace("\0", string.Empty);
+                                var gpios = JsonSerializer.Deserialize<GpioObject[]?>(s);
+                                logger!.LogInformation("Received message {s}", s!);
+                            }
+                        }
 
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        logger!.LogInformation("Client Aborted Connection");
+                        logger!.LogInformation("Client Aborted Connection{ex.Message}", ex.Message);
                         return;
                     }
                 }
 
-                gpioObjectsWaitEventHandler!.WaitOne(10);
+                gpioObjectsWaitEventHandler!.WaitOne(1);
 
             }
 

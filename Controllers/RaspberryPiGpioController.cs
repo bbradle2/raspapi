@@ -1,7 +1,6 @@
 using System.Device.Gpio;
 using Microsoft.AspNetCore.Mvc;
 using raspapi.Constants;
-using raspapi.Utils;
 using raspapi.Models;
 using raspapi.Interfaces;
 
@@ -13,7 +12,7 @@ namespace raspapi.Controllers
     {
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
-        private readonly IBinarySemaphoreSlim _semaphoreGpio;
+        private readonly IBinarySemaphoreSlimHandler _semaphoreGpio;
         private readonly IList<GpioObject> _gpioObjects;
         private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
         private readonly IAppShutdownWaitEventHandler _appShutdownWaitEventHandler;
@@ -22,7 +21,7 @@ namespace raspapi.Controllers
 
         public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
                                          [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlim semaphoreGpio,
+                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlimHandler semaphoreGpio,
                                          [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
                                          [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
                                          [FromKeyedServices(MiscConstants.appShutdownWaitEventName)] IAppShutdownWaitEventHandler appObjectsWaitEventHandler,
