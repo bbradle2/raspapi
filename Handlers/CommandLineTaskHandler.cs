@@ -1,23 +1,42 @@
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting.Server;
 using raspapi.Constants;
 using raspapi.Interfaces;
 using raspapi.Models;
 using System.Device.Gpio;
 using System.Net.NetworkInformation;
 
-namespace raspapi.Utils
+namespace raspapi.Handlers
 {
-    public class CommandLineTask
+   
+    public class CommandLineTaskHandler : ICommandLineTaskHandler
     {
-        public static void RunCommandLineTask(WebApplication app)
+        private readonly GpioController _gpioController;
+        private readonly IList<GpioObject> _gpioObjectList;
+        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
+        private readonly IServiceProvider _services;
+        private readonly ILogger<CommandLineTaskHandler> _logger;
+
+        public CommandLineTaskHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
+                                      [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
+                                      [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                      IServiceProvider services,
+                                      ILogger<CommandLineTaskHandler> logger)
+        {
+            _gpioObjectList = gpioObjectList;
+            _gpioController = gpioController;
+            _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
+            _services = services;
+            _logger = logger;
+
+        }
+
+        public void Handle(WebApplication app)
         {
             _ = Task.Factory.StartNew(async () =>
             {
-                var gpioObjects = app.Services.GetKeyedService<IList<GpioObject>>(MiscConstants.gpioObjectsName);
-                var gpioObjectsWaitEventHandler = app.Services.GetKeyedService<IGpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
-                var appShutdownWaitEventHandler = app.Services.GetKeyedService<IAppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
-                var logger = app.Services.GetService<ILogger<CommandLineTask>>();
-                var gpioController = app.Services.GetKeyedService<GpioController>(MiscConstants.gpioControllerName);
 
+               
                 bool runTask = true;
 
                 while (runTask)
@@ -26,9 +45,9 @@ namespace raspapi.Utils
 
                     if (command!.Equals("INFO".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        logger!.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}", app.Environment.EnvironmentName);
-                        logger!.LogInformation("APPICATION_NAME:{ApplicationName}", app.Environment.ApplicationName);
-                        // _logger.LogInformation("WEB_ROOT_PATH:{WebRootPath}", app.Environment.WebRootPath);
+                        _logger!.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}", app!.Environment.EnvironmentName);
+                        _logger!.LogInformation("APPICATION_NAME:{ApplicationName}", app.Environment.ApplicationName);
+
                         var urls = app.Urls;
 
                         var endpoints = app
@@ -45,9 +64,9 @@ namespace raspapi.Utils
 
 
                                 if (routepatternrawtext!.StartsWith('/'))
-                                    logger!.LogInformation("ENDPOINT:{url}{RawText}", url, routepatternrawtext);
+                                    _logger!.LogInformation("ENDPOINT:{url}{RawText}", url, routepatternrawtext);
                                 else
-                                    logger!.LogInformation("ENDPOINT:{url}/{RawText}", url, routepatternrawtext);
+                                    _logger!.LogInformation("ENDPOINT:{url}/{RawText}", url, routepatternrawtext);
 
                             }
 
@@ -63,50 +82,49 @@ namespace raspapi.Utils
                                               where connection.LocalEndPoint.Port == new Uri(urls.FirstOrDefault()!).Port
                                               select connection;
 
-                        logger!.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
+                        _logger!.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
 
                     }
-
                     else if (command!.Equals("GPIO".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        if (gpioObjects != null && gpioObjects.Count > 0)
+                        if (_gpioObjectList != null && _gpioObjectList.Count > 0)
                         {
-                            foreach (var gpioObject in gpioObjects!.DistinctBy(s => s.GpioNumber))
+                            foreach (var gpioObject in _gpioObjectList!.DistinctBy(s => s.GpioNumber))
                             {
 
-                                if (gpioController != null)
+                                if (_gpioController != null)
                                 {
-                                    if (gpioController!.IsPinOpen(gpioObject.GpioNumber))
+                                    if (_gpioController!.IsPinOpen(gpioObject.GpioNumber))
                                     {
-                                        logger!.LogInformation("Gpio {GpioNumber} Open", gpioObject.GpioNumber);
-                                        PinValue pinValue = gpioController.Read(gpioObject.GpioNumber);
-                                        logger!.LogInformation("Gpio Value is {pinValue} ", pinValue);
+                                        _logger!.LogInformation("Gpio {GpioNumber} Open", gpioObject.GpioNumber);
+                                        PinValue pinValue = _gpioController.Read(gpioObject.GpioNumber);
+                                        _logger!.LogInformation("Gpio Value is {pinValue} ", pinValue);
 
                                     }
                                     else
                                     {
-                                        logger!.LogInformation("Gpio {GpioNumber} not Open", gpioObject.GpioNumber);
+                                        _logger!.LogInformation("Gpio {GpioNumber} not Open", gpioObject.GpioNumber);
                                     }
                                 }
                             }
                         }
                         else
                         {
-                            logger!.LogInformation("No Gpios are Open");
+                            _logger!.LogInformation("No Gpios are Open");
                         }
 
                         Console.ForegroundColor = ConsoleColor.White;
                     }
                     else if (command!.Equals("QUIT".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        gpioObjectsWaitEventHandler!.Set();
+                        _gpioObjectsWaitEventHandler!.Set();
                         runTask = false;
                         await app.StopAsync();
 
                     }
                     else
                     {
-                        logger!.LogWarning("Invalid command. Valid commands are quit,info or gpio");
+                        _logger!.LogWarning("Invalid command. Valid commands are quit,info or gpio");
                     }
                 }
             });

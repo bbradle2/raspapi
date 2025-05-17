@@ -21,12 +21,5 @@ namespace raspapi.Handlers
         {
             return _eventHandle.Set();
         }
-
-
-
-
-
-
-
     }
 }

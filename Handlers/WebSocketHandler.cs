@@ -4,19 +4,40 @@ using System.Text.Json;
 using raspapi.Models;
 using raspapi.Interfaces;
 using raspapi.Constants;
+using System.Device.Gpio;
 
 namespace raspapi.Handlers
 {
    
     public class WebSocketHandler : IWebSocketHandler
     {
-        public async Task GetGpios(WebSocket webSocket, IServiceProvider requestServices)
+
+        private readonly IList<GpioObject> _gpioObjects;
+        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
+        private readonly IAppShutdownWaitEventHandler _appShutdownWaitEventHandler;
+        private readonly IBinarySemaphoreSlimHandler _binarySemphoreSlimHandler;
+        private readonly IServiceProvider _services;
+        private readonly ILogger _logger;
+
+        public WebSocketHandler([FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
+                                [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                [FromKeyedServices(MiscConstants.appShutdownWaitEventName)] IAppShutdownWaitEventHandler appShutdownWaitEventHandler,
+                                [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
+                                IServiceProvider services,
+                                ILogger<WebSocketHandler> logger)
         {
 
-            var gpioObjects = requestServices.GetKeyedService<IList<GpioObject>>(MiscConstants.gpioObjectsName);
-            var gpioObjectsWaitEventHandler = requestServices.GetKeyedService<IGpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
-            var appShutdownWaitEventHandler = requestServices.GetKeyedService<IAppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
-            var logger = requestServices.GetService<ILogger<WebSocketHandler>>();
+            _gpioObjects = gpioObjects;
+            _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
+            _services = services;
+            _appShutdownWaitEventHandler = appShutdownWaitEventHandler;
+            _binarySemphoreSlimHandler = binarySemaphoreSlimHandler;
+            _logger = logger;
+
+        }
+        
+        public async Task GetGpios(WebSocket webSocket)
+        {
 
             var initBuffer = new byte[1024 * 4];
             var receiveResult = await webSocket.ReceiveAsync(
@@ -28,7 +49,7 @@ namespace raspapi.Handlers
                   initBuffer[1] == ']')
             {
 
-                if (appShutdownWaitEventHandler!.WaitOne(100))
+                if (_appShutdownWaitEventHandler!.WaitOne(100))
                 {
 
                     if (webSocket == null || webSocket!.State == WebSocketState.Closed || webSocket!.State == WebSocketState.Aborted)
@@ -45,7 +66,7 @@ namespace raspapi.Handlers
                     }
                 }
 
-                var sendBuffer = JsonSerializer.Serialize(gpioObjects);
+                var sendBuffer = JsonSerializer.Serialize(_gpioObjects);
                 sendBuffer = sendBuffer.Replace("\0", string.Empty);
 
                 if (webSocket != null)
@@ -60,7 +81,7 @@ namespace raspapi.Handlers
 
                         if (webSocket.State == WebSocketState.Aborted || webSocket.State == WebSocketState.CloseSent || webSocket.State == WebSocketState.CloseReceived)
                         {
-                            logger!.LogInformation("WebSocket CloseSent, Aborted or CloseReceived..");
+                            _logger!.LogInformation("WebSocket CloseSent, Aborted or CloseReceived..");
                             return;
                         }
 
@@ -73,7 +94,7 @@ namespace raspapi.Handlers
                             recvBuffer[1] == ']' &&
                             receiveResult.EndOfMessage)
                         {
-                            logger!.LogInformation("Received Initalize message []");
+                            _logger!.LogInformation("Received Initalize message []");
                         }
                         else
                         {
@@ -82,23 +103,23 @@ namespace raspapi.Handlers
                                 // make sure message can de-serialize to an array of gpioObjects
                                 var s = Encoding.UTF8.GetString(recvBuffer).Replace("\0", string.Empty);
                                 var gpios = JsonSerializer.Deserialize<GpioObject[]?>(s);
-                                logger!.LogInformation("Received message {s}", s!);
+                                _logger!.LogInformation("Received message {s}", s!);
                             }
                         }
 
                     }
                     catch (Exception ex)
                     {
-                        logger!.LogInformation("Client Aborted Connection{ex.Message}", ex.Message);
+                        _logger!.LogInformation("Client Aborted Connection{ex.Message}", ex.Message);
                         return;
                     }
                 }
 
-                gpioObjectsWaitEventHandler!.WaitOne(1);
+                _gpioObjectsWaitEventHandler!.WaitOne(1);
 
             }
 
-            logger!.LogInformation("WebSocket Closed");
+            _logger!.LogInformation("WebSocket Closed");
         }
     }
 }

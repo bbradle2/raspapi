@@ -36,73 +36,23 @@ namespace raspapi
             builder.Services.AddKeyedSingleton<IGpioObjectsWaitEventHandler,GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
             builder.Services.AddKeyedSingleton<IAppShutdownWaitEventHandler,AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
             builder.Services.AddKeyedSingleton<IWebSocketHandler, WebSocketHandler>(MiscConstants.webSocketHandlerName);
-
+           
             builder.Services.AddControllers();
 
             var app = builder.Build();
+
+            _logger = app.Services.GetRequiredService<ILogger<Program>>();
+
             app.UseMiddleware<ApiIntercept>();
             app.UseRouting();          
             app.UseWebSockets();
-             
-            var gpioController = app.Services.GetKeyedService<GpioController>(MiscConstants.gpioControllerName);
-            var gpioSemaphore = app.Services.GetKeyedService<IBinarySemaphoreSlimHandler>(MiscConstants.gpioSemaphoreName);
-            var gpioObjectList = app.Services.GetKeyedService<IList<GpioObject>>(MiscConstants.gpioObjectsName);
-            var gpioObjectsWaitEventHandler = app.Services.GetKeyedService<IGpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
-            var appShutdownWaitEventHandler = app.Services.GetKeyedService<IAppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
-            _logger = app.Services.GetRequiredService<ILogger<Program>>();
-
             app.MapControllers();
-          
-            CommandLineTask.RunCommandLineTask(app);
 
-            _ = app.Lifetime.ApplicationStopping.Register(() =>
-            {
-                _logger!.LogInformation("Shutting down Gpio Wait Event Handler.");
-                _logger!.LogInformation("Please wait.");
-                gpioObjectsWaitEventHandler!.Set();
-                appShutdownWaitEventHandler!.Set();
-                _logger!.LogInformation("Gpio Wait Event Handler shut down complete");
-            });
+            var commandLineTaskHandler = ActivatorUtilities.GetServiceOrCreateInstance<CommandLineTaskHandler>(app.Services);
+            var appLifeTimeHandler = ActivatorUtilities.GetServiceOrCreateInstance<AppLifeTimeHandler>(app.Services);
 
-
-            _ = app.Lifetime.ApplicationStopped.Register(() =>
-            {
-                try
-                {
-                    gpioSemaphore!.WaitAsync().GetAwaiter();
-                    _logger!.LogInformation("Checking for Open Gpio's....");
-
-                    if (gpioObjectList == null)
-                    {
-                        return;
-                    }
-
-                    foreach (var gpioObject in gpioObjectList!.DistinctBy(s => s.GpioNumber))
-                    {
-                        if (gpioController!.IsPinOpen(gpioObject.GpioNumber))
-                        {
-                            _logger!.LogInformation("Closing Gpio {gpioObject.GpioNumber}", gpioObject.GpioNumber);
-                            gpioController.Write(gpioObject.GpioNumber, PinValue.Low);
-                            gpioController.ClosePin(gpioObject.GpioNumber);
-                        }
-                        else
-                        {
-                            _logger!.LogInformation("Gpio {gpioObject.GpioNumber} not Open", gpioObject.GpioNumber);
-                        }
-
-
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger!.LogError("Exception:{Message}", ex.Message);
-                }
-                finally
-                {
-                    gpioController!.Dispose();
-                    gpioSemaphore!.Release();
-                }
-            });
+            commandLineTaskHandler!.Handle(app);
+            appLifeTimeHandler!.Handle(app);
 
             app.Run();
         }

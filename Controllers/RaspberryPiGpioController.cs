@@ -45,8 +45,7 @@ namespace raspapi.Controllers
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
                 using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                var requestSerevices = HttpContext.RequestServices;
-                await _webSocketHandler.GetGpios(webSocket, requestSerevices);
+                await _webSocketHandler.GetGpios(webSocket);
             }
             else
             {
