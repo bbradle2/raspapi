@@ -13,8 +13,6 @@ namespace raspapi.Utils
 
             _intToStringConverter = (JsonConverter<KeyValuePair<int, string>>)options.GetConverter(typeof(KeyValuePair<int, string>));
 
-            // KeyValuePair<> converter is built-in.
-            //Debug.Assert(_intToStringConverter != null);
         }
 
         public override Dictionary<int, string> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

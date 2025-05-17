@@ -4,7 +4,6 @@ using System.Text.Json;
 using raspapi.Models;
 using raspapi.Interfaces;
 using raspapi.Constants;
-using System.Device.Gpio;
 
 namespace raspapi.Handlers
 {
@@ -39,14 +38,7 @@ namespace raspapi.Handlers
         public async Task GetGpios(WebSocket webSocket)
         {
 
-            var initBuffer = new byte[1024 * 4];
-            var receiveResult = await webSocket.ReceiveAsync(
-                new ArraySegment<byte>(initBuffer), CancellationToken.None);
-
-            while (webSocket!.State == WebSocketState.Open &&
-                  receiveResult.EndOfMessage &&
-                  initBuffer[0] == '[' &&
-                  initBuffer[1] == ']')
+            while (webSocket!.State == WebSocketState.Open)
             {
 
                 if (_appShutdownWaitEventHandler!.WaitOne(100))
@@ -75,8 +67,8 @@ namespace raspapi.Handlers
                     {
                         await webSocket.SendAsync(
                             new ArraySegment<byte>(Encoding.UTF8.GetBytes(sendBuffer), 0, sendBuffer.Length),
-                            receiveResult.MessageType,
-                            receiveResult.EndOfMessage,
+                            WebSocketMessageType.Text,
+                            true,
                             CancellationToken.None);
 
                         if (webSocket.State == WebSocketState.Aborted || webSocket.State == WebSocketState.CloseSent || webSocket.State == WebSocketState.CloseReceived)
@@ -87,24 +79,15 @@ namespace raspapi.Handlers
 
 
                         var recvBuffer = new byte[1024 * 4];
-                        receiveResult = await webSocket.ReceiveAsync(
+                        var receiveResult = await webSocket.ReceiveAsync(
                             new ArraySegment<byte>(recvBuffer), CancellationToken.None);
 
-                        if (recvBuffer[0] == '[' &&
-                            recvBuffer[1] == ']' &&
-                            receiveResult.EndOfMessage)
+                        if (receiveResult.EndOfMessage && recvBuffer[0] == '[')
                         {
-                            _logger!.LogInformation("Received Initalize message []");
-                        }
-                        else
-                        {
-                            if (receiveResult.EndOfMessage && recvBuffer[0] == '[')
-                            {
-                                // make sure message can de-serialize to an array of gpioObjects
-                                var s = Encoding.UTF8.GetString(recvBuffer).Replace("\0", string.Empty);
-                                var gpios = JsonSerializer.Deserialize<GpioObject[]?>(s);
-                                _logger!.LogInformation("Received message {s}", s!);
-                            }
+                            // make sure message can de-serialize to an array of gpioObjects
+                            var s = Encoding.UTF8.GetString(recvBuffer).Replace("\0", string.Empty);
+                            var gpios = JsonSerializer.Deserialize<GpioObject[]?>(s);
+                            _logger!.LogInformation("Received message {s}", s!);
                         }
 
                     }

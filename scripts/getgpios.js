@@ -8,7 +8,7 @@ import { check, sleep } from 'k6';
 //   vus: 1,
 //   iterations: 1,
 // };
-const iterations = 100;
+const iterations = 1000;
 var currentIterator = 0;
 
 export default function () {
@@ -25,7 +25,7 @@ export default function () {
     socket.on('open', function open() {
       console.log(`connected`);
 
-      socket.send(JSON.stringify([]));
+      //socket.send(JSON.stringify([]));
      
     });
   
@@ -38,14 +38,16 @@ export default function () {
       for(var i = 0; i < gpios.length; i++) 
         console.log(`received message: ${gpios[i].GpioNumber}:${gpios[i].GpioValue}`);
 
-      if(currentIterator < iterations)
+      if(currentIterator < iterations) {
         socket.send(message);
+        currentIterator++; 
+      }
 
       if(currentIterator >= iterations)
         socket.close();
 
       //sleep(1);
-      currentIterator++;      
+           
     });
    
   });

@@ -2,6 +2,7 @@ using raspapi.Constants;
 using raspapi.Interfaces;
 using raspapi.Models;
 using System.Device.Gpio;
+
 namespace raspapi.Handlers
 {
 
@@ -13,13 +14,15 @@ namespace raspapi.Handlers
         private readonly IAppShutdownWaitEventHandler _appShutdownWaitEventHandler;
         private readonly IBinarySemaphoreSlimHandler _binarySemphoreSlimHandler;
         private readonly IServiceProvider _services;
+        private readonly ILogger<AppLifeTimeHandler> _logger;
 
         public AppLifeTimeHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                   [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
                                   [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
                                   [FromKeyedServices(MiscConstants.appShutdownWaitEventName)] IAppShutdownWaitEventHandler appShutdownWaitEventHandler,
                                   [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
-                                  IServiceProvider services)
+                                  IServiceProvider services,
+                                  ILogger<AppLifeTimeHandler> logger)
         {
             _gpioController = gpioController;
             _gpioObjectList = gpioObjectList;
@@ -27,20 +30,20 @@ namespace raspapi.Handlers
             _services = services;
             _appShutdownWaitEventHandler = appShutdownWaitEventHandler;
             _binarySemphoreSlimHandler = binarySemaphoreSlimHandler;
+            _logger = logger;
 
         }
 
         public void Handle(WebApplication app)
         {
-            var logger = _services.GetService<ILogger<AppLifeTimeHandler>>();
-
+            
             _ = app.Lifetime.ApplicationStopping.Register(() =>
            {
-               logger!.LogInformation("Shutting down Gpio Wait Event Handler.");
-               logger!.LogInformation("Please wait.");
+               _logger!.LogInformation("Shutting down Gpio Wait Event Handler.");
+               _logger!.LogInformation("Please wait.");
                _gpioObjectsWaitEventHandler!.Set();
                _appShutdownWaitEventHandler!.Set();
-               logger!.LogInformation("Gpio Wait Event Handler shut down complete");
+               _logger!.LogInformation("Gpio Wait Event Handler shut down complete");
            });
 
             _ = app.Lifetime.ApplicationStopped.Register(() =>
@@ -48,7 +51,7 @@ namespace raspapi.Handlers
                 try
                 {
                     _binarySemphoreSlimHandler!.WaitAsync().GetAwaiter();
-                    logger!.LogInformation("Checking for Open Gpio's....");
+                    _logger!.LogInformation("Checking for Open Gpio's....");
 
                     if (_gpioObjectList == null)
                     {
@@ -59,19 +62,19 @@ namespace raspapi.Handlers
                     {
                         if (_gpioController!.IsPinOpen(gpioObject.GpioNumber))
                         {
-                            logger!.LogInformation("Closing Gpio {gpioObject.GpioNumber}", gpioObject.GpioNumber);
+                            _logger!.LogInformation("Closing Gpio {gpioObject.GpioNumber}", gpioObject.GpioNumber);
                             _gpioController.Write(gpioObject.GpioNumber, PinValue.Low);
                             _gpioController.ClosePin(gpioObject.GpioNumber);
                         }
                         else
                         {
-                            logger!.LogInformation("Gpio {gpioObject.GpioNumber} not Open", gpioObject.GpioNumber);
+                            _logger!.LogInformation("Gpio {gpioObject.GpioNumber} not Open", gpioObject.GpioNumber);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger!.LogError("Exception:{Message}", ex.Message);
+                    _logger!.LogError("Exception:{Message}", ex.Message);
                 }
                 finally
                 {

@@ -1,6 +1,5 @@
 ﻿using System.Device.Gpio;
 using raspapi.Constants;
-using raspapi.Utils;
 using raspapi.Models;
 using raspapi.Intercepts;
 using raspapi.Interfaces;
@@ -47,12 +46,13 @@ namespace raspapi
             app.UseRouting();          
             app.UseWebSockets();
             app.MapControllers();
+            
+            var appLifeTimeHandler = ActivatorUtilities.GetServiceOrCreateInstance<AppLifeTimeHandler>(app.Services);
+            appLifeTimeHandler!.Handle(app);
 
             var commandLineTaskHandler = ActivatorUtilities.GetServiceOrCreateInstance<CommandLineTaskHandler>(app.Services);
-            var appLifeTimeHandler = ActivatorUtilities.GetServiceOrCreateInstance<AppLifeTimeHandler>(app.Services);
-
             commandLineTaskHandler!.Handle(app);
-            appLifeTimeHandler!.Handle(app);
+            
 
             app.Run();
         }

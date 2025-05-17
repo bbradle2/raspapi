@@ -1,6 +1,9 @@
 using System.Net.WebSockets;
 
-public interface IWebSocketHandler
+namespace raspapi.Interfaces
 {
-    Task GetGpios(WebSocket webSocket);
+    public interface IWebSocketHandler
+    {
+        Task GetGpios(WebSocket webSocket);
+    }
 }
