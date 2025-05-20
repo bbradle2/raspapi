@@ -9,12 +9,11 @@
 
   
   <ItemGroup>
-    <PackageReference Include="Iot.Device.Bindings" Version="3.2.0" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.2.7" />
-    <PackageReference Include="System.Device.Gpio" Version="3.2.0" />
+    <PackageReference Include="Iot.Device.Bindings" Version="4.0.1" />
+    <PackageReference Include="System.Device.Gpio" Version="4.0.1" />
     <PackageReference Include="GitVersion.MsBuild" Version="6.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
 
     <!-- <PackageReference Include="Nextended.Core" Version="9.0.10" /> -->
 

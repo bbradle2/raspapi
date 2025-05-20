@@ -51,7 +51,7 @@ namespace raspapi.Controllers
                                     HttpMethod = metadata.HttpMethods[0]
                                 };
 
-                                if (!end.HttpCallEndPoint.Contains("GetEndPoints") && !end.HttpCallEndPoint.Contains("GetGpios"))
+                                if (!end.HttpCallEndPoint.Contains("GetEndPoints") && !end.HttpCallEndPoint.Contains("GetGpioStatus"))
                                     endpoints.Add(end);
                             }
                         }

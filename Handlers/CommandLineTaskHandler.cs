@@ -12,29 +12,35 @@ namespace raspapi.Handlers
         private readonly GpioController _gpioController;
         private readonly IList<GpioObject> _gpioObjectList;
         private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
-        private readonly IServiceProvider _services;
         private readonly ILogger<CommandLineTaskHandler> _logger;
+        private readonly IHost _host;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IConfiguration _configuration;
 
         public CommandLineTaskHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                      [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
-                                      [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                      IServiceProvider services,
-                                      ILogger<CommandLineTaskHandler> logger)
+                                       [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
+                                       [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                       ILogger<CommandLineTaskHandler> logger,
+                                       IHost host,
+                                       IWebHostEnvironment webHostEnvironment,
+                                       IConfiguration configuration
+                                       )
         {
             _gpioObjectList = gpioObjectList;
             _gpioController = gpioController;
             _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
-            _services = services;
             _logger = logger;
+            _host = host;
+            _webHostEnvironment = webHostEnvironment;
+            _configuration = configuration;
 
         }
 
-        public void Handle(WebApplication app)
+        public void Handle()
         {
             _ = Task.Factory.StartNew(async () =>
             {
 
-               
                 bool runTask = true;
 
                 while (runTask)
@@ -43,13 +49,16 @@ namespace raspapi.Handlers
 
                     if (command!.Equals("INFO".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        _logger!.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}", app!.Environment.EnvironmentName);
-                        _logger!.LogInformation("APPICATION_NAME:{ApplicationName}", app.Environment.ApplicationName);
+                        _logger!.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}", _webHostEnvironment.EnvironmentName);
+                        _logger!.LogInformation("APPICATION_NAME:{ApplicationName}", _webHostEnvironment.ApplicationName);
 
-                        var urls = app.Urls;
+                        _logger!.LogInformation("Available Connection(s):{Urls}", _configuration["Urls"]!);
+                        var urls = _configuration["Urls"]!.Split(',');
+                       
 
-                        var endpoints = app
-                                        .Services
+
+
+                        var endpoints = _host.Services
                                         .GetServices<EndpointDataSource>()
                                         .SelectMany(x => x!.Endpoints);
 
@@ -75,12 +84,19 @@ namespace raspapi.Handlers
                             var httpMethods = httpMethodsMetadata?.HttpMethods;
                         }
 
-                        var properties = IPGlobalProperties.GetIPGlobalProperties();
-                        var httpConnections = from connection in properties.GetActiveTcpConnections()
-                                              where connection.LocalEndPoint.Port == new Uri(urls.FirstOrDefault()!).Port
-                                              select connection;
+                        try
+                        {
+                            var properties = IPGlobalProperties.GetIPGlobalProperties();
+                            var httpConnections = from connection in properties.GetActiveTcpConnections()
+                                                  where connection.LocalEndPoint.Port == new Uri(urls.FirstOrDefault()!).Port
+                                                  select connection;
 
-                        _logger!.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
+                            _logger!.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger!.LogWarning("Problem Getting Http Connection Count. {ex.Message}", ex.Message);
+                        }
 
                     }
                     else if (command!.Equals("GPIO".Trim(), StringComparison.CurrentCultureIgnoreCase))
@@ -117,7 +133,7 @@ namespace raspapi.Handlers
                     {
                         _gpioObjectsWaitEventHandler!.Set();
                         runTask = false;
-                        await app.StopAsync();
+                        await _host.StopAsync();
 
                     }
                     else

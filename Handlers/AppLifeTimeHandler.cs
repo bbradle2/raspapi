@@ -11,46 +11,40 @@ namespace raspapi.Handlers
         private readonly GpioController _gpioController;
         private readonly IList<GpioObject> _gpioObjectList;
         private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
-        private readonly IAppShutdownWaitEventHandler _appShutdownWaitEventHandler;
         private readonly IBinarySemaphoreSlimHandler _binarySemphoreSlimHandler;
-        private readonly IServiceProvider _services;
         private readonly ILogger<AppLifeTimeHandler> _logger;
+        private readonly IHostApplicationLifetime _hostLifetTime;
 
         public AppLifeTimeHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                   [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
                                   [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                  [FromKeyedServices(MiscConstants.appShutdownWaitEventName)] IAppShutdownWaitEventHandler appShutdownWaitEventHandler,
                                   [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
-                                  IServiceProvider services,
-                                  ILogger<AppLifeTimeHandler> logger)
+                                  ILogger<AppLifeTimeHandler> logger,
+                                  IHostApplicationLifetime hostLifetTime)
         {
             _gpioController = gpioController;
             _gpioObjectList = gpioObjectList;
             _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
-            _services = services;
-            _appShutdownWaitEventHandler = appShutdownWaitEventHandler;
             _binarySemphoreSlimHandler = binarySemaphoreSlimHandler;
             _logger = logger;
-
+            _hostLifetTime = hostLifetTime;
         }
 
-        public void Handle(WebApplication app)
+        public void Handle()
         {
-            
-            _ = app.Lifetime.ApplicationStopping.Register(() =>
+            _ = _hostLifetTime!.ApplicationStopping.Register(() =>
            {
                _logger!.LogInformation("Shutting down Gpio Wait Event Handler.");
                _logger!.LogInformation("Please wait.");
                _gpioObjectsWaitEventHandler!.Set();
-               _appShutdownWaitEventHandler!.Set();
                _logger!.LogInformation("Gpio Wait Event Handler shut down complete");
            });
 
-            _ = app.Lifetime.ApplicationStopped.Register(() =>
+            _ = _hostLifetTime.ApplicationStopped.Register(async () =>
             {
                 try
                 {
-                    _binarySemphoreSlimHandler!.WaitAsync().GetAwaiter();
+                    await _binarySemphoreSlimHandler!.WaitAsync();
                     _logger!.LogInformation("Checking for Open Gpio's....");
 
                     if (_gpioObjectList == null)

@@ -15,7 +15,6 @@ namespace raspapi.Controllers
         private readonly IBinarySemaphoreSlimHandler _semaphoreGpio;
         private readonly IList<GpioObject> _gpioObjects;
         private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
-        private readonly IAppShutdownWaitEventHandler _appShutdownWaitEventHandler;
         private readonly IConfiguration _configuration;
         private readonly IWebSocketHandler _webSocketHandler;
 
@@ -24,7 +23,6 @@ namespace raspapi.Controllers
                                          [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlimHandler semaphoreGpio,
                                          [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
                                          [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                         [FromKeyedServices(MiscConstants.appShutdownWaitEventName)] IAppShutdownWaitEventHandler appObjectsWaitEventHandler,
                                          [FromKeyedServices(MiscConstants.webSocketHandlerName)] IWebSocketHandler webSocketHandler,
                                          IConfiguration configuration)
         {
@@ -33,19 +31,18 @@ namespace raspapi.Controllers
             _semaphoreGpio = semaphoreGpio;
             _gpioObjects = gpioObjects;
             _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
-            _appShutdownWaitEventHandler = appObjectsWaitEventHandler;
             _configuration = configuration;
             _webSocketHandler = webSocketHandler;
         }
 
         [Route("/ws")]
-        [HttpGet("GetGpios")]
-        public async Task GetGpios()
+        [HttpGet("GetGpioStatus")]
+        public async Task GetGpioStatus()
         {
             if (HttpContext.WebSockets.IsWebSocketRequest)
             {
                 using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                await _webSocketHandler.GetGpios(webSocket);
+                await _webSocketHandler.GetGpioStatus(webSocket);
             }
             else
             {

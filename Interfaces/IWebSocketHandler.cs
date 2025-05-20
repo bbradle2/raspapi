@@ -4,6 +4,6 @@ namespace raspapi.Interfaces
 {
     public interface IWebSocketHandler
     {
-        Task GetGpios(WebSocket webSocket);
+        Task GetGpioStatus(WebSocket webSocket);
     }
 }

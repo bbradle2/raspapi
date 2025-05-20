@@ -20,7 +20,7 @@ namespace raspapi
             _logger!.LogInformation("SIGTERM Received...");
         }
         
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             AppDomain.CurrentDomain.ProcessExit += OnSigTerm;
             Console.CancelKeyPress += OnSigInt;
@@ -33,28 +33,31 @@ namespace raspapi
             builder.Services.AddKeyedSingleton<IBinarySemaphoreSlimHandler, BinarySemaphoreSlimHandler>(MiscConstants.gpioSemaphoreName);
             builder.Services.AddKeyedSingleton<IList<GpioObject>,List<GpioObject>>(MiscConstants.gpioObjectsName);
             builder.Services.AddKeyedSingleton<IGpioObjectsWaitEventHandler,GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
-            builder.Services.AddKeyedSingleton<IAppShutdownWaitEventHandler,AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventName);
             builder.Services.AddKeyedSingleton<IWebSocketHandler, WebSocketHandler>(MiscConstants.webSocketHandlerName);
-           
+            builder.Services.AddKeyedSingleton<IAppLifeTimeHandler, AppLifeTimeHandler>(MiscConstants.appLifeTimeHandlerName);
+            builder.Services.AddKeyedSingleton<ICommandLineTaskHandler, CommandLineTaskHandler>(MiscConstants.commandLineTaskHandlerName);
+
             builder.Services.AddControllers();
 
             var app = builder.Build();
-
+             
             _logger = app.Services.GetRequiredService<ILogger<Program>>();
 
             app.UseMiddleware<ApiIntercept>();
             app.UseRouting();          
             app.UseWebSockets();
             app.MapControllers();
-            
-            var appLifeTimeHandler = ActivatorUtilities.GetServiceOrCreateInstance<AppLifeTimeHandler>(app.Services);
-            appLifeTimeHandler!.Handle(app);
 
-            var commandLineTaskHandler = ActivatorUtilities.GetServiceOrCreateInstance<CommandLineTaskHandler>(app.Services);
-            commandLineTaskHandler!.Handle(app);
-            
+            var appLifeTimeHandler  = app.Services.GetKeyedService<IAppLifeTimeHandler>(MiscConstants.appLifeTimeHandlerName);
+            appLifeTimeHandler!.Handle();
 
-            app.Run();
+            if (app.Environment.IsDevelopment())
+            {
+                var commandLineTaskHandler = app.Services.GetKeyedService<ICommandLineTaskHandler>(MiscConstants.commandLineTaskHandlerName);
+                commandLineTaskHandler!.Handle();
+            }
+            
+            await app.RunAsync();
         }
     }
 }

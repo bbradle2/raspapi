@@ -8,11 +8,11 @@ import { check, sleep } from 'k6';
 //   vus: 1,
 //   iterations: 1,
 // };
-const iterations = 1000;
+const iterations = 3;
 var currentIterator = 0;
 
 export default function () {
-  const url = `ws://localhost:5000/RaspberryPiGpio/GetGpios`;
+  const url = `ws://localhost:5000/RaspberryPiGpio/GetGpioStatus`;
   const params = { 
                    headers: {
                     'Content-Type':'application/json',
@@ -39,10 +39,10 @@ export default function () {
         console.log(`received message: ${gpios[i].GpioNumber}:${gpios[i].GpioValue}`);
 
       if(currentIterator < iterations) {
-        socket.send(message);
+        socket.send("00");
         currentIterator++; 
       }
-
+      
       if(currentIterator >= iterations)
         socket.close();
 
