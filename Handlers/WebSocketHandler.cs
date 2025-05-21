@@ -4,7 +4,6 @@ using System.Text.Json;
 using raspapi.Models;
 using raspapi.Interfaces;
 using raspapi.Constants;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace raspapi.Handlers
 {
