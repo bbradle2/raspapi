@@ -12,7 +12,7 @@ namespace raspapi.Controllers
     {
         private readonly ILogger<RaspberryPiGpioController> _logger;
         private readonly GpioController _gpioController;
-        private readonly IBinarySemaphoreSlimHandler _semaphoreGpio;
+        private readonly IBinarySemaphoreSlimHandler _binarySemaphoreSlimHandler;
         private readonly IList<GpioObject> _gpioObjects;
         private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
         private readonly IConfiguration _configuration;
@@ -20,7 +20,7 @@ namespace raspapi.Controllers
 
         public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
                                          [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlimHandler semaphoreGpio,
+                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
                                          [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
                                          [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
                                          [FromKeyedServices(MiscConstants.webSocketHandlerName)] IWebSocketHandler webSocketHandler,
@@ -28,7 +28,7 @@ namespace raspapi.Controllers
         {
             _logger = logger;
             _gpioController = gpioController;
-            _semaphoreGpio = semaphoreGpio;
+            _binarySemaphoreSlimHandler = binarySemaphoreSlimHandler;
             _gpioObjects = gpioObjects;
             _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
             _configuration = configuration;
@@ -55,17 +55,17 @@ namespace raspapi.Controllers
         {
             try
             {
-                ArgumentNullException.ThrowIfNull(_semaphoreGpio);
+                ArgumentNullException.ThrowIfNull(_binarySemaphoreSlimHandler);
                 ArgumentNullException.ThrowIfNull(_gpioController);
                 ArgumentNullException.ThrowIfNull(_logger);
 
-                await _semaphoreGpio.WaitAsync();
+                await _binarySemaphoreSlimHandler.WaitAsync();
 
                 List<GpioObject> gpioObjects = [];
 
                 foreach (var gpioObject in gpioObjs)
                 {
-                    bool gpioValue = false;
+                    bool gpioValue = true;
                     if (gpioObjs.Where(s => (s.GpioValue == null || s.GpioValue == false) && s.GpioNumber == gpioObject.GpioNumber).Count() == 1)
                     {
                         if (!_gpioController.IsPinOpen(gpioObject.GpioNumber))
@@ -100,7 +100,7 @@ namespace raspapi.Controllers
             }
             finally
             {
-                _semaphoreGpio.Release();
+                _binarySemaphoreSlimHandler.Release();
                 _gpioObjectsWaitEventHandler.Set();
             }
         }
@@ -110,11 +110,11 @@ namespace raspapi.Controllers
         {
             try
             {
-                ArgumentNullException.ThrowIfNull(_semaphoreGpio);
+                ArgumentNullException.ThrowIfNull(_binarySemaphoreSlimHandler);
                 ArgumentNullException.ThrowIfNull(_gpioController);
                 ArgumentNullException.ThrowIfNull(_logger);
 
-                await _semaphoreGpio.WaitAsync();
+                await _binarySemaphoreSlimHandler.WaitAsync();
 
                 List<GpioObject> gpioObjects = [];
 
@@ -158,7 +158,7 @@ namespace raspapi.Controllers
             }
             finally
             {
-                _semaphoreGpio.Release();
+                _binarySemaphoreSlimHandler.Release();
                 _gpioObjectsWaitEventHandler.Set();
             }
         }
