@@ -13,20 +13,18 @@ namespace raspapi.Handlers
     {
 
         private readonly IList<GpioObject> _gpioObjects;
-        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
-        private readonly IBinarySemaphoreSlimHandler _binarySemaphoreSlimHandler;
+        //private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
         private readonly ILogger _logger;
 
         public WebSocketHandler([FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
-                                [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
+                                //[FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
                                 ILogger<WebSocketHandler> logger)
         {
 
             _gpioObjects = gpioObjects;
-            _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
+            //_gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
             _logger = logger;
-            _binarySemaphoreSlimHandler = binarySemaphoreSlimHandler;
+            
 
         }
         
