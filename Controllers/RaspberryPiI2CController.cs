@@ -7,16 +7,10 @@ namespace raspapi.Controllers
 
     [ApiController]
     [Route("[controller]")]
-    public class RaspberryPiI2CController : ControllerBase
+    public class RaspberryPiI2CController(ILogger<RaspberryPiI2CController> logger, GpioController gpioController) : ControllerBase
     {
-        private readonly ILogger<RaspberryPiI2CController> _logger;
-        private readonly GpioController _gpioController;
-
-        public RaspberryPiI2CController(ILogger<RaspberryPiI2CController> logger, GpioController gpioController)
-        {
-            _logger = logger;
-            _gpioController = gpioController;
-        }
+        private readonly ILogger<RaspberryPiI2CController> _logger = logger;
+        private readonly GpioController _gpioController = gpioController;
 
     }
 

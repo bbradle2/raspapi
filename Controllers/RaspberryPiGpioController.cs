@@ -8,32 +8,21 @@ namespace raspapi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class RaspberryPiGpioController : ControllerBase
+    public class RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
+                                           [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
+                                           [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
+                                           [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
+                                           [FromKeyedServices(MiscConstants.gpioObjectsWaitEventHandlerName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                           [FromKeyedServices(MiscConstants.webSocketHandlerName)] IWebSocketHandler webSocketHandler,
+                                           IConfiguration configuration) : ControllerBase
     {
-        private readonly ILogger<RaspberryPiGpioController> _logger;
-        private readonly GpioController _gpioController;
-        private readonly IBinarySemaphoreSlimHandler _binarySemaphoreSlimHandler;
-        private readonly IList<GpioObject> _gpioObjects;
-        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
-        private readonly IConfiguration _configuration;
-        private readonly IWebSocketHandler _webSocketHandler;
-
-        public RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
-                                         [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                         [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
-                                         [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
-                                         [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                         [FromKeyedServices(MiscConstants.webSocketHandlerName)] IWebSocketHandler webSocketHandler,
-                                         IConfiguration configuration)
-        {
-            _logger = logger;
-            _gpioController = gpioController;
-            _binarySemaphoreSlimHandler = binarySemaphoreSlimHandler;
-            _gpioObjects = gpioObjects;
-            _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
-            _configuration = configuration;
-            _webSocketHandler = webSocketHandler;
-        }
+        private readonly ILogger<RaspberryPiGpioController> _logger = logger;
+        private readonly GpioController _gpioController = gpioController;
+        private readonly IBinarySemaphoreSlimHandler _binarySemaphoreSlimHandler = binarySemaphoreSlimHandler;
+        private readonly IList<GpioObject> _gpioObjects = gpioObjects;
+        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
+        private readonly IConfiguration _configuration = configuration;
+        private readonly IWebSocketHandler _webSocketHandler = webSocketHandler;
 
         [Route("/ws")]
         [HttpGet("GetGpioStatus")]

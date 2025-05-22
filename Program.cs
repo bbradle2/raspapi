@@ -26,16 +26,16 @@ namespace raspapi
             Console.CancelKeyPress += OnSigInt;
 
             var builder = WebApplication.CreateBuilder(args);
-
             builder.Logging.AddConsole();
 
             builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
-            builder.Services.AddKeyedSingleton<IBinarySemaphoreSlimHandler, BinarySemaphoreSlimHandler>(MiscConstants.gpioSemaphoreName);
             builder.Services.AddKeyedSingleton<IList<GpioObject>,List<GpioObject>>(MiscConstants.gpioObjectsName);
-            builder.Services.AddKeyedSingleton<IGpioObjectsWaitEventHandler,GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventName);
+            builder.Services.AddKeyedSingleton<IGpioObjectsWaitEventHandler,GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventHandlerName);
             builder.Services.AddKeyedSingleton<IWebSocketHandler, WebSocketHandler>(MiscConstants.webSocketHandlerName);
             builder.Services.AddKeyedSingleton<IAppLifeTimeHandler, AppLifeTimeHandler>(MiscConstants.appLifeTimeHandlerName);
             builder.Services.AddKeyedSingleton<ICommandLineTaskHandler, CommandLineTaskHandler>(MiscConstants.commandLineTaskHandlerName);
+            builder.Services.AddKeyedSingleton<IAppShutdownWaitEventHandler, AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventHandlerName);
+            builder.Services.AddKeyedSingleton<IBinarySemaphoreSlimHandler, BinarySemaphoreSlimHandler>(MiscConstants.gpioBinarySemaphoreSlimName);
 
             builder.Services.AddControllers();
 

@@ -6,29 +6,19 @@ using System.Device.Gpio;
 namespace raspapi.Handlers
 {
 
-    public class AppLifeTimeHandler : IAppLifeTimeHandler
+    public class AppLifeTimeHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
+                              [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
+                              [FromKeyedServices(MiscConstants.gpioObjectsWaitEventHandlerName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                              [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
+                              ILogger<AppLifeTimeHandler> logger,
+                              IHostApplicationLifetime hostLifetTime) : IAppLifeTimeHandler
     {
-        private readonly GpioController _gpioController;
-        private readonly IList<GpioObject> _gpioObjectList;
-        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
-        private readonly IBinarySemaphoreSlimHandler _binarySemphoreSlimHandler;
-        private readonly ILogger<AppLifeTimeHandler> _logger;
-        private readonly IHostApplicationLifetime _hostLifetTime;
-
-        public AppLifeTimeHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                  [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
-                                  [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                  [FromKeyedServices(MiscConstants.gpioSemaphoreName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
-                                  ILogger<AppLifeTimeHandler> logger,
-                                  IHostApplicationLifetime hostLifetTime)
-        {
-            _gpioController = gpioController;
-            _gpioObjectList = gpioObjectList;
-            _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
-            _binarySemphoreSlimHandler = binarySemaphoreSlimHandler;
-            _logger = logger;
-            _hostLifetTime = hostLifetTime;
-        }
+        private readonly GpioController _gpioController = gpioController;
+        private readonly IList<GpioObject> _gpioObjectList = gpioObjectList;
+        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
+        private readonly IBinarySemaphoreSlimHandler _binarySemphoreSlimHandler = binarySemaphoreSlimHandler;
+        private readonly ILogger<AppLifeTimeHandler> _logger = logger;
+        private readonly IHostApplicationLifetime _hostLifetTime = hostLifetTime;
 
         public void Handle()
         {

@@ -22,6 +22,5 @@ namespace raspapi.Handlers
         {
             return _semaphore.Release();
         }
-
     }
 }

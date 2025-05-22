@@ -7,34 +7,22 @@ using System.Net.NetworkInformation;
 namespace raspapi.Handlers
 {
    
-    public class CommandLineTaskHandler : ICommandLineTaskHandler
+    public class CommandLineTaskHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
+                                        [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
+                                        [FromKeyedServices(MiscConstants.gpioObjectsWaitEventHandlerName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                        ILogger<CommandLineTaskHandler> logger,
+                                        IHost host,
+                                        IWebHostEnvironment webHostEnvironment,
+                                        IConfiguration configuration
+                                       ) : ICommandLineTaskHandler
     {
-        private readonly GpioController _gpioController;
-        private readonly IList<GpioObject> _gpioObjectList;
-        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler;
-        private readonly ILogger<CommandLineTaskHandler> _logger;
-        private readonly IHost _host;
-        private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly IConfiguration _configuration;
-
-        public CommandLineTaskHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                       [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
-                                       [FromKeyedServices(MiscConstants.gpioObjectsWaitEventName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                       ILogger<CommandLineTaskHandler> logger,
-                                       IHost host,
-                                       IWebHostEnvironment webHostEnvironment,
-                                       IConfiguration configuration
-                                       )
-        {
-            _gpioObjectList = gpioObjectList;
-            _gpioController = gpioController;
-            _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
-            _logger = logger;
-            _host = host;
-            _webHostEnvironment = webHostEnvironment;
-            _configuration = configuration;
-
-        }
+        private readonly GpioController _gpioController = gpioController;
+        private readonly IList<GpioObject> _gpioObjectList = gpioObjectList;
+        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
+        private readonly ILogger<CommandLineTaskHandler> _logger = logger;
+        private readonly IHost _host = host;
+        private readonly IWebHostEnvironment _webHostEnvironment = webHostEnvironment;
+        private readonly IConfiguration _configuration = configuration;
 
         public void Handle()
         {

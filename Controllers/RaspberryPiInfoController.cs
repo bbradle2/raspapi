@@ -1,31 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
 using raspapi.Utils;
 using raspapi.Models;
+using System.Device.Gpio;
+using raspapi.Constants;
 
 namespace raspapi.Controllers
 {
 
     [ApiController]
     [Route("[controller]")]
-    public class RaspberryPiInfoController : ControllerBase
+    public class RaspberryPiInfoController(ILogger<RaspberryPiInfoController> logger, [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController) : ControllerBase
     {
-        private readonly ILogger<RaspberryPiInfoController>? _logger;
-        private readonly string? _product;
-        private readonly SystemInfoObject? _systemInfoObject;
+        private readonly ILogger<RaspberryPiInfoController>? _logger = logger;
+        private readonly GpioController? _gpioController = gpioController;
+        private string? _product;
+        private SystemInfoObject? _systemInfoObject;
 
-        public RaspberryPiInfoController(ILogger<RaspberryPiInfoController> logger)
+        private async Task GetSystemData()
         {
-            try
-            {
-                _logger = logger;
-                _systemInfoObject = DataUtils.PopulateSystemInfoAsync("No Description", "systeminfo").GetAwaiter().GetResult();
-                _product = _systemInfoObject.SystemObjects?[0]?.Product;
-                _systemInfoObject.ProductName = _product!;
-            }
-            catch
-            {
-                throw;
-            }
+            _systemInfoObject = await DataUtils.PopulateSystemInfoAsync("No Description", "systeminfo");
+            _product = _systemInfoObject.SystemObjects?[0]?.Product;
+            _systemInfoObject.ProductName = _product!;
         }
 
         [HttpGet("GetEndPoints")]
@@ -74,7 +69,9 @@ namespace raspapi.Controllers
         {
             try
             {
+                await GetSystemData();
                 return Ok(await Task.FromResult(_systemInfoObject));
+               
             }
             catch (Exception e)
             {
@@ -88,6 +85,7 @@ namespace raspapi.Controllers
         {
             try
             {
+                await GetSystemData();
                 CPUInfoObject _cpuInfoObject = await DataUtils.PopulateCpuInfoAsync($"{_product}.", "cpuinfo");
                 return Ok(_cpuInfoObject);
             }
@@ -103,6 +101,7 @@ namespace raspapi.Controllers
         {
             try
             {
+                await GetSystemData();
                 var temperatureInfo = await DataUtils.PopulateGetTemperatureInfoAsync($"{_product}.", "temperatureInfo");
                 return Ok(temperatureInfo);
             }
@@ -118,6 +117,7 @@ namespace raspapi.Controllers
         {
             try
             {
+                await GetSystemData();
                 var memInfo = await DataUtils.PopulateMemoryInfoAsync($"{_product}.", "memoryinfo");
                 return Ok(memInfo);
             }
