@@ -1,22 +1,19 @@
 using raspapi.Constants;
 using raspapi.Interfaces;
 using raspapi.Models;
+using System.Collections.Concurrent;
 using System.Device.Gpio;
 
 namespace raspapi.Handlers
 {
 
     public class AppLifeTimeHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                              [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
-                              [FromKeyedServices(MiscConstants.gpioObjectsWaitEventHandlerName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                              [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
+                              [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjectList,
                               ILogger<AppLifeTimeHandler> logger,
                               IHostApplicationLifetime hostLifetTime) : IAppLifeTimeHandler
     {
         private readonly GpioController _gpioController = gpioController;
-        private readonly IList<GpioObject> _gpioObjectList = gpioObjectList;
-        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
-        private readonly IBinarySemaphoreSlimHandler _binarySemphoreSlimHandler = binarySemaphoreSlimHandler;
+        private readonly ConcurrentQueue<GpioObject> _gpioObjectList = gpioObjectList;
         private readonly ILogger<AppLifeTimeHandler> _logger = logger;
         private readonly IHostApplicationLifetime _hostLifetTime = hostLifetTime;
 
@@ -24,17 +21,13 @@ namespace raspapi.Handlers
         {
             _ = _hostLifetTime!.ApplicationStopping.Register(() =>
            {
-               _logger!.LogInformation("Shutting down Gpio Wait Event Handler.");
-               _logger!.LogInformation("Please wait.");
-               _gpioObjectsWaitEventHandler!.Set();
-               _logger!.LogInformation("Gpio Wait Event Handler shut down complete");
+               _logger!.LogInformation("Waiting for client(s) to Disconnect");
            });
 
-            _ = _hostLifetTime.ApplicationStopped.Register(async () =>
+            _ = _hostLifetTime.ApplicationStopped.Register(() =>
             {
                 try
                 {
-                    await _binarySemphoreSlimHandler!.WaitAsync();
                     _logger!.LogInformation("Checking for Open Gpio's....");
 
                     if (_gpioObjectList == null)
@@ -63,7 +56,6 @@ namespace raspapi.Handlers
                 finally
                 {
                     _gpioController!.Dispose();
-                    _binarySemphoreSlimHandler!.Release();
                 }
             });
         }

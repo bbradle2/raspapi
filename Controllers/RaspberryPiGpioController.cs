@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using raspapi.Constants;
 using raspapi.Models;
 using raspapi.Interfaces;
+using System.Collections.Concurrent;
+using System.Linq;
 
 namespace raspapi.Controllers
 {
@@ -10,17 +12,14 @@ namespace raspapi.Controllers
     [Route("[controller]")]
     public class RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
                                            [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                           [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
-                                           [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
-                                           [FromKeyedServices(MiscConstants.gpioObjectsWaitEventHandlerName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                           [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
+                                          
                                            [FromKeyedServices(MiscConstants.webSocketHandlerName)] IWebSocketHandler webSocketHandler,
                                            IConfiguration configuration) : ControllerBase
     {
         private readonly ILogger<RaspberryPiGpioController> _logger = logger;
         private readonly GpioController _gpioController = gpioController;
-        private readonly IBinarySemaphoreSlimHandler _binarySemaphoreSlimHandler = binarySemaphoreSlimHandler;
-        private readonly IList<GpioObject> _gpioObjects = gpioObjects;
-        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
+        private readonly ConcurrentQueue<GpioObject> _gpioObjects = gpioObjects;
         private readonly IConfiguration _configuration = configuration;
         private readonly IWebSocketHandler _webSocketHandler = webSocketHandler;
 
@@ -40,17 +39,17 @@ namespace raspapi.Controllers
         }
 
         [HttpPut("SetGpiosHigh")]
-        public async Task<IActionResult?> SetGpiosHigh(IList<GpioObject> gpioObjs)
+        public async Task<IActionResult?> SetGpiosHigh(ConcurrentQueue<GpioObject> gpioObjs)
         {
             try
             {
-                ArgumentNullException.ThrowIfNull(_binarySemaphoreSlimHandler);
+                ArgumentNullException.ThrowIfNull(gpioObjs);
                 ArgumentNullException.ThrowIfNull(_gpioController);
                 ArgumentNullException.ThrowIfNull(_logger);
 
-                await _binarySemaphoreSlimHandler.WaitAsync();
+                //await _binarySemaphoreSlimHandler.WaitAsync();
 
-                List<GpioObject> gpioObjects = [];
+                ConcurrentQueue<GpioObject> gpioObjects = [];
 
                 foreach (var gpioObject in gpioObjs)
                 {
@@ -70,17 +69,17 @@ namespace raspapi.Controllers
                         }
                     }
 
-                    gpioObjects.Add(new GpioObject { GpioNumber = gpioObject.GpioNumber, GpioValue = gpioValue });
+                    gpioObjects.Enqueue(new GpioObject { GpioNumber = gpioObject.GpioNumber, GpioValue = gpioValue });
                 }
+
 
                 _gpioObjects.Clear();
-
                 foreach (var i in gpioObjects)
                 {
-                    _gpioObjects.Add(i);
+                    _gpioObjects.Enqueue(i);
                 }
 
-                return Ok(_gpioObjects);
+                return await Task.FromResult(Ok(_gpioObjects));
             }
             catch (Exception e)
             {
@@ -89,23 +88,22 @@ namespace raspapi.Controllers
             }
             finally
             {
-                _binarySemaphoreSlimHandler.Release();
-                _gpioObjectsWaitEventHandler.Set();
+
             }
         }
 
         [HttpPut("SetGpiosLow")]
-        public async Task<IActionResult?> SetGpiosLow(IList<GpioObject> gpioObjs)
+        public async Task<IActionResult?> SetGpiosLow(ConcurrentQueue<GpioObject> gpioObjs)
         {
             try
             {
-                ArgumentNullException.ThrowIfNull(_binarySemaphoreSlimHandler);
+                ArgumentNullException.ThrowIfNull(gpioObjs);
                 ArgumentNullException.ThrowIfNull(_gpioController);
                 ArgumentNullException.ThrowIfNull(_logger);
 
-                await _binarySemaphoreSlimHandler.WaitAsync();
+                //await _binarySemaphoreSlimHandler.WaitAsync();
 
-                List<GpioObject> gpioObjects = [];
+                ConcurrentQueue<GpioObject> gpioObjects = [];
 
                 foreach (var gpioObject in gpioObjs)
                 {
@@ -127,7 +125,7 @@ namespace raspapi.Controllers
                         }
                     }
 
-                    gpioObjects.Add(new GpioObject { GpioNumber = gpioObject.GpioNumber, GpioValue = gpioValue });
+                    gpioObjects.Enqueue(new GpioObject { GpioNumber = gpioObject.GpioNumber, GpioValue = gpioValue });
 
                 }
 
@@ -135,10 +133,11 @@ namespace raspapi.Controllers
 
                 foreach (var i in gpioObjects)
                 {
-                    _gpioObjects.Add(i);
+                    _gpioObjects.Enqueue(i);
                 }
 
-                return Ok(_gpioObjects);
+                return await Task.FromResult(Ok(_gpioObjects));
+
             }
             catch (Exception e)
             {
@@ -147,8 +146,7 @@ namespace raspapi.Controllers
             }
             finally
             {
-                _binarySemaphoreSlimHandler.Release();
-                _gpioObjectsWaitEventHandler.Set();
+
             }
         }
     }

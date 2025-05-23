@@ -1,6 +1,7 @@
 using raspapi.Constants;
 using raspapi.Interfaces;
 using raspapi.Models;
+using System.Collections.Concurrent;
 using System.Device.Gpio;
 using System.Net.NetworkInformation;
 
@@ -8,8 +9,7 @@ namespace raspapi.Handlers
 {
    
     public class CommandLineTaskHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                        [FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjectList,
-                                        [FromKeyedServices(MiscConstants.gpioObjectsWaitEventHandlerName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
+                                        [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjectList,
                                         ILogger<CommandLineTaskHandler> logger,
                                         IHost host,
                                         IWebHostEnvironment webHostEnvironment,
@@ -17,8 +17,7 @@ namespace raspapi.Handlers
                                        ) : ICommandLineTaskHandler
     {
         private readonly GpioController _gpioController = gpioController;
-        private readonly IList<GpioObject> _gpioObjectList = gpioObjectList;
-        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
+        private readonly ConcurrentQueue<GpioObject> _gpioObjectList = gpioObjectList;
         private readonly ILogger<CommandLineTaskHandler> _logger = logger;
         private readonly IHost _host = host;
         private readonly IWebHostEnvironment _webHostEnvironment = webHostEnvironment;
@@ -119,7 +118,6 @@ namespace raspapi.Handlers
                     }
                     else if (command!.Equals("QUIT".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        _gpioObjectsWaitEventHandler!.Set();
                         runTask = false;
                         await _host.StopAsync();
 

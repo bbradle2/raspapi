@@ -4,19 +4,16 @@ using System.Text.Json;
 using raspapi.Models;
 using raspapi.Interfaces;
 using raspapi.Constants;
+using System.Collections.Concurrent;
 
 namespace raspapi.Handlers
 {
    
-    public class WebSocketHandler([FromKeyedServices(MiscConstants.gpioObjectsName)] IList<GpioObject> gpioObjects,
-                                  [FromKeyedServices(MiscConstants.gpioObjectsWaitEventHandlerName)] IGpioObjectsWaitEventHandler gpioObjectsWaitEventHandler,
-                                  [FromKeyedServices(MiscConstants.appShutdownWaitEventHandlerName)] IAppShutdownWaitEventHandler appShutdownWaitEventHandlerName,
+    public class WebSocketHandler([FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
                                   ILogger<WebSocketHandler> logger) : IWebSocketHandler
     {
 
-        private readonly IList<GpioObject> _gpioObjects = gpioObjects;
-        private readonly IGpioObjectsWaitEventHandler _gpioObjectsWaitEventHandler = gpioObjectsWaitEventHandler;
-        private readonly IAppShutdownWaitEventHandler _appShutdownWaitEventHandlerName = appShutdownWaitEventHandlerName;
+        private readonly IReadOnlyCollection<GpioObject> _gpioObjects = gpioObjects;
         private readonly ILogger _logger = logger;
 
 
@@ -46,18 +43,14 @@ namespace raspapi.Handlers
                         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
                                                    res.CloseStatusDescription,
                                                    CancellationToken.None);
-                        break;
+                        continue;
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger!.LogWarning("Client Aborted Connection {ex.Message}", ex.Message);
-                    return;
+                    continue;
                 }
-
-                _gpioObjectsWaitEventHandler!.WaitOne(10);
-               
-                if (webSocket!.State != WebSocketState.Open) break;
             }
 
             _logger!.LogInformation("End GetGpioStatus");

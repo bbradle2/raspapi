@@ -4,6 +4,7 @@ using raspapi.Models;
 using raspapi.Intercepts;
 using raspapi.Interfaces;
 using raspapi.Handlers;
+using System.Collections.Concurrent;
 
 namespace raspapi
 {
@@ -29,14 +30,11 @@ namespace raspapi
             builder.Logging.AddConsole();
 
             builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
-            builder.Services.AddKeyedSingleton<IList<GpioObject>,List<GpioObject>>(MiscConstants.gpioObjectsName);
-            builder.Services.AddKeyedSingleton<IGpioObjectsWaitEventHandler,GpioObjectsWaitEventHandler>(MiscConstants.gpioObjectsWaitEventHandlerName);
+            builder.Services.AddKeyedSingleton<ConcurrentQueue<GpioObject>>(MiscConstants.gpioObjectsName);
             builder.Services.AddKeyedSingleton<IWebSocketHandler, WebSocketHandler>(MiscConstants.webSocketHandlerName);
             builder.Services.AddKeyedSingleton<IAppLifeTimeHandler, AppLifeTimeHandler>(MiscConstants.appLifeTimeHandlerName);
             builder.Services.AddKeyedSingleton<ICommandLineTaskHandler, CommandLineTaskHandler>(MiscConstants.commandLineTaskHandlerName);
-            builder.Services.AddKeyedSingleton<IAppShutdownWaitEventHandler, AppShutdownWaitEventHandler>(MiscConstants.appShutdownWaitEventHandlerName);
-            builder.Services.AddKeyedSingleton<IBinarySemaphoreSlimHandler, BinarySemaphoreSlimHandler>(MiscConstants.gpioBinarySemaphoreSlimName);
-
+           
             builder.Services.AddControllers();
 
             var app = builder.Build();

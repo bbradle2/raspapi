@@ -167,8 +167,15 @@ START=$(date +%s%N | cut -b1-13)
 # runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
 gpioObjects='[{"gpioNumber":23,"gpioValue":null},{"gpioNumber":24,"gpioValue":null},{"gpioNumber":25,"gpioValue":null},{"gpioNumber":26,"gpioValue":null},{"gpioNumber":27,"gpioValue":null}]'
+
+for i in {1..1000}
+do
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh" $gpioObjects
 runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow" $gpioObjects
+
+done
+
+
 END=$(date +%s%N | cut -b1-13)
 echo Execution time $((END-START)) milli seconds.
 
