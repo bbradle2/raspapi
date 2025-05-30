@@ -4,7 +4,6 @@ using raspapi.Constants;
 using raspapi.Models;
 using raspapi.Interfaces;
 using System.Collections.Concurrent;
-using System.Linq;
 
 namespace raspapi.Controllers
 {
@@ -13,7 +12,6 @@ namespace raspapi.Controllers
     public class RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
                                            [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                            [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
-                                          
                                            [FromKeyedServices(MiscConstants.webSocketHandlerName)] IWebSocketHandler webSocketHandler,
                                            IConfiguration configuration) : ControllerBase
     {
@@ -22,6 +20,7 @@ namespace raspapi.Controllers
         private readonly ConcurrentQueue<GpioObject> _gpioObjects = gpioObjects;
         private readonly IConfiguration _configuration = configuration;
         private readonly IWebSocketHandler _webSocketHandler = webSocketHandler;
+        
 
         [Route("/ws")]
         [HttpGet("GetGpioStatus")]
@@ -46,8 +45,6 @@ namespace raspapi.Controllers
                 ArgumentNullException.ThrowIfNull(gpioObjs);
                 ArgumentNullException.ThrowIfNull(_gpioController);
                 ArgumentNullException.ThrowIfNull(_logger);
-
-                //await _binarySemaphoreSlimHandler.WaitAsync();
 
                 ConcurrentQueue<GpioObject> gpioObjects = [];
 
@@ -100,8 +97,6 @@ namespace raspapi.Controllers
                 ArgumentNullException.ThrowIfNull(gpioObjs);
                 ArgumentNullException.ThrowIfNull(_gpioController);
                 ArgumentNullException.ThrowIfNull(_logger);
-
-                //await _binarySemaphoreSlimHandler.WaitAsync();
 
                 ConcurrentQueue<GpioObject> gpioObjects = [];
 

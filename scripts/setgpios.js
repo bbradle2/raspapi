@@ -41,8 +41,8 @@ export default function () {
     };
   
 
-  const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosHigh', payload, params);
-  //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosLow', payload, params);   
+  //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosHigh', payload, params);
+  const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosLow', payload, params);   
   
   
   //const result = JSON.stringify(response.body, payload, params);

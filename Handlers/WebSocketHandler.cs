@@ -8,14 +8,11 @@ using System.Collections.Concurrent;
 
 namespace raspapi.Handlers
 {
-   
     public class WebSocketHandler([FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
                                   ILogger<WebSocketHandler> logger) : IWebSocketHandler
     {
-
         private readonly IReadOnlyCollection<GpioObject> _gpioObjects = gpioObjects;
         private readonly ILogger _logger = logger;
-
 
         public async Task GetGpioStatus(WebSocket webSocket)
         {
@@ -27,7 +24,7 @@ namespace raspapi.Handlers
                     sendBuffer = sendBuffer.Replace("\0", string.Empty);
 
                     await webSocket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(sendBuffer), 0, sendBuffer.Length),
-                                              WebSocketMessageType.Text,
+                                              WebSocketMessageType.Binary,
                                               true,
                                               CancellationToken.None);
 
@@ -35,14 +32,18 @@ namespace raspapi.Handlers
                     var res = await webSocket.ReceiveAsync(recvBytes,
                                                            CancellationToken.None);
 
-                    if (res.MessageType == WebSocketMessageType.Close
-                        && res.EndOfMessage
-                        && recvBytes.Length == 1
-                        && recvBytes[0] == MiscConstants.EOT)
+                    if (!res.EndOfMessage && res.Count != 1 && recvBytes[0] != MiscConstants.EOT)
+                    {
+                         _logger!.LogWarning("Did not receive End Of Transmission byte");
+                    }
+
+                    if (res.MessageType == WebSocketMessageType.Close && res.EndOfMessage)
                     {
                         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,
                                                    res.CloseStatusDescription,
                                                    CancellationToken.None);
+                        _logger!.LogInformation("{res.CloseStatusDescription}", res.CloseStatusDescription);
+
                         continue;
                     }
                 }

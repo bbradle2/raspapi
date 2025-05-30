@@ -5,6 +5,7 @@ using raspapi.Intercepts;
 using raspapi.Interfaces;
 using raspapi.Handlers;
 using System.Collections.Concurrent;
+using Microsoft.AspNetCore.HttpLogging;
 
 namespace raspapi
 {
@@ -28,17 +29,18 @@ namespace raspapi
 
             var builder = WebApplication.CreateBuilder(args);
             builder.Logging.AddConsole();
-
+            
+            
             builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
             builder.Services.AddKeyedSingleton<ConcurrentQueue<GpioObject>>(MiscConstants.gpioObjectsName);
             builder.Services.AddKeyedSingleton<IWebSocketHandler, WebSocketHandler>(MiscConstants.webSocketHandlerName);
             builder.Services.AddKeyedSingleton<IAppLifeTimeHandler, AppLifeTimeHandler>(MiscConstants.appLifeTimeHandlerName);
             builder.Services.AddKeyedSingleton<ICommandLineTaskHandler, CommandLineTaskHandler>(MiscConstants.commandLineTaskHandlerName);
-           
+            builder.WebHost.UseQuic();
             builder.Services.AddControllers();
-
+           
             var app = builder.Build();
-             
+    
             _logger = app.Services.GetRequiredService<ILogger<Program>>();
 
             app.UseMiddleware<ApiIntercept>();

@@ -77,7 +77,8 @@ namespace raspapi.Utils
 
                 var inActiveAnonValue = meminfoLines.SingleOrDefault(item => item.Contains($"inactive(anon){Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
 
-                MemoryInfoObject memInfoObject = new()
+
+                return new MemoryInfoObject()
                 {
                     ProductName = ProductName,
                     Description = Description,
@@ -88,8 +89,6 @@ namespace raspapi.Utils
                     SwapCached = swapCachedValue,
                     SwapFree = swapFreeValue,
                 };
-
-                return memInfoObject;
             }
             catch
             {
@@ -118,14 +117,13 @@ namespace raspapi.Utils
                     return new MemoryStream(systemInfoByteArray);
                 }
 
-                SystemInfoObject systemInfoObject = new()
+
+                return new SystemInfoObject()
                 {
                     ProductName = ProductName,
                     Description = Description,
                     SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(await memoryStreamSystemInfo(), _options)
                 };
-
-                return systemInfoObject;
             }
             catch
             {
@@ -150,15 +148,14 @@ namespace raspapi.Utils
 
                 int valuePosition = 1;
                 var temperatureValueCelcius = double.Parse(temperatureInfoResult.Split($"{Delimeter}")[valuePosition].Trim().Split("'")[0]);
-                TemperatureInfoObject temperatureInfoObject = new()
+
+                return new TemperatureInfoObject()
                 {
                     ProductName = ProductName,
                     Description = Description,
                     TemperatureFahrenheit = (temperatureValueCelcius * 1.8) + 32,
                     TemperatureCelcius = temperatureValueCelcius
                 };
-
-                return temperatureInfoObject;
             }
             catch
             {
@@ -187,14 +184,13 @@ namespace raspapi.Utils
                     return new MemoryStream(cpuInfoByteArray);
                 }
 
-                CPUInfoObject cpuInfoObject = new()
+
+                return new CPUInfoObject()
                 {
                     ProductName = ProductName,
                     Description = Description,
                     CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(await memoryStreamcCPUInfo(), _options)
                 };
-
-                return cpuInfoObject;
             }
             catch
             {

@@ -4,6 +4,7 @@ using raspapi.Models;
 using System.Device.Gpio;
 using raspapi.Constants;
 
+
 namespace raspapi.Controllers
 {
 
@@ -32,6 +33,7 @@ namespace raspapi.Controllers
 
                 foreach (var endpoint in HttpContext.RequestServices.GetServices<EndpointDataSource>().SelectMany(x => x!.Endpoints))
                 {
+                    
                     if (endpoint is RouteEndpoint routeEndpoint)
                     {
                         var routepatternrawtext = routeEndpoint.RoutePattern.RawText;
@@ -50,7 +52,6 @@ namespace raspapi.Controllers
                                     endpoints.Add(end);
                             }
                         }
-
                     }
                 }
 
