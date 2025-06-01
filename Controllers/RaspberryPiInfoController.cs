@@ -10,19 +10,21 @@ namespace raspapi.Controllers
 
     [ApiController]
     [Route("[controller]")]
-    public class RaspberryPiInfoController(ILogger<RaspberryPiInfoController> logger, [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController) : ControllerBase
+    public class RaspberryPiInfoController : ControllerBase
     {
-        private readonly ILogger<RaspberryPiInfoController>? _logger = logger;
-        private readonly GpioController? _gpioController = gpioController;
+        private readonly ILogger<RaspberryPiInfoController>? _logger;
+        //private readonly GpioController? _gpioController = gpioController;
         private string? _product;
         private SystemInfoObject? _systemInfoObject;
 
-        private async Task GetSystemData()
+        public RaspberryPiInfoController(ILogger<RaspberryPiInfoController>? logger)
         {
-            _systemInfoObject = await DataUtils.PopulateSystemInfoAsync("No Description", "systeminfo");
+            _logger = logger; 
+            _systemInfoObject = DataUtils.PopulateSystemInfoAsync("No Description", "systeminfo").GetAwaiter().GetResult();
             _product = _systemInfoObject.SystemObjects?[0]?.Product;
             _systemInfoObject.ProductName = _product!;
         }
+       
 
         [HttpGet("GetEndPoints")]
         public async Task<IActionResult?> GetEndPoints()
@@ -70,7 +72,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                await GetSystemData();
+                
                 return Ok(await Task.FromResult(_systemInfoObject));
                
             }
@@ -86,7 +88,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                await GetSystemData();
+               
                 CPUInfoObject _cpuInfoObject = await DataUtils.PopulateCpuInfoAsync($"{_product}.", "cpuinfo");
                 return Ok(_cpuInfoObject);
             }
@@ -102,8 +104,8 @@ namespace raspapi.Controllers
         {
             try
             {
-                await GetSystemData();
-                var temperatureInfo = await DataUtils.PopulateGetTemperatureInfoAsync($"{_product}.", "temperatureInfo");
+                
+                var temperatureInfo = await DataUtils.PopulateTemperatureInfoAsync($"{_product}.", "temperatureInfo");
                 return Ok(temperatureInfo);
             }
             catch (Exception e)
@@ -118,7 +120,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                await GetSystemData();
+                
                 var memInfo = await DataUtils.PopulateMemoryInfoAsync($"{_product}.", "memoryinfo");
                 return Ok(memInfo);
             }

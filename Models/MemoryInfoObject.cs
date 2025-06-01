@@ -3,15 +3,13 @@ namespace raspapi.Models
     public class MemoryInfoObject : BaseInfoObject
     {
 
-        public string? MemoryTotal { get; set; }
-        public string? MemoryFree { get; set; }
-        public string? MemoryAvailable { get; set; }
+        public int? MemoryTotal { get; set; }
+        public int? MemoryFree { get; set; }
+        public int? MemoryAvailable { get; set; }
 
-        public string? Cached { get; set; }
-        public string? SwapCached { get; set; }
-        public string? SwapFree { get; set; }
+        public int? Cached { get; set; }
+        public int? SwapCached { get; set; }
+        public int? SwapFree { get; set; }
 
     }
-
-
 }

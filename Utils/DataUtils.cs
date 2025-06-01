@@ -56,38 +56,53 @@ namespace raspapi.Utils
                     throw new Exception("Meminfo has no entries");
                 }
 
+                int ignoreCase = (int)StringComparison.CurrentCultureIgnoreCase;
                 int valuePosition = 1;
-                var memTotalValue = meminfoLines.SingleOrDefault(item => item.Contains($"memtotal{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
+                var memTotalValue = meminfoLines.SingleOrDefault(item => item.Contains($"memtotal{Delimeter}", (StringComparison)ignoreCase))!
+                                                .Split($"{Delimeter}")[valuePosition]
+                                                .Trim();
 
-                var memFreeValue = meminfoLines.SingleOrDefault(item => item.Contains($"memfree{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
+                var memFreeValue = meminfoLines.SingleOrDefault(item => item.Contains($"memfree{Delimeter}", (StringComparison)ignoreCase))!
+                                               .Split($"{Delimeter}")[valuePosition]
+                                               .Trim();
 
-                var memAvailableValue = meminfoLines.SingleOrDefault(item => item.Contains($"memavailable{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
+                var memAvailableValue = meminfoLines.SingleOrDefault(item => item.Contains($"memavailable{Delimeter}", (StringComparison)ignoreCase))!
+                                                    .Split($"{Delimeter}")[valuePosition]
+                                                    .Trim();     
 
-                var cachedValue = meminfoLines.SingleOrDefault(item => item.Contains($"cached{Delimeter}", StringComparison.CurrentCultureIgnoreCase)
-                                                                  &&
-                                                                  !item.Contains($"swapcached{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
+                var swapCachedValue = meminfoLines.SingleOrDefault(item => item.Contains($"swapcached{Delimeter}", (StringComparison)ignoreCase))!
+                                                                               .Split($"{Delimeter}")[valuePosition]
+                                                                               .Trim();
 
-                var swapCachedValue = meminfoLines.SingleOrDefault(item => item.Contains($"swapcached{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
+                var swapFreeValue = meminfoLines.SingleOrDefault(item => item.Contains($"swapfree{Delimeter}", (StringComparison)ignoreCase))!
+                                                                             .Split($"{Delimeter}")[valuePosition]
+                                                                             .Trim();
+               
+                var inActiveAnonValue = meminfoLines.SingleOrDefault(item => item.Contains($"inactive(anon){Delimeter}", (StringComparison)ignoreCase))!
+                                                                                 .Split($"{Delimeter}")[valuePosition]
+                                                                                 .Trim();
 
-                var swapFreeValue = meminfoLines.SingleOrDefault(item => item.Contains($"swapfree{Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
+                var cachedValue = meminfoLines.SingleOrDefault(item => item.Contains($"cached{Delimeter}", (StringComparison)ignoreCase)
+                                                               && !item.Contains($"swapcached{Delimeter}", (StringComparison)ignoreCase))!
+                                                                       .Split($"{Delimeter}")[valuePosition]
+                                                                       .Trim();
 
-                var activeAnonValue = meminfoLines.SingleOrDefault(item => item.Contains($"active(anon){Delimeter}", StringComparison.CurrentCultureIgnoreCase)
-                                                                      &&
-                                                                      !item.Contains($"inactive(anon){Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
-
-                var inActiveAnonValue = meminfoLines.SingleOrDefault(item => item.Contains($"inactive(anon){Delimeter}", StringComparison.CurrentCultureIgnoreCase))!.Split($"{Delimeter}")[valuePosition].Trim();
+                var activeAnonValue = meminfoLines.SingleOrDefault(item => item.Contains($"active(anon){Delimeter}", (StringComparison)ignoreCase)
+                                                                   && !item.Contains($"inactive(anon){Delimeter}", (StringComparison)ignoreCase))!
+                                                                           .Split($"{Delimeter}")[valuePosition]
+                                                                           .Trim();
 
 
                 return new MemoryInfoObject()
                 {
                     ProductName = ProductName,
                     Description = Description,
-                    MemoryTotal = memTotalValue,
-                    MemoryFree = memFreeValue,
-                    MemoryAvailable = memAvailableValue,
-                    Cached = cachedValue,
-                    SwapCached = swapCachedValue,
-                    SwapFree = swapFreeValue,
+                    MemoryTotal = Convert.ToInt32(memTotalValue.Replace("kB", "")),
+                    MemoryFree = Convert.ToInt32(memFreeValue.Replace("kB", "")),
+                    MemoryAvailable = Convert.ToInt32(memAvailableValue.Replace("kB", "")),
+                    Cached = Convert.ToInt32(cachedValue.Replace("kB", "")),
+                    SwapCached = Convert.ToInt32(swapCachedValue.Replace("kB", "")),
+                    SwapFree =  Convert.ToInt32(swapFreeValue.Replace("kB", ""))
                 };
             }
             catch
@@ -109,7 +124,7 @@ namespace raspapi.Utils
                 ArgumentException.ThrowIfNullOrWhiteSpace(ProductName);
                 ArgumentException.ThrowIfNullOrWhiteSpace(Description);
 
-                static async Task<MemoryStream> memoryStreamSystemInfo()
+                static async Task<MemoryStream> memoryStreamSystemInfoAsync()
                 {
                     string systemInfoResult = await "sudo lshw -class system -json".ExecuteBashScriptAsync();
                     ArgumentNullException.ThrowIfNullOrWhiteSpace(systemInfoResult);
@@ -122,7 +137,7 @@ namespace raspapi.Utils
                 {
                     ProductName = ProductName,
                     Description = Description,
-                    SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(await memoryStreamSystemInfo(), _options)
+                    SystemObjects = await JsonSerializer.DeserializeAsync<SystemInfoObject.SystemObject[]>(await memoryStreamSystemInfoAsync(), _options)
                 };
             }
             catch
@@ -135,7 +150,7 @@ namespace raspapi.Utils
             }
         }
 
-        public static async Task<TemperatureInfoObject> PopulateGetTemperatureInfoAsync(string ProductName, string Description, string Delimeter = "=")
+        public static async Task<TemperatureInfoObject> PopulateTemperatureInfoAsync(string ProductName, string Description, string Delimeter = "=")
         {
             try
             {
@@ -176,7 +191,7 @@ namespace raspapi.Utils
                 ArgumentException.ThrowIfNullOrWhiteSpace(ProductName);
                 ArgumentException.ThrowIfNullOrWhiteSpace(Description);
 
-                static async Task<MemoryStream> memoryStreamcCPUInfo()
+                static async Task<MemoryStream> memoryStreamcCPUInfoAsync()
                 {
                     string cpuInfoResult = await "sudo lshw -class cpu -json".ExecuteBashScriptAsync();
                     ArgumentNullException.ThrowIfNullOrWhiteSpace(cpuInfoResult);
@@ -189,7 +204,7 @@ namespace raspapi.Utils
                 {
                     ProductName = ProductName,
                     Description = Description,
-                    CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(await memoryStreamcCPUInfo(), _options)
+                    CPUObjects = await JsonSerializer.DeserializeAsync<CPUInfoObject.CPUObject[]>(await memoryStreamcCPUInfoAsync(), _options)
                 };
             }
             catch
