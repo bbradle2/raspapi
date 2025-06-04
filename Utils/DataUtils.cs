@@ -93,16 +93,18 @@ namespace raspapi.Utils
                                                                            .Trim();
 
 
+                var formula = 1024 * 1024;
+                var places = 8;
                 return new MemoryInfoObject()
                 {
                     ProductName = ProductName,
                     Description = Description,
-                    MemoryTotal = Convert.ToInt32(memTotalValue.Replace("kB", "")),
-                    MemoryFree = Convert.ToInt32(memFreeValue.Replace("kB", "")),
-                    MemoryAvailable = Convert.ToInt32(memAvailableValue.Replace("kB", "")),
-                    Cached = Convert.ToInt32(cachedValue.Replace("kB", "")),
-                    SwapCached = Convert.ToInt32(swapCachedValue.Replace("kB", "")),
-                    SwapFree =  Convert.ToInt32(swapFreeValue.Replace("kB", ""))
+                    MemoryTotal = decimal.Round(Convert.ToDecimal(memTotalValue.Replace("kB", "")) / formula, places),
+                    MemoryFree = decimal.Round(Convert.ToDecimal(memFreeValue.Replace("kB", "")) / formula, places),
+                    MemoryAvailable = decimal.Round(Convert.ToDecimal(memAvailableValue.Replace("kB", "")) / formula, places),
+                    Cached = decimal.Round(Convert.ToDecimal(cachedValue.Replace("kB", "")) / formula, places),
+                    SwapCached = decimal.Round(Convert.ToDecimal(swapCachedValue.Replace("kB", "")) / formula, places),
+                    SwapFree = decimal.Round(Convert.ToDecimal(swapFreeValue.Replace("kB", "")) / formula, places)
                 };
             }
             catch

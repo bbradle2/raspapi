@@ -15,7 +15,7 @@ namespace raspapi.Controllers
         private readonly ILogger<RaspberryPiInfoController>? _logger;
         //private readonly GpioController? _gpioController = gpioController;
         private string? _product;
-        private SystemInfoObject? _systemInfoObject;
+        private static SystemInfoObject? _systemInfoObject;
 
         public RaspberryPiInfoController(ILogger<RaspberryPiInfoController>? logger)
         {
