@@ -2,7 +2,6 @@ using System.Device.Gpio;
 using Microsoft.AspNetCore.Mvc;
 using raspapi.Constants;
 using raspapi.Models;
-using raspapi.Interfaces;
 using System.Collections.Concurrent;
 
 namespace raspapi.Controllers
@@ -12,28 +11,26 @@ namespace raspapi.Controllers
     public class RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
                                            [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                            [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
-                                           [FromKeyedServices(MiscConstants.webSocketHandlerName)] IWebSocketHandler webSocketHandler,
                                            IConfiguration configuration) : ControllerBase
     {
         private readonly ILogger<RaspberryPiGpioController> _logger = logger;
         private readonly GpioController _gpioController = gpioController;
         private readonly ConcurrentQueue<GpioObject> _gpioObjects = gpioObjects;
         private readonly IConfiguration _configuration = configuration;
-        private readonly IWebSocketHandler _webSocketHandler = webSocketHandler;
-        
 
-        [Route("/ws")]
+      
+
         [HttpGet("GetGpioStatus")]
-        public async Task GetGpioStatus()
+        public async Task<IActionResult?> GetGpioStatus()
         {
-            if (HttpContext.WebSockets.IsWebSocketRequest)
+            try
             {
-                using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-                await _webSocketHandler.GetGpioStatus(webSocket);
+                return await Task.FromResult(Ok(_gpioObjects)); ;
             }
-            else
+            catch (Exception e)
             {
-                HttpContext.Response.StatusCode = 400; // Bad request
+                _logger.LogCritical("{Message}", e.Message);
+                return BadRequest("Something went wrong.");
             }
         }
 

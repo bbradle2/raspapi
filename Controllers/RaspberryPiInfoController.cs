@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using raspapi.Utils;
 using raspapi.Models;
-using System.Device.Gpio;
-using raspapi.Constants;
 
 
 namespace raspapi.Controllers
@@ -20,7 +18,7 @@ namespace raspapi.Controllers
         public RaspberryPiInfoController(ILogger<RaspberryPiInfoController>? logger)
         {
             _logger = logger; 
-            _systemInfoObject = DataUtils.PopulateSystemInfoAsync("No Description", "systeminfo").GetAwaiter().GetResult();
+            _systemInfoObject = DataUtils.GetSystemInfoAsync("No Description", "systeminfo").GetAwaiter().GetResult();
             _product = _systemInfoObject.SystemObjects?[0]?.Product;
             _systemInfoObject.ProductName = _product!;
         }
@@ -89,7 +87,7 @@ namespace raspapi.Controllers
             try
             {
                
-                CPUInfoObject _cpuInfoObject = await DataUtils.PopulateCpuInfoAsync($"{_product}.", "cpuinfo");
+                CPUInfoObject _cpuInfoObject = await DataUtils.GetCpuInfoAsync($"{_product}.", "cpuinfo");
                 return Ok(_cpuInfoObject);
             }
             catch (Exception e)
@@ -105,7 +103,7 @@ namespace raspapi.Controllers
             try
             {
                 
-                var temperatureInfo = await DataUtils.PopulateTemperatureInfoAsync($"{_product}.", "temperatureInfo");
+                var temperatureInfo = await DataUtils.GetTemperatureInfoAsync($"{_product}.", "temperatureInfo");
                 return Ok(temperatureInfo);
             }
             catch (Exception e)
@@ -121,7 +119,7 @@ namespace raspapi.Controllers
             try
             {
                 
-                var memInfo = await DataUtils.PopulateMemoryInfoAsync($"{_product}.", "memoryinfo");
+                var memInfo = await DataUtils.GetMemoryInfoAsync($"{_product}.", "memoryinfo");
                 return Ok(memInfo);
             }
             catch (Exception e)

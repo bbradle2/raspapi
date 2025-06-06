@@ -40,7 +40,7 @@ namespace raspapi.Utils
             return [.. gpios.DistinctBy(s => s)];
         }
 
-        public static async Task<MemoryInfoObject> PopulateMemoryInfoAsync(string ProductName, string Description, string Delimeter = ":")
+        public static async Task<MemoryInfoObject> GetMemoryInfoAsync(string ProductName, string Description, string Delimeter = ":")
         {
             try
             {
@@ -117,7 +117,7 @@ namespace raspapi.Utils
             }
         }
 
-        public static async Task<SystemInfoObject> PopulateSystemInfoAsync(string ProductName, string Description)
+        public static async Task<SystemInfoObject> GetSystemInfoAsync(string ProductName, string Description)
         {
             try
             {
@@ -152,7 +152,7 @@ namespace raspapi.Utils
             }
         }
 
-        public static async Task<TemperatureInfoObject> PopulateTemperatureInfoAsync(string ProductName, string Description, string Delimeter = "=")
+        public static async Task<TemperatureInfoObject> GetTemperatureInfoAsync(string ProductName, string Description, string Delimeter = "=")
         {
             try
             {
@@ -164,13 +164,14 @@ namespace raspapi.Utils
                 string temperatureInfoResult = await "vcgencmd measure_temp".ExecuteBashScriptAsync();
 
                 int valuePosition = 1;
-                var temperatureValueCelcius = double.Parse(temperatureInfoResult.Split($"{Delimeter}")[valuePosition].Trim().Split("'")[0]);
+                var temperatureValueCelcius = decimal.Round(
+                                              Convert.ToDecimal(temperatureInfoResult.Split($"{Delimeter}")[valuePosition].Trim().Split("'")[0]), 2);
 
                 return new TemperatureInfoObject()
                 {
                     ProductName = ProductName,
                     Description = Description,
-                    TemperatureFahrenheit = (temperatureValueCelcius * 1.8) + 32,
+                    TemperatureFahrenheit = (temperatureValueCelcius * 1.8M) + 32,
                     TemperatureCelcius = temperatureValueCelcius
                 };
             }
@@ -184,7 +185,7 @@ namespace raspapi.Utils
             }
         }
 
-        public static async Task<CPUInfoObject> PopulateCpuInfoAsync(string ProductName, string Description)
+        public static async Task<CPUInfoObject> GetCpuInfoAsync(string ProductName, string Description)
         {
             try
             {
