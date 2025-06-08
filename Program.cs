@@ -29,13 +29,11 @@ namespace raspapi
 
             var builder = WebApplication.CreateBuilder(args);
             builder.Logging.AddConsole();
-            
-            
+                        
             builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
             builder.Services.AddKeyedSingleton<ConcurrentQueue<GpioObject>>(MiscConstants.gpioObjectsName);
             builder.Services.AddKeyedSingleton<IAppLifeTimeHandler, AppLifeTimeHandler>(MiscConstants.appLifeTimeHandlerName);
             builder.Services.AddKeyedSingleton<ICommandLineTaskHandler, CommandLineTaskHandler>(MiscConstants.commandLineTaskHandlerName);
-            builder.WebHost.UseQuic();
             builder.Services.AddControllers();
            
             var app = builder.Build();
