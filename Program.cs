@@ -45,12 +45,12 @@ namespace raspapi
             app.MapControllers();
 
             var appLifeTimeHandler  = app.Services.GetKeyedService<IAppLifeTimeHandler>(MiscConstants.appLifeTimeHandlerName);
-            appLifeTimeHandler!.Handle();
+            appLifeTimeHandler!.Run();
 
             if (app.Environment.IsDevelopment())
             {
                 var commandLineTaskHandler = app.Services.GetKeyedService<ICommandLineTaskHandler>(MiscConstants.commandLineTaskHandlerName);
-                commandLineTaskHandler!.Handle();
+                commandLineTaskHandler!.Run();
             }
             
             await app.RunAsync();

@@ -23,7 +23,7 @@ namespace raspapi.Handlers
         private readonly IWebHostEnvironment _webHostEnvironment = webHostEnvironment;
         private readonly IConfiguration _configuration = configuration;
 
-        public void Handle()
+        public void Run()
         {
             _ = Task.Factory.StartNew(async () =>
             {

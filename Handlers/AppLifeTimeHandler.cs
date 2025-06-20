@@ -17,7 +17,7 @@ namespace raspapi.Handlers
         private readonly ILogger<AppLifeTimeHandler> _logger = logger;
         private readonly IHostApplicationLifetime _hostLifetTime = hostLifetTime;
 
-        public void Handle()
+        public void Run()
         {
             _ = _hostLifetTime!.ApplicationStopping.Register(() =>
            {
