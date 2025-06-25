@@ -9,7 +9,8 @@ namespace raspapi.Handlers
 {
    
     public class CommandLineTaskHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                        [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjectList,
+                                        [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
+                                        [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
                                         ILogger<CommandLineTaskHandler> logger,
                                         IHost host,
                                         IWebHostEnvironment webHostEnvironment,
@@ -17,17 +18,18 @@ namespace raspapi.Handlers
                                        ) : ICommandLineTaskHandler
     {
         private readonly GpioController _gpioController = gpioController;
-        private readonly ConcurrentQueue<GpioObject> _gpioObjectList = gpioObjectList;
+        private readonly ConcurrentQueue<GpioObject> _gpioObjects = gpioObjects;
         private readonly ILogger<CommandLineTaskHandler> _logger = logger;
         private readonly IHost _host = host;
         private readonly IWebHostEnvironment _webHostEnvironment = webHostEnvironment;
         private readonly IConfiguration _configuration = configuration;
+        private readonly IBinarySemaphoreSlimHandler _binarySemaphoreSlimHandler = binarySemaphoreSlimHandler;
 
         public void Run()
         {
             _ = Task.Factory.StartNew(async () =>
             {
-
+                
                 bool runTask = true;
 
                 while (runTask)
@@ -41,9 +43,6 @@ namespace raspapi.Handlers
 
                         _logger!.LogInformation("Available Connection(s):{Urls}", _configuration["Urls"]!);
                         var urls = _configuration["Urls"]!.Split(',');
-                       
-
-
 
                         var endpoints = _host.Services
                                         .GetServices<EndpointDataSource>()
@@ -80,7 +79,7 @@ namespace raspapi.Handlers
 
                             _logger!.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             _logger!.LogWarning("Problem Getting Http Connection Count. {ex.Message}", ex.Message);
                         }
@@ -88,9 +87,11 @@ namespace raspapi.Handlers
                     }
                     else if (command!.Equals("GPIO".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        if (_gpioObjectList != null && _gpioObjectList.Count > 0)
+                        await _binarySemaphoreSlimHandler!.WaitAsync();
+
+                        if (_gpioObjects != null && _gpioObjects.Count > 0)
                         {
-                            foreach (var gpioObject in _gpioObjectList!.DistinctBy(s => s.GpioNumber))
+                            foreach (var gpioObject in _gpioObjects!.DistinctBy(s => s.GpioNumber))
                             {
 
                                 if (_gpioController != null)
@@ -115,6 +116,8 @@ namespace raspapi.Handlers
                         }
 
                         Console.ForegroundColor = ConsoleColor.White;
+                        
+                        _binarySemaphoreSlimHandler!.Release();
                     }
                     else if (command!.Equals("QUIT".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
@@ -127,6 +130,8 @@ namespace raspapi.Handlers
                         _logger!.LogWarning("Invalid command. Valid commands are quit,info or gpio");
                     }
                 }
+
+                
             });
         }
     }

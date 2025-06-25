@@ -8,14 +8,16 @@ namespace raspapi.Handlers
 {
 
     public class AppLifeTimeHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                              [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjectList,
+                              [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
                               ILogger<AppLifeTimeHandler> logger,
-                              IHostApplicationLifetime hostLifetTime) : IAppLifeTimeHandler
+                              IHostApplicationLifetime hostLifetTime,
+                              [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler) : IAppLifeTimeHandler
     {
         private readonly GpioController _gpioController = gpioController;
-        private readonly ConcurrentQueue<GpioObject> _gpioObjectList = gpioObjectList;
+        private readonly ConcurrentQueue<GpioObject> _gpioObjects = gpioObjects;
         private readonly ILogger<AppLifeTimeHandler> _logger = logger;
         private readonly IHostApplicationLifetime _hostLifetTime = hostLifetTime;
+        private readonly IBinarySemaphoreSlimHandler _binarySemaphoreSlimHandler = binarySemaphoreSlimHandler;
 
         public void Run()
         {
@@ -24,18 +26,19 @@ namespace raspapi.Handlers
                _logger!.LogInformation("Waiting for client(s) to Disconnect");
            });
 
-            _ = _hostLifetTime.ApplicationStopped.Register(() =>
+            _ = _hostLifetTime.ApplicationStopped.Register(async () =>
             {
                 try
                 {
+                    await _binarySemaphoreSlimHandler!.WaitAsync();
                     _logger!.LogInformation("Checking for Open Gpio's....");
 
-                    if (_gpioObjectList == null)
+                    if (_gpioObjects == null)
                     {
                         return;
                     }
 
-                    foreach (var gpioObject in _gpioObjectList!.DistinctBy(s => s.GpioNumber))
+                    foreach (var gpioObject in _gpioObjects!.DistinctBy(s => s.GpioNumber))
                     {
                         if (_gpioController!.IsPinOpen(gpioObject.GpioNumber))
                         {
@@ -55,6 +58,7 @@ namespace raspapi.Handlers
                 }
                 finally
                 {
+                    _binarySemaphoreSlimHandler!.Release();
                     _gpioController!.Dispose();
                 }
             });

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using raspapi.Constants;
 using raspapi.Models;
 using System.Collections.Concurrent;
+using raspapi.Interfaces;
 
 namespace raspapi.Controllers
 {
@@ -11,14 +12,16 @@ namespace raspapi.Controllers
     public class RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
                                            [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                            [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
-                                           IConfiguration configuration) : ControllerBase
+                                           IConfiguration configuration,
+                                            [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler) : ControllerBase
     {
         private readonly ILogger<RaspberryPiGpioController> _logger = logger;
         private readonly GpioController _gpioController = gpioController;
         private readonly ConcurrentQueue<GpioObject> _gpioObjects = gpioObjects;
         private readonly IConfiguration _configuration = configuration;
+        private readonly IBinarySemaphoreSlimHandler _binarySemaphoreSlimHandler = binarySemaphoreSlimHandler;
 
-      
+
 
         [HttpGet("GetGpioStatus")]
         public async Task<IActionResult?> GetGpioStatus()
@@ -39,6 +42,7 @@ namespace raspapi.Controllers
         {
             try
             {
+                await _binarySemaphoreSlimHandler.WaitAsync();
                 ArgumentNullException.ThrowIfNull(gpioObjs);
                 ArgumentNullException.ThrowIfNull(_gpioController);
                 ArgumentNullException.ThrowIfNull(_logger);
@@ -82,7 +86,7 @@ namespace raspapi.Controllers
             }
             finally
             {
-
+                _binarySemaphoreSlimHandler.Release();
             }
         }
 
@@ -91,6 +95,8 @@ namespace raspapi.Controllers
         {
             try
             {
+                await _binarySemaphoreSlimHandler.WaitAsync();
+
                 ArgumentNullException.ThrowIfNull(gpioObjs);
                 ArgumentNullException.ThrowIfNull(_gpioController);
                 ArgumentNullException.ThrowIfNull(_logger);
@@ -138,7 +144,7 @@ namespace raspapi.Controllers
             }
             finally
             {
-
+                _binarySemaphoreSlimHandler.Release();
             }
         }
     }
