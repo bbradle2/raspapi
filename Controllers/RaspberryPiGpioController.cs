@@ -13,7 +13,7 @@ namespace raspapi.Controllers
                                            [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                            [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
                                            IConfiguration configuration,
-                                            [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler) : ControllerBase
+                                           [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler) : ControllerBase
     {
         private readonly ILogger<RaspberryPiGpioController> _logger = logger;
         private readonly GpioController _gpioController = gpioController;
@@ -49,32 +49,32 @@ namespace raspapi.Controllers
 
                 ConcurrentQueue<GpioObject> gpioObjects = [];
 
-                foreach (var gpioObject in gpioObjs)
+                foreach (var gpioObj in gpioObjs)
                 {
                     bool gpioValue = true;
-                    if (gpioObjs.Where(s => (s.GpioValue == null || s.GpioValue == false) && s.GpioNumber == gpioObject.GpioNumber).Count() == 1)
+                    if (gpioObjs.Where(s => (s.GpioValue == null || s.GpioValue == false) && s.GpioNumber == gpioObj.GpioNumber).Count() == 1)
                     {
-                        if (!_gpioController.IsPinOpen(gpioObject.GpioNumber))
+                        if (!_gpioController.IsPinOpen(gpioObj.GpioNumber))
                         {
-                            var gpioPin = _gpioController!.OpenPin(gpioObject.GpioNumber, PinMode.Output).PinNumber;
+                            var gpioPin = _gpioController!.OpenPin(gpioObj.GpioNumber, PinMode.Output).PinNumber;
                             _gpioController.Write(gpioPin, PinValue.High);
-                            gpioValue = (bool)_gpioController.Read(gpioObject.GpioNumber);
+                            gpioValue = (bool)_gpioController.Read(gpioObj.GpioNumber);
                         }
                         else
                         {
-                            _gpioController.Write(gpioObject.GpioNumber, PinValue.High);
-                            gpioValue = (bool)_gpioController.Read(gpioObject.GpioNumber);
+                            _gpioController.Write(gpioObj.GpioNumber, PinValue.High);
+                            gpioValue = (bool)_gpioController.Read(gpioObj.GpioNumber);
                         }
                     }
 
-                    gpioObjects.Enqueue(new GpioObject { GpioNumber = gpioObject.GpioNumber, GpioValue = gpioValue });
+                    gpioObjects.Enqueue(new GpioObject { GpioNumber = gpioObj.GpioNumber, GpioValue = gpioValue });
                 }
 
 
                 _gpioObjects.Clear();
-                foreach (var i in gpioObjects)
+                foreach (var gpioObject in gpioObjects)
                 {
-                    _gpioObjects.Enqueue(i);
+                    _gpioObjects.Enqueue(gpioObject);
                 }
 
                 return await Task.FromResult(Ok(_gpioObjects));
@@ -103,35 +103,35 @@ namespace raspapi.Controllers
 
                 ConcurrentQueue<GpioObject> gpioObjects = [];
 
-                foreach (var gpioObject in gpioObjs)
+                foreach (var gpioObj in gpioObjs)
                 {
                     bool gpioValue = false;
-                    if (gpioObjs.Where(s => (s.GpioValue == null || s.GpioValue == true) && s.GpioNumber == gpioObject.GpioNumber).Count() == 1)
+                    if (gpioObjs.Where(s => (s.GpioValue == null || s.GpioValue == true) && s.GpioNumber == gpioObj.GpioNumber).Count() == 1)
                     {
-                        if (!_gpioController.IsPinOpen(gpioObject.GpioNumber))
+                        if (!_gpioController.IsPinOpen(gpioObj.GpioNumber))
                         {
-                            var gpioPin = _gpioController!.OpenPin(gpioObject.GpioNumber, PinMode.Output).PinNumber;
+                            var gpioPin = _gpioController!.OpenPin(gpioObj.GpioNumber, PinMode.Output).PinNumber;
                             _gpioController.Write(gpioPin, PinValue.Low);
-                            gpioValue = (bool)_gpioController.Read(gpioObject.GpioNumber);
+                            gpioValue = (bool)_gpioController.Read(gpioObj.GpioNumber);
 
                         }
                         else
                         {
-                            _gpioController.Write(gpioObject.GpioNumber, PinValue.Low);
-                            gpioValue = (bool)_gpioController.Read(gpioObject.GpioNumber);
+                            _gpioController.Write(gpioObj.GpioNumber, PinValue.Low);
+                            gpioValue = (bool)_gpioController.Read(gpioObj.GpioNumber);
 
                         }
                     }
 
-                    gpioObjects.Enqueue(new GpioObject { GpioNumber = gpioObject.GpioNumber, GpioValue = gpioValue });
+                    gpioObjects.Enqueue(new GpioObject { GpioNumber = gpioObj.GpioNumber, GpioValue = gpioValue });
 
                 }
 
                 _gpioObjects.Clear();
 
-                foreach (var i in gpioObjects)
+                foreach (var gpioObject in gpioObjects)
                 {
-                    _gpioObjects.Enqueue(i);
+                    _gpioObjects.Enqueue(gpioObject);
                 }
 
                 return await Task.FromResult(Ok(_gpioObjects));
