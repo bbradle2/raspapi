@@ -11,7 +11,7 @@ namespace raspapi.Handlers
                               [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
                               ILogger<AppLifeTimeHandler> logger,
                               IHostApplicationLifetime hostLifetTime,
-                              [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler) : IAppLifeTimeHandler
+                              [FromKeyedServices(MiscConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler) : IAppLifeTimeHandler
     {
         private readonly GpioController _gpioController = gpioController;
         private readonly ConcurrentQueue<GpioObject> _gpioObjects = gpioObjects;

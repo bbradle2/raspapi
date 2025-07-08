@@ -34,7 +34,7 @@ namespace raspapi
             builder.Services.AddKeyedSingleton<ConcurrentQueue<GpioObject>>(MiscConstants.gpioObjectsName);
             builder.Services.AddKeyedSingleton<IAppLifeTimeHandler, AppLifeTimeHandler>(MiscConstants.appLifeTimeHandlerName);
             builder.Services.AddKeyedSingleton<ICommandLineTaskHandler, CommandLineTaskHandler>(MiscConstants.commandLineTaskHandlerName);
-            builder.Services.AddKeyedSingleton<IBinarySemaphoreSlimHandler, BinarySemaphoreSlimHandler>(MiscConstants.gpioBinarySemaphoreSlimName);
+            builder.Services.AddKeyedSingleton<IBinarySemaphoreSlimHandler, BinarySemaphoreSlimHandler>(MiscConstants.binarySemaphoreSlimHandler);
             builder.Services.AddControllers();
            
             var app = builder.Build();

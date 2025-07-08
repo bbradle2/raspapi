@@ -13,7 +13,7 @@ namespace raspapi.Controllers
                                            [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                            [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
                                            IConfiguration configuration,
-                                           [FromKeyedServices(MiscConstants.gpioBinarySemaphoreSlimName)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler) : ControllerBase
+                                           [FromKeyedServices(MiscConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler) : ControllerBase
     {
         private readonly ILogger<RaspberryPiGpioController> _logger = logger;
         private readonly GpioController _gpioController = gpioController;

@@ -129,7 +129,7 @@ namespace raspapi.Utils
                 static async Task<MemoryStream> memoryStreamSystemInfoAsync()
                 {
                     string systemInfoResult = await "sudo lshw -class system -json".ExecuteBashScriptAsync();
-                    ArgumentNullException.ThrowIfNullOrWhiteSpace(systemInfoResult);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(systemInfoResult);
                     byte[] systemInfoByteArray = Encoding.UTF8.GetBytes(systemInfoResult);
                     return new MemoryStream(systemInfoByteArray);
                 }
@@ -197,7 +197,7 @@ namespace raspapi.Utils
                 static async Task<MemoryStream> memoryStreamcCPUInfoAsync()
                 {
                     string cpuInfoResult = await "sudo lshw -class cpu -json".ExecuteBashScriptAsync();
-                    ArgumentNullException.ThrowIfNullOrWhiteSpace(cpuInfoResult);
+                    ArgumentException.ThrowIfNullOrWhiteSpace(cpuInfoResult);
                     byte[] cpuInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
                     return new MemoryStream(cpuInfoByteArray);
                 }
