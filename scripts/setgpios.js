@@ -1,7 +1,7 @@
 import http from 'k6/http';
 
 export const options = {
-  iterations: 1,
+  iterations: 1000,
 };
 
 export default function () {
@@ -26,9 +26,9 @@ export default function () {
        gpioValue: null
       },
       {
-        gpioNumber: 27,
-        gpioValue: null
-       }
+       gpioNumber: 27,
+       gpioValue: null
+      }
     ]
   );
   
