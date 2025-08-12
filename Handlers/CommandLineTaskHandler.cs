@@ -38,10 +38,10 @@ namespace raspapi.Handlers
 
                     if (command!.Equals("INFO".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
-                        _logger!.LogInformation("ASPNETCORE_ENVIRONMENT:{EnvironmentName}", _webHostEnvironment.EnvironmentName);
-                        _logger!.LogInformation("APPICATION_NAME:{ApplicationName}", _webHostEnvironment.ApplicationName);
+                        _logger!.LogInformation("ASPNETCORE_ENVIRONMENT: {EnvironmentName}", _webHostEnvironment.EnvironmentName);
+                        _logger!.LogInformation("APPICATION_NAME: {ApplicationName}", _webHostEnvironment.ApplicationName);
 
-                        _logger!.LogInformation("Available Connection(s):{Urls}", _configuration["Urls"]!);
+                        _logger!.LogInformation("Listening On: {Urls}", _configuration["Urls"]!);
                         var urls = _configuration["Urls"]!.Split(',');
 
                         var endpoints = _host.Services
@@ -57,9 +57,9 @@ namespace raspapi.Handlers
 
 
                                 if (routepatternrawtext!.StartsWith('/'))
-                                    _logger!.LogInformation("ENDPOINT:{url}{RawText}", url, routepatternrawtext);
+                                    _logger!.LogInformation("ENDPOINT: {url}{RawText}", url, routepatternrawtext);
                                 else
-                                    _logger!.LogInformation("ENDPOINT:{url}/{RawText}", url, routepatternrawtext);
+                                    _logger!.LogInformation("ENDPOINT: {url}/{RawText}", url, routepatternrawtext);
 
                             }
 
@@ -77,7 +77,7 @@ namespace raspapi.Handlers
                                                   where connection.LocalEndPoint.Port == new Uri(urls.FirstOrDefault()!).Port
                                                   select connection;
 
-                            _logger!.LogInformation("Local CONNECTIONS:{Count}", httpConnections.Count());
+                            _logger!.LogInformation("Local CONNECTIONS: {Count}", httpConnections.Count());
                         }
                         catch (Exception ex)
                         {

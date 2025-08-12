@@ -82,10 +82,6 @@ runtest()
     url=$2
     
     printf "${GREEN}Calling $verb $url\n"
-    #jsondata='[{"pinNumber":23},{"pinNumber":24},{"pinNumber":25}]'
-
-    #pins='[23,24]'
-    #pins='[]'
     
     if [[ "$verb" == "GET" ]];
     then
@@ -129,9 +125,6 @@ runtest()
 
     fi
 
-    #printf ''${GREEN}'Calling Web Socket Method GetGpiosStatus:\n'
-    
-    #./web.sh
     printf '\n\n'
 
 }
@@ -142,7 +135,6 @@ startservice()
     then
         cd ..
         dotnet clean
-        #dotnet build
         dotnet run &
         printf "${GREEN}Waiting for Service to build and start\n\n"
         sleep 20
@@ -159,19 +151,19 @@ printf 'Run Tests\n'
 printf '#########\n'
 printf '\n'
 
-getheader "http://$host:$port"
+#getheader "http://$host:$port"
 START=$(date +%s%N | cut -b1-13)
-# runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
-# runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
-# runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
-# runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
+runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
+runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
+runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
+runtest GET "http://$host:$port/RaspberryPiInfo/GetTemperatureInfo"
 
 gpioObjects='[{"gpioNumber":23,"gpioValue":null},{"gpioNumber":24,"gpioValue":null},{"gpioNumber":25,"gpioValue":null},{"gpioNumber":26,"gpioValue":null},{"gpioNumber":27,"gpioValue":null}]'
 
-for i in {1..200}
+for i in {1..1}
 do
-    runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh" $gpioObjects
-    runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow" $gpioObjects
+    runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh"
+    runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow"
 done
 
 
