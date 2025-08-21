@@ -163,6 +163,7 @@ gpioObjects='[{"gpioNumber":23,"gpioValue":null},{"gpioNumber":24,"gpioValue":nu
 for i in {1..1}
 do
     runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh"
+    sleep 1
     runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow"
 done
 

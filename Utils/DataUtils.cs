@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using raspapi.Models;
 using raspapi.Extensions;
+using System.Diagnostics;
 
 namespace raspapi.Utils
 {
@@ -17,12 +18,14 @@ namespace raspapi.Utils
         public static List<GpioObject> JsonArrayToGpioObjectArray(JsonArray gpioObjects)
         {
             List<GpioObject> gpioList = [];
+           
 
             foreach (var gpioObject in gpioObjects)
             {
                 var gpioNumber = gpioObject![0]!.GetValue<int>();
                 var gpioValue = gpioObject![1]!.GetValue<bool>();
                 gpioList.Add(new GpioObject { GpioNumber = gpioNumber, GpioValue = gpioValue });
+
 
             }
 
@@ -68,7 +71,7 @@ namespace raspapi.Utils
 
                 var memAvailableValue = meminfoLines.SingleOrDefault(item => item.Contains($"memavailable{Delimeter}", (StringComparison)ignoreCase))!
                                                     .Split($"{Delimeter}")[valuePosition]
-                                                    .Trim();     
+                                                    .Trim();
 
                 var swapCachedValue = meminfoLines.SingleOrDefault(item => item.Contains($"swapcached{Delimeter}", (StringComparison)ignoreCase))!
                                                                                .Split($"{Delimeter}")[valuePosition]
@@ -77,7 +80,7 @@ namespace raspapi.Utils
                 var swapFreeValue = meminfoLines.SingleOrDefault(item => item.Contains($"swapfree{Delimeter}", (StringComparison)ignoreCase))!
                                                                              .Split($"{Delimeter}")[valuePosition]
                                                                              .Trim();
-               
+
                 var inActiveAnonValue = meminfoLines.SingleOrDefault(item => item.Contains($"inactive(anon){Delimeter}", (StringComparison)ignoreCase))!
                                                                                  .Split($"{Delimeter}")[valuePosition]
                                                                                  .Trim();
@@ -128,7 +131,7 @@ namespace raspapi.Utils
 
                 static async Task<MemoryStream> memoryStreamSystemInfoAsync()
                 {
-                    string systemInfoResult = await "sudo lshw -class system -json".ExecuteBashScriptAsync();
+                    string systemInfoResult = await ExecuteBashScriptAsync("sudo lshw -class system -json");
                     ArgumentException.ThrowIfNullOrWhiteSpace(systemInfoResult);
                     byte[] systemInfoByteArray = Encoding.UTF8.GetBytes(systemInfoResult);
                     return new MemoryStream(systemInfoByteArray);
@@ -161,7 +164,7 @@ namespace raspapi.Utils
                 ArgumentException.ThrowIfNullOrWhiteSpace(ProductName);
                 ArgumentException.ThrowIfNullOrWhiteSpace(Description);
 
-                string temperatureInfoResult = await "vcgencmd measure_temp".ExecuteBashScriptAsync();
+                string temperatureInfoResult = await ExecuteBashScriptAsync("vcgencmd measure_temp");
 
                 int valuePosition = 1;
                 var temperatureValueCelcius = decimal.Round(
@@ -193,10 +196,10 @@ namespace raspapi.Utils
 
                 ArgumentException.ThrowIfNullOrWhiteSpace(ProductName);
                 ArgumentException.ThrowIfNullOrWhiteSpace(Description);
-
+                
                 static async Task<MemoryStream> memoryStreamcCPUInfoAsync()
                 {
-                    string cpuInfoResult = await "sudo lshw -class cpu -json".ExecuteBashScriptAsync();
+                    string cpuInfoResult = await ExecuteBashScriptAsync("sudo lshw -class cpu -json");
                     ArgumentException.ThrowIfNullOrWhiteSpace(cpuInfoResult);
                     byte[] cpuInfoByteArray = Encoding.UTF8.GetBytes(cpuInfoResult);
                     return new MemoryStream(cpuInfoByteArray);
@@ -218,6 +221,40 @@ namespace raspapi.Utils
             {
                 _semCpuInfo.Release();
             }
+        }
+
+        private static async Task<string> ExecuteBashScriptAsync(string cmd)
+        {
+            var escapedArgs = cmd.Replace("\"", "\\\"");
+            string? result = null;
+
+            var process = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"{escapedArgs}\"",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                }
+            };
+
+            try
+            {
+                process.Start();
+                result = await process.StandardOutput.ReadToEndAsync();
+                await process.WaitForExitAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                process.Dispose();
+                process = null;
+            }
+
+            return result!;
         }
     }
 }

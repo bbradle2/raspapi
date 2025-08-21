@@ -9,11 +9,11 @@ namespace raspapi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class RaspberryPiGpioController(ILogger<RaspberryPiGpioController> logger,
-                                           [FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
+    public class RaspberryPiGpioController([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                            [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
-                                           IConfiguration configuration,
-                                           [FromKeyedServices(MiscConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler) : ControllerBase
+                                           [FromKeyedServices(MiscConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
+                                           ILogger<RaspberryPiGpioController> logger,
+                                           IConfiguration configuration) : ControllerBase
     {
         private readonly ILogger<RaspberryPiGpioController> _logger = logger;
         private readonly GpioController _gpioController = gpioController;
@@ -21,14 +21,12 @@ namespace raspapi.Controllers
         private readonly IConfiguration _configuration = configuration;
         private readonly IBinarySemaphoreSlimHandler _binarySemaphoreSlimHandler = binarySemaphoreSlimHandler;
 
-
-
         [HttpGet("GetGpioStatus")]
         public async Task<IActionResult?> GetGpioStatus()
         {
             try
             {
-                return await Task.FromResult(Ok(_gpioObjects)); ;
+                return await Task.FromResult(Ok(_gpioObjects));
             }
             catch (Exception e)
             {
