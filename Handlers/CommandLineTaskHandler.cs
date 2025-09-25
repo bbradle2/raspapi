@@ -11,7 +11,7 @@ namespace raspapi.Handlers
     public class CommandLineTaskHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
                                         [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
                                         [FromKeyedServices(MiscConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
-                                        ILogger<CommandLineTaskHandler> logger,
+                                        ILogger<ICommandLineTaskHandler> logger,
                                         IHost host,
                                         IWebHostEnvironment webHostEnvironment,
                                         IConfiguration configuration
@@ -19,7 +19,7 @@ namespace raspapi.Handlers
     {
         private readonly GpioController _gpioController = gpioController;
         private readonly ConcurrentQueue<GpioObject> _gpioObjects = gpioObjects;
-        private readonly ILogger<CommandLineTaskHandler> _logger = logger;
+        private readonly ILogger<ICommandLineTaskHandler> _logger = logger;
         private readonly IHost _host = host;
         private readonly IWebHostEnvironment _webHostEnvironment = webHostEnvironment;
         private readonly IConfiguration _configuration = configuration;

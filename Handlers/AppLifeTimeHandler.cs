@@ -8,25 +8,26 @@ namespace raspapi.Handlers
 {
 
     public class AppLifeTimeHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                              [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
-                              ILogger<AppLifeTimeHandler> logger,
-                              IHostApplicationLifetime hostLifetTime,
-                              [FromKeyedServices(MiscConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler) : IAppLifeTimeHandler
+                                    [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
+                                    ILogger<IAppLifeTimeHandler> logger,
+                                    IHostApplicationLifetime hostApplicationLifetTime,
+                                    [FromKeyedServices(MiscConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler
+                                    ) : IAppLifeTimeHandler
     {
         private readonly GpioController _gpioController = gpioController;
         private readonly ConcurrentQueue<GpioObject> _gpioObjects = gpioObjects;
-        private readonly ILogger<AppLifeTimeHandler> _logger = logger;
-        private readonly IHostApplicationLifetime _hostLifetTime = hostLifetTime;
+        private readonly ILogger<IAppLifeTimeHandler> _logger = logger;
+        private readonly IHostApplicationLifetime _hostApplicationLifetTime = hostApplicationLifetTime;
         private readonly IBinarySemaphoreSlimHandler _binarySemaphoreSlimHandler = binarySemaphoreSlimHandler;
 
         public void Run()
         {
-            _ = _hostLifetTime!.ApplicationStopping.Register(() =>
-           {
-               _logger!.LogInformation("Waiting for client(s) to Disconnect");
-           });
+            _ = _hostApplicationLifetTime!.ApplicationStopping.Register(() =>
+            {
+                _logger!.LogInformation("Waiting for client(s) to Disconnect");
+            });
 
-            _ = _hostLifetTime.ApplicationStopped.Register(async () =>
+            _ = _hostApplicationLifetTime.ApplicationStopped.Register(async () =>
             {
                 try
                 {
