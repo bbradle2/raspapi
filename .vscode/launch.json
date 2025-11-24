@@ -1,8 +1,6 @@
 {
     "version": "0.2.0",
-    "configurations": 
-    [
-        
+    "configurations": [
         {
             "name": "C#: raspapi Debug",
             "type": "coreclr",
@@ -10,9 +8,8 @@
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
-            "program": "${workspaceFolder}/bin/Debug/net9.0/raspapi.dll",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/raspapi.dll",
             "preLaunchTask": "buildfirst"
-            
         },
         {
             "name": "C#: raspapi Production",
@@ -21,8 +18,8 @@
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Production"
             },
-            "program": "${workspaceFolder}/bin/Debug/net9.0/raspapi.dll",
+            "program": "${workspaceFolder}/bin/Debug/net10.0/raspapi.dll",
             "preLaunchTask": "buildfirst"
         },
-    ],    
+    ],
 }
