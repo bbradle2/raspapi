@@ -26,12 +26,17 @@ namespace raspapi.Controllers
         {
             try
             {
+                await _binarySemaphoreSlimHandler.WaitAsync();
                 return await Task.FromResult(Ok(_gpioObjects));
             }
             catch (Exception e)
             {
                 _logger.LogCritical("{Message}", e.Message);
                 return BadRequest("Something went wrong.");
+            }
+            finally
+            {
+                _binarySemaphoreSlimHandler.Release();
             }
         }
 

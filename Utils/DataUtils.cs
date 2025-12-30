@@ -250,6 +250,10 @@ namespace raspapi.Utils
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+               
+            }
+            finally
+            {
                 process.Dispose();
                 process = null;
             }
