@@ -227,12 +227,12 @@ namespace raspapi.Utils
         {
             var escapedArgs = cmd.Replace("\"", "\\\"");
             string? result = null;
-
+            var shell = Environment.GetEnvironmentVariable("SHELL");
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "/bin/bash",
+                    FileName = shell,
                     Arguments = $"-c \"{escapedArgs}\"",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
