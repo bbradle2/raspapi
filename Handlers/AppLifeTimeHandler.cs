@@ -32,7 +32,7 @@ namespace raspapi.Handlers
                 try
                 {
                     await _binarySemaphoreSlimHandler!.WaitAsync();
-                    _logger!.LogInformation("Checking for Open Gpio's....");
+                    _logger!.LogInformation("Checking for Open Gpio(s)....");
 
                     if (_gpioObjects == null)
                     {
