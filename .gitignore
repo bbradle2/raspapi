@@ -3,3 +3,5 @@ bin/
 .mono/
 test.json
 scripts/*json
+.fake
+raspapi.csproj.lscache

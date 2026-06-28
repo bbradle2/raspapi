@@ -1,35 +1,42 @@
 import http from 'k6/http';
 
 export const options = {
-  iterations: 1000,
+  iterations: 5000,
 };
 
 export default function () {
  
  
+  // const payload = JSON.stringify(
+  //   [
+  //     {
+  //      gpioNumber: 23,
+  //      gpioValue: null
+  //     },
+  //     {
+  //      gpioNumber: 24,
+  //      gpioValue: null
+  //     },
+  //     {
+  //      gpioNumber: 25,
+  //      gpioValue: null
+  //     },
+  //     {
+  //      gpioNumber: 26,
+  //      gpioValue: null
+  //     },
+  //     {
+  //      gpioNumber: 27,
+  //      gpioValue: null
+  //     }
+  //   ]
+  // );
+
   const payload = JSON.stringify(
-    [
       {
        gpioNumber: 23,
-       gpioValue: null
-      },
-      {
-       gpioNumber: 24,
-       gpioValue: null
-      },
-      {
-       gpioNumber: 25,
-       gpioValue: null
-      },
-      {
-       gpioNumber: 26,
-       gpioValue: null
-      },
-      {
-       gpioNumber: 27,
-       gpioValue: null
+       gpioValue: 0
       }
-    ]
   );
   
 
@@ -42,14 +49,16 @@ export default function () {
   
 
   //const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosHigh', payload, params);
-  const response = http.put('http://localhost:5000/RaspberryPiGpio/SetGpiosLow', payload, params);   
+  const response = http.put('http://localhost:8080/putgpiobynumber', payload, params);   
   
   
   //const result = JSON.stringify(response.body, payload, params);
-  const gpios = JSON.parse(response.body);
-      for(var i = 0; i < gpios.length; i++)
-        console.log(`VU ${__VU} received message: ${gpios[i].GpioNumber}:${gpios[i].GpioValue}`);
+  // const gpios = JSON.parse(response.body);
+  //     for(var i = 0; i < gpios.length; i++)
+  //       console.log(`VU ${__VU} received message: ${gpios[i].GpioNumber}:${gpios[i].GpioValue}`);
 
+  const gpio = JSON.parse(response.body);
+  console.log(`VU ${__VU} received message: ${gpio.gpioNumber}:${gpio.gpioValue}`);
 
   // const cpuInfoObject = JSON.parse(response.body);
 
