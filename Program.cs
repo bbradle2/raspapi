@@ -28,6 +28,7 @@ namespace raspapi
             Console.CancelKeyPress += OnSigInt;
 
             var builder = WebApplication.CreateBuilder(args);
+            builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
 
             builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
