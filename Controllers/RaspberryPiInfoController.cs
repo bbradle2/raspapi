@@ -23,7 +23,6 @@ namespace raspapi.Controllers
             _systemInfoObject.ProductName = _product!;
         }
        
-
         [HttpGet("GetEndPoints")]
         public async Task<IActionResult?> GetEndPoints()
         {
@@ -56,7 +55,6 @@ namespace raspapi.Controllers
                 }
 
                 return Ok(await Task.FromResult(endpoints));
-
             }
             catch (Exception e)
             {
@@ -70,9 +68,7 @@ namespace raspapi.Controllers
         {
             try
             {
-                
-                return Ok(await Task.FromResult(_systemInfoObject));
-               
+                return Ok(await Task.FromResult(_systemInfoObject));              
             }
             catch (Exception e)
             {
@@ -86,7 +82,6 @@ namespace raspapi.Controllers
         {
             try
             {
-               
                 CPUInfoObject _cpuInfoObject = await DataUtils.GetCpuInfoAsync($"{_product}.", "cpuinfo");
                 return Ok(_cpuInfoObject);
             }
@@ -102,7 +97,6 @@ namespace raspapi.Controllers
         {
             try
             {
-                
                 var temperatureInfo = await DataUtils.GetTemperatureInfoAsync($"{_product}.", "temperatureInfo");
                 return Ok(temperatureInfo);
             }
@@ -118,7 +112,6 @@ namespace raspapi.Controllers
         {
             try
             {
-                
                 var memInfo = await DataUtils.GetMemoryInfoAsync($"{_product}.", "memoryinfo");
                 return Ok(memInfo);
             }

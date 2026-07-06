@@ -11,8 +11,5 @@ namespace raspapi.Controllers
     {
         private readonly ILogger<RaspberryPiSpiController> _logger = logger;
         private readonly GpioController _gpioController = gpioController;
-
     }
-
-
 }

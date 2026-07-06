@@ -13,6 +13,7 @@ namespace raspapi.Handlers
         {
             _semaphore = new SemaphoreSlim(IntialCount, CurrentCount);
         }
+        
         public async Task WaitAsync()
         {
             await _semaphore.WaitAsync();

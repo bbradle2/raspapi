@@ -2,8 +2,6 @@ namespace raspapi.Models
 {
     public class SystemInfoObject : BaseInfoObject
     {
-
-
         public SystemObject[]? SystemObjects { get; set; }
         
         public class SystemObject
@@ -16,6 +14,5 @@ namespace raspapi.Models
             public string? Serial { get; set; }
             public int Width { get; set; }
         }
-
     }
 }

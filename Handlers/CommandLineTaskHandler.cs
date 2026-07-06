@@ -29,7 +29,6 @@ namespace raspapi.Handlers
         {
             _ = Task.Factory.StartNew(async () =>
             {
-                
                 bool runTask = true;
 
                 while (runTask)
@@ -83,7 +82,6 @@ namespace raspapi.Handlers
                         {
                             _logger!.LogWarning("Problem Getting Http Connection Count. {ex.Message}", ex.Message);
                         }
-
                     }
                     else if (command!.Equals("GPIO".Trim(), StringComparison.CurrentCultureIgnoreCase))
                     {
@@ -93,7 +91,6 @@ namespace raspapi.Handlers
                         {
                             foreach (var gpioObject in _gpioObjects!.DistinctBy(s => s.GpioNumber))
                             {
-
                                 if (_gpioController != null)
                                 {
                                     if (_gpioController!.IsPinOpen(gpioObject.GpioNumber))
@@ -123,15 +120,12 @@ namespace raspapi.Handlers
                     {
                         runTask = false;
                         await _host.StopAsync();
-
                     }
                     else
                     {
                         _logger!.LogWarning("Invalid command. Valid commands are quit,info or gpio");
                     }
-                }
-
-                
+                }               
             });
         }
     }

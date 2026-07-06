@@ -18,7 +18,6 @@ namespace raspapi.Utils
         public static List<GpioObject> JsonArrayToGpioObjectArray(JsonArray gpioObjects)
         {
             List<GpioObject> gpioList = [];
-           
 
             foreach (var gpioObject in gpioObjects)
             {
@@ -137,7 +136,6 @@ namespace raspapi.Utils
                     return new MemoryStream(systemInfoByteArray);
                 }
 
-
                 return new SystemInfoObject()
                 {
                     ProductName = ProductName,
@@ -205,7 +203,6 @@ namespace raspapi.Utils
                     return new MemoryStream(cpuInfoByteArray);
                 }
 
-
                 return new CPUInfoObject()
                 {
                     ProductName = ProductName,
@@ -250,7 +247,6 @@ namespace raspapi.Utils
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-               
             }
             finally
             {

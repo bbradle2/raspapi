@@ -23,7 +23,6 @@ namespace raspapi
 
         static async Task Main(string[] args)
         {
-            
             AppDomain.CurrentDomain.ProcessExit += OnSigTerm;
             Console.CancelKeyPress += OnSigInt;
 

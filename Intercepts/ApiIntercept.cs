@@ -54,7 +54,6 @@ namespace raspapi.Intercepts
             _logger.LogError("Unauthorized User {unauthorizedUser}", unauthorizedUser);
             await context.Response.WriteAsJsonAsync(new UnauthorizedResult());
             return;
-
         }
 
         public static async Task<byte[]> ReadToEndAsync(System.IO.Stream stream)

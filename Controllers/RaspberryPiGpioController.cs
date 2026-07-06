@@ -73,7 +73,6 @@ namespace raspapi.Controllers
                     gpioObjects.Enqueue(new GpioObject { GpioNumber = gpioObj.GpioNumber, GpioValue = gpioValue });
                 }
 
-
                 _gpioObjects.Clear();
                 foreach (var gpioObject in gpioObjects)
                 {
