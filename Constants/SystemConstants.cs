@@ -1,6 +1,6 @@
 namespace raspapi.Constants
 {
-    public static class MiscConstants
+    public static class SystemConstants
     {
         public const string binarySemaphoreSlimHandler = "binarySemaphoreSlimName";
         public const string gpioControllerName = "gpioControllerName";

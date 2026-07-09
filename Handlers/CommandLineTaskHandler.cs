@@ -8,9 +8,9 @@ using System.Net.NetworkInformation;
 namespace raspapi.Handlers
 {
    
-    public class CommandLineTaskHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                        [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
-                                        [FromKeyedServices(MiscConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
+    public class CommandLineTaskHandler([FromKeyedServices(SystemConstants.gpioControllerName)] GpioController gpioController,
+                                        [FromKeyedServices(SystemConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
+                                        [FromKeyedServices(SystemConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
                                         ILogger<ICommandLineTaskHandler> logger,
                                         IHost host,
                                         IWebHostEnvironment webHostEnvironment,

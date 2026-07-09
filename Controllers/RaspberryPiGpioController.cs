@@ -9,9 +9,9 @@ namespace raspapi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class RaspberryPiGpioController([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                           [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
-                                           [FromKeyedServices(MiscConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
+    public class RaspberryPiGpioController([FromKeyedServices(SystemConstants.gpioControllerName)] GpioController gpioController,
+                                           [FromKeyedServices(SystemConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
+                                           [FromKeyedServices(SystemConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler,
                                            ILogger<RaspberryPiGpioController> logger,
                                            IConfiguration configuration) : ControllerBase
     {

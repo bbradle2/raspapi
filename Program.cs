@@ -30,11 +30,11 @@ namespace raspapi
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
 
-            builder.Services.AddKeyedSingleton<GpioController>(MiscConstants.gpioControllerName);
-            builder.Services.AddKeyedSingleton<ConcurrentQueue<GpioObject>>(MiscConstants.gpioObjectsName);
-            builder.Services.AddKeyedSingleton<IAppLifeTimeHandler, AppLifeTimeHandler>(MiscConstants.appLifeTimeHandlerName);
-            builder.Services.AddKeyedSingleton<ICommandLineTaskHandler, CommandLineTaskHandler>(MiscConstants.commandLineTaskHandlerName);
-            builder.Services.AddKeyedSingleton<IBinarySemaphoreSlimHandler, BinarySemaphoreSlimHandler>(MiscConstants.binarySemaphoreSlimHandler);
+            builder.Services.AddKeyedSingleton<GpioController>(SystemConstants.gpioControllerName);
+            builder.Services.AddKeyedSingleton<ConcurrentQueue<GpioObject>>(SystemConstants.gpioObjectsName);
+            builder.Services.AddKeyedSingleton<IAppLifeTimeHandler, AppLifeTimeHandler>(SystemConstants.appLifeTimeHandlerName);
+            builder.Services.AddKeyedSingleton<ICommandLineTaskHandler, CommandLineTaskHandler>(SystemConstants.commandLineTaskHandlerName);
+            builder.Services.AddKeyedSingleton<IBinarySemaphoreSlimHandler, BinarySemaphoreSlimHandler>(SystemConstants.binarySemaphoreSlimHandler);
             builder.Services.AddControllers();
 
             var app = builder.Build();
@@ -45,12 +45,12 @@ namespace raspapi
             app.UseRouting();
             app.MapControllers();
 
-            var appLifeTimeHandler = app.Services.GetKeyedService<IAppLifeTimeHandler>(MiscConstants.appLifeTimeHandlerName);
+            var appLifeTimeHandler = app.Services.GetKeyedService<IAppLifeTimeHandler>(SystemConstants.appLifeTimeHandlerName);
             appLifeTimeHandler!.Run();
 
             if (app.Environment.IsDevelopment())
             {
-                var commandLineTaskHandler = app.Services.GetKeyedService<ICommandLineTaskHandler>(MiscConstants.commandLineTaskHandlerName);
+                var commandLineTaskHandler = app.Services.GetKeyedService<ICommandLineTaskHandler>(SystemConstants.commandLineTaskHandlerName);
                 commandLineTaskHandler!.Run();
             }
 

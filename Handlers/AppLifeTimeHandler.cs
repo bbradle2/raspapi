@@ -7,11 +7,11 @@ using System.Device.Gpio;
 namespace raspapi.Handlers
 {
 
-    public class AppLifeTimeHandler([FromKeyedServices(MiscConstants.gpioControllerName)] GpioController gpioController,
-                                    [FromKeyedServices(MiscConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
+    public class AppLifeTimeHandler([FromKeyedServices(SystemConstants.gpioControllerName)] GpioController gpioController,
+                                    [FromKeyedServices(SystemConstants.gpioObjectsName)] ConcurrentQueue<GpioObject> gpioObjects,
                                     ILogger<IAppLifeTimeHandler> logger,
                                     IHostApplicationLifetime hostApplicationLifetTime,
-                                    [FromKeyedServices(MiscConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler
+                                    [FromKeyedServices(SystemConstants.binarySemaphoreSlimHandler)] IBinarySemaphoreSlimHandler binarySemaphoreSlimHandler
                                     ) : IAppLifeTimeHandler
     {
         private readonly GpioController _gpioController = gpioController;
