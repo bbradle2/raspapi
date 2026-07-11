@@ -11,7 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Iot.Device.Bindings" Version="4.2.0" />
     <PackageReference Include="System.Device.Gpio" Version="4.2.0" />
-    <PackageReference Include="GitVersion.MsBuild" Version="6.8.1" />
+    <PackageReference Include="GitVersion.MsBuild" Version="6.8.2" />
     <PackageReference Include="Microsoft.OpenApi" Version="3.8.0" />
 
     <!-- <PackageReference Include="Nextended.Core" Version="9.0.10" /> -->
