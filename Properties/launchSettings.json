@@ -11,6 +11,6 @@
             {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
-        },
+        }
     }
 }

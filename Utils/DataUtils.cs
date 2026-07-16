@@ -24,8 +24,6 @@ namespace raspapi.Utils
                 var gpioNumber = gpioObject![0]!.GetValue<int>();
                 var gpioValue = gpioObject![1]!.GetValue<bool>();
                 gpioList.Add(new GpioObject { GpioNumber = gpioNumber, GpioValue = gpioValue });
-
-
             }
 
             return gpioList;

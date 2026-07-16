@@ -55,7 +55,7 @@ namespace raspapi.Controllers
                 foreach (var gpioObj in gpioObjs)
                 {
                     bool gpioValue = true;
-                    if (gpioObjs.Where(s => (s.GpioValue == null || s.GpioValue == false) && s.GpioNumber == gpioObj.GpioNumber).Count() == 1)
+                    if (gpioObjs.Count(s => (s.GpioValue == null || s.GpioValue == false) && s.GpioNumber == gpioObj.GpioNumber) == 1)
                     {
                         if (!_gpioController.IsPinOpen(gpioObj.GpioNumber))
                         {
@@ -108,7 +108,7 @@ namespace raspapi.Controllers
                 foreach (var gpioObj in gpioObjs)
                 {
                     bool gpioValue = false;
-                    if (gpioObjs.Where(s => (s.GpioValue == null || s.GpioValue == true) && s.GpioNumber == gpioObj.GpioNumber).Count() == 1)
+                    if (gpioObjs.Count(s => (s.GpioValue == null || s.GpioValue == true) && s.GpioNumber == gpioObj.GpioNumber) == 1)
                     {
                         if (!_gpioController.IsPinOpen(gpioObj.GpioNumber))
                         {
