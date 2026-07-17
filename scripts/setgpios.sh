@@ -167,6 +167,7 @@ do
     runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow"
 done
 
+runtest GET "http://$host:$port/RaspberryPiGpio/GetGpioStatus"
 
 END=$(date +%s%N | cut -b1-13)
 echo Execution time $((END-START)) milli seconds.
