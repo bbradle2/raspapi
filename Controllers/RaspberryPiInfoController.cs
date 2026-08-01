@@ -11,7 +11,6 @@ namespace raspapi.Controllers
     public class RaspberryPiInfoController : ControllerBase
     {
         private readonly ILogger<RaspberryPiInfoController>? _logger;
-        //private readonly GpioController? _gpioController = gpioController;
         private string? _product;
         private static SystemInfoObject? _systemInfoObject;
 

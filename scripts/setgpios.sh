@@ -151,8 +151,10 @@ printf 'Run Tests\n'
 printf '#########\n'
 printf '\n'
 
-#getheader "http://$host:$port"
 START=$(date +%s%N | cut -b1-13)
+
+getheader "http://$host:$port"
+
 runtest GET "http://$host:$port/RaspberryPiInfo/GetCPUInfo"
 runtest GET "http://$host:$port/RaspberryPiInfo/GetSystemInfo"
 runtest GET "http://$host:$port/RaspberryPiInfo/GetMemoryInfo"
@@ -163,14 +165,13 @@ gpioObjects='[{"gpioNumber":23,"gpioValue":null},{"gpioNumber":24,"gpioValue":nu
 for i in {1..1}
 do
     runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosHigh"
-    sleep 1
+    runtest GET "http://$host:$port/RaspberryPiGpio/GetGpioStatus"
+    #sleep 1
     runtest PUT "http://$host:$port/RaspberryPiGpio/SetGpiosLow"
+    runtest GET "http://$host:$port/RaspberryPiGpio/GetGpioStatus"
 done
 
-runtest GET "http://$host:$port/RaspberryPiGpio/GetGpioStatus"
-
 END=$(date +%s%N | cut -b1-13)
-echo Execution time $((END-START)) milli seconds.
 
 cleanup
 
@@ -178,3 +179,4 @@ printf "\n"
 printf "${GREEN}###########\n"
 printf "${GREEN}End Test\n\n"
 
+printf "${NORMAL}Execution time $((END-START)) milli seconds.\n"
