@@ -6,6 +6,7 @@ using raspapi.Interfaces;
 using raspapi.Handlers;
 using System.Collections.Concurrent;
 
+
 namespace raspapi
 {
     class Program
@@ -45,6 +46,8 @@ namespace raspapi
             app.UseRouting();
             app.MapControllers();
 
+            //var chips = LibGpiodDriver.GetAvailableChips();
+           
             var appLifeTimeHandler = app.Services.GetKeyedService<IAppLifeTimeHandler>(SystemConstants.appLifeTimeHandlerName);
             appLifeTimeHandler!.Run();
 

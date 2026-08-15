@@ -111,10 +111,10 @@ printf ''${CYAN}'CT:%s\n' $CT
 printf ''${CYAN}'STATUS:%s\n' $STATUS
 printf ''${NORMAL}'\n'
 
-gpioObject='{"gpioNumber":24,"gpioValue":1}'
+gpioObject='{"gpioNumber":23,"gpioValue":1}'
 runtest PUT "http://$host:$port/putgpiobynumber"
 
-gpioObject='{"gpioNumber":24}'
+gpioObject='{"gpioNumber":23}'
 runtest GET "http://$host:$port/getgpiobynumber"
 
 gpioObject='{}'
