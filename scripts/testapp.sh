@@ -111,6 +111,8 @@ printf ''${CYAN}'CT:%s\n' $CT
 printf ''${CYAN}'STATUS:%s\n' $STATUS
 printf ''${NORMAL}'\n'
 
+for i in {1..1}
+do
 gpioObject='{"gpioNumber":23,"gpioValue":1}'
 runtest PUT "http://$host:$port/putgpiobynumber"
 
@@ -119,6 +121,6 @@ runtest GET "http://$host:$port/getgpiobynumber"
 
 gpioObject='{}'
 runtest GET "http://$host:$port/getinfo"
-
+done
 
 
